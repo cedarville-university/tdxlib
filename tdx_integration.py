@@ -236,10 +236,10 @@ class TDXIntegration:
     def search_people(self, key):
         """
         Gets the top match of people with search text, such as:
-         - Name
-         - Email
-         - Username
-         - Organizational ID
+        - Name
+        - Email
+        - Username
+        - Organizational ID
         :param key: string with search text of person to search with
         :return: person data in json format
         """
