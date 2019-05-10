@@ -263,9 +263,11 @@ class TDXIntegration:
 
     def get_account_by_name(self, key, additional_params=None):
         """
-        Gets an account with name key
+        Gets an account with name key.
+        
         :param key: name of an account to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
+        
         :return: dict of account data (not complete, but including the ID)
         """
         if key in self.cache['accounts']:
