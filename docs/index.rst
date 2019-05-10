@@ -10,7 +10,6 @@ Welcome to tdxlib's documentation!
 .. autoclass:: tdx_asset_integration.TDXAssetIntegration
     :members:
     :undoc-members:
-.. autofunction:: tdx_integration.print_nice
 
 .. toctree::
    :maxdepth: 2
