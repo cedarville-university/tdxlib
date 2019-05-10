@@ -1,0 +1,9 @@
+*.ini
+*.json
+.idea/
+__pycache__/
+venv/
+.vscode/launch.json
+TicketMaster.code-workspace
+.vscode/settings.json
+notes.txt
