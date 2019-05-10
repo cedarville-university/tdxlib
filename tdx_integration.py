@@ -95,9 +95,12 @@ class TDXIntegration:
 
     def make_get(self, request_url):
         """
-        Makes a HTTP GET request to the TDX Api
+        Makes a HTTP GET request to the TDX Api.
+
         :param request_url: the path (everything after /TDWebAPI/api/) to call
+
         :return: the API response
+
         """
         get_url = self.api_url + request_url
         response = None
@@ -127,9 +130,12 @@ class TDXIntegration:
     def make_post(self, request_url, body):
         """
         Makes a HTTP POST request to the TDX Api
+
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the POST
+
         :return: the API response
+
         """
         post_url = self.api_url + request_url
         response = None
@@ -159,10 +165,13 @@ class TDXIntegration:
 
     def make_put(self, request_url, body):
         """
-        Makes an HTTP PUT request to the TDX API
+        Makes an HTTP PUT request to the TDX API.
+
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the PUT
+
         :return: the API response
+
         """
         put_url = self.api_url + request_url
         response = None
@@ -240,8 +249,11 @@ class TDXIntegration:
         - Email
         - Username
         - Organizational ID
+
         :param key: string with search text of person to search with
+
         :return: person data in json format
+
         """
         if key in self.cache['people']:
             return self.cache['people'][key]
@@ -269,6 +281,7 @@ class TDXIntegration:
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
         
         :return: dict of account data (not complete, but including the ID)
+
         """
         if key in self.cache['accounts']:
             return self.cache['accounts'][key]
@@ -296,10 +309,13 @@ class TDXIntegration:
 
     def get_group_by_name(self, key, additional_params=None):
         """
-        Gets a group with name key
+        Gets a group with name key.
+
         :param key: name of Group to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
+
         :return: a dict of group data (not complete, but including the ID)
+
         """
         if key in self.cache['groups']:
             return self.cache['groups'][key]
@@ -326,11 +342,14 @@ class TDXIntegration:
     def get_all_custom_attributes(self, object_type, associated_type=0, app_id=0):
         """
         Gets all custom attributes for the component type. 
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values
+        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+
         :param associated_type: the associated type of object to get attributes for, default: 0
         :param app_id: the application number to get attributes from, default: 0
         :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
-        :return: the API response
+
+        :return: dictionary of custom attributes with options
+
         """
         url_string = '/attributes/custom?componentId=' + str(object_type) + '&associatedTypeId=' + \
             str(associated_type) + '&appId=' + str(app_id)
@@ -339,10 +358,13 @@ class TDXIntegration:
     def get_custom_attribute_by_name(self, key, object_type):
         """
         Gets a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values
+        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+
         :param key: the name of the custom attribute to search for
         :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
+
         :return: the attribute as a dict, with all choice items included
+
         """
         if not self.cache['custom_attributes'][str(object_type)]:
             # There is no API for searching attributes -- the only way is to get them all.
@@ -363,10 +385,13 @@ class TDXIntegration:
     def get_custom_attribute_value_by_name(attribute, key):
         """
         Gets the choice item from a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values
+        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+
         :param key: the name of the choice to look for
         :param attribute: the attribute (as retrieved from get_attribute_by_name())
+
         :return: the the choice object from this attribute whose name matches the key
+
         """
         for i in attribute['Choices']:
             if key in i['Name']:
@@ -380,10 +405,13 @@ class TDXIntegration:
 
     def get_location_by_name(self, key, additional_params=None):
         """
-        Gets a location with name key
+        Gets a location with name key.
+
         :param key: name of location to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
+
         :return: a dict of location data
+
         """
         if key in self.cache['locations']:
             return self.cache['locations']['key']
@@ -403,10 +431,12 @@ class TDXIntegration:
     @staticmethod
     def get_room_by_name(location, room):
         """
-        Gets a room with name key
+        Gets a room with name key.
         :param location: dict of location info from get_location_by_name()
         :param room: name/number of a room to search for (must be exact)
+
         :return: a dict of room data (including ID)
+
         """
         for i in location['Rooms']:
             if room in i['Name']:
