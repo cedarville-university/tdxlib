@@ -1,6 +1,6 @@
-# TicketMaster (TeamDynamix Python SDK)
+# TDXLib (TeamDynamix Python SDK)
 
-TicketMaster is a suite of Python libraries originally designed to take input from Google Sheets and create tickets in TeamDynamix based on the contents of the sheets. The scope of the project has broadened past its humble beginnings, and continues to do so whenever there's a feature we need that it doesn't currently support.
+TDXLib is a suite of Python libraries originally designed to take input from Google Sheets and create tickets in TeamDynamix based on the contents of the sheets. The scope of the project has broadened past its humble beginnings, and continues to do so whenever there's a feature we need that it doesn't currently support.
 
 ## Dependencies
 
@@ -12,7 +12,7 @@ TicketMaster is a suite of Python libraries originally designed to take input fr
 
 ## Components
 
-* **TDXIntegration**: the base class that contains the methods necessary to authenticate to Teamdynamix. This class also contains methods to interact with TeamDyanamix objects that are universal across various Apps (Locations, People, Accounts, etc.)
+* **TDXIntegration**: this base class that contains the methods necessary to authenticate to Teamdynamix. This class also contains methods to interact with TeamDyanamix objects that are universal across various Apps (Locations, People, Accounts, etc.)
 
   Currently Implemented:
   * Authentication (only simple auth, no loginadmin or sso)
