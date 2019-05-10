@@ -84,21 +84,19 @@ class TDXTicketIntegration(tdx_integration.TDXIntegration):
         Gets a ticket, based on criteria
         :param max_results: maximum number of results to return
         :param criteria: a string, list or dict to search for tickets with
-                Common criteria:
-                    {
-                        'TicketClassification': [List of Int],
-                        'SearchText': [String],
-                        'Status IDs': [List of Int],
-                        'ResponsibilityUids': [List of String (GUID)],
-                        'ResponsibilityGroupIDs': [List of String (ID)],
-                        'RequestorEmailSearch': [String],
-                        'LocationIDs': [List of Int],
-                        'LocationRoomIds': [List of Int],
-                        'CreatedDateFrom': [DateTime],
-                        'CreatedDateTo': [DateTime],
-                        'SlaViolationStatus': [Boolean -- true = SLA Violated]
-                    }
-                    (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch)
+        Common criteria:
+        {'TicketClassification': [List of Int],
+        'SearchText': [String],
+        'Status IDs': [List of Int],
+        'ResponsibilityUids': [List of String (GUID)],
+        'ResponsibilityGroupIDs': [List of String (ID)],
+        'RequestorEmailSearch': [String],
+        'LocationIDs': [List of Int],
+        'LocationRoomIds': [List of Int],
+        'CreatedDateFrom': [DateTime],
+        'CreatedDateTo': [DateTime],
+        'SlaViolationStatus': [Boolean -- true = SLA Violated]}
+        (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch)
         :param cancelled: include cancelled tickets in search if true
         :param closed: include closed tickets in search if true
         :param other_status: Status ID of a custom status
@@ -471,7 +469,7 @@ class TDXTicketIntegration(tdx_integration.TDXIntegration):
         Updates ticket task(s) with a set of new values.
         :param ticket_id: The ticket Id on which the ticket task exists.
         :param task_list: list of tasks, maybe from get_all_ticket_tasks,
-            or a single ticket task in dict (must include task ID).
+        or a single ticket task in dict (must include task ID).
         :param changed_attributes: The new values ot set on the ticket task.
         :return: The modified ticket task(s), if the operation was sucessful
         :rtype: dict or list of dict
@@ -547,7 +545,7 @@ class TDXTicketIntegration(tdx_integration.TDXIntegration):
         :param requestor: Requester for the ticket, defaults to username of integration (optional)
         :param classification: Classification name for ticket, default "Incident" (optional)
         :param form_id: ID of a form that you'd like to assign to this ticket (Form ID's not accessible via
-                        API -- Must be looked up manually in TDAdmin)
+        API -- Must be looked up manually in TDAdmin)
         """
         # Required by TDX for a new ticket: Type, Title, Account, Status, Priority, Requestor
 

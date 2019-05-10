@@ -7,6 +7,7 @@ import dateutil.parser
 import tdx_api_exceptions
 import datetime
 
+
 class TDXIntegration:
     # Hard-coded into TDX
     component_ids = {
@@ -167,7 +168,7 @@ class TDXIntegration:
         response = None
         try:
             response = requests.put(
-                url = put_url,
+                url=put_url,
                 headers={
                     "Authorization": 'Bearer ' + self.token,
                     "Content-Type": "application/json; charset=utf-8",
