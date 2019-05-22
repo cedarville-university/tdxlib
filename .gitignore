@@ -4,6 +4,6 @@
 __pycache__/
 venv/
 .vscode/launch.json
-TicketMaster.code-workspace
+tdxlib.code-workspace
 .vscode/settings.json
 notes.txt

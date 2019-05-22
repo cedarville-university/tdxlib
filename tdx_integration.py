@@ -36,7 +36,7 @@ class TDXIntegration:
         if filename is not None:
             self.config.read(filename)
         else:
-            filename = 'TicketMaster.ini'
+            filename = 'tdxlib.ini'
             self.config.read(filename)
         if 'TDX API Settings' in self.config:
             self.settings = self.config['TDX API Settings']
