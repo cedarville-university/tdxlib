@@ -41,11 +41,12 @@ class TDXIntegration:
         if 'TDX API Settings' in self.config:
             self.settings = self.config['TDX API Settings']
             self.org_name = self.settings.get('orgname')
-            self.sandbox = bool(self.settings.get('sandbox'))
+            self.sandbox = self.settings.getboolean('sandbox')
             self.username = self.settings.get('username')
             self.password = self.settings.get('password')
             self.ticket_app_id = self.settings.get('ticketAppId')
             self.asset_app_id = self.settings.get('assetAppId')
+            self.caching = self.settings.getboolean('caching')
             if self.sandbox:
                 api_end = '/SBTDWebApi/api'
             else:
@@ -62,11 +63,12 @@ class TDXIntegration:
                 'password': 'Prompt',
                 'ticketAppId': '',
                 'assetAppId': '',
-                'caching': False
-                                       }
+                'caching': True
+            }
             with open(filename, 'w') as configfile:
                 self.config.write(configfile)
-            raise FileNotFoundError('No config settings at ' + filename + ", writing sample config to" +
+            raise FileNotFoundError(f'No config settings at {filename}. ' +
+                                    'Writing sample config to ' + 
                                     os.path.join(os.getcwd(), filename))
         try:
             response = requests.post(
