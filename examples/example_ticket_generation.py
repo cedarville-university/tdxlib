@@ -1,16 +1,16 @@
-import tdx_ticket_integration
+import tdxlib.tdx_ticket_integration
 import gsheet
 
 SHEET_URL = 'https://docs.google.com/spreadsheets/d/<big_long_string>/edit#gid=0'
 SHEET_TAB = 'Sheet1'
 HEADERS = 1
-CONFIGFILE = 'TicketMaster.ini'
+CONFIGFILE = 'tdxlib.ini'
 
 # Set ticket data from Google Sheets
 tickets = gsheet.read(SHEET_URL, SHEET_TAB, HEADERS)
 
 # Set up TDX connection for tickets
-tdx = tdx_ticket_integration.TDXTicketIntegration(CONFIGFILE)
+tdx = tdxlib.tdx_ticket_integration.TDXTicketIntegration(CONFIGFILE)
 
 # Set up global values for ticket generation
 

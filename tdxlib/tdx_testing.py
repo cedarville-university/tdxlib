@@ -1,16 +1,15 @@
 import unittest
 from datetime import datetime as dt
-
-import tdx_integration
-import tdx_asset_integration
-import tdx_ticket_integration
+from tdxlib import tdx_integration
+from tdxlib import tdx_asset_integration
+from tdxlib import tdx_ticket_integration
 
 
 class TdxTicketTesting(unittest.TestCase):
 
     # Create TDXIntegration object for testing use. Called before testing methods.
     def setUp(self):
-        self.tix = tdx_ticket_integration.TDXTicketIntegration('TicketMaster.ini')
+        self.tix = tdx_ticket_integration.TDXTicketIntegration()
         right_now = dt.today()
         self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
     

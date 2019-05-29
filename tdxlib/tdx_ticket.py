@@ -1,9 +1,9 @@
-import tdx_api_exceptions
+import tdxlib.tdx_api_exceptions
 import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import tdx_ticket_integration
+    import tdxlib.tdx_ticket_integration
 
 
 class TdxTicket:
@@ -61,7 +61,7 @@ class TdxTicket:
 
     # This constructor makes a bare-bones ticket using defaults
     #   that may or may not work in all circumstances.
-    def __init__(self, integration: 'tdx_ticket_integration.TDXTicketIntegration', json=None):
+    def __init__(self, integration: 'tdxlib.tdx_ticket_integration.TDXTicketIntegration', json=None):
         """
         Instantiates a ticket from scratch -- setting some defaults
         :param integration: a valid ticket integration object
@@ -125,7 +125,7 @@ class TdxTicket:
                 else:
                     self.ticket_data[key]: str = value
             else:
-                raise tdx_api_exceptions.TdxApiTicketImportError(
+                raise tdxlib.tdx_api_exceptions.TdxApiTicketImportError(
                     "Attribute {0} with value {1} not allowed in Ticket".format(key, value))
 
     def validate(self, data=None, editable_only=False):
@@ -135,44 +135,44 @@ class TdxTicket:
         if not editable_only:
             for attrib in TdxTicket.required_attributes:
                 if attrib not in data:
-                    raise tdx_api_exceptions.TdxApiTicketValidationError(
+                    raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value required for {0}".format(attrib))
                 if attrib in self.valid_int_attributes:
                     if not isinstance(data[attrib], int):
-                        raise tdx_api_exceptions.TdxApiTicketValidationError(
+                        raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                             "Integer value required for {0}".format(attrib))
                 elif not isinstance(data[attrib], str):
-                    raise tdx_api_exceptions.TdxApiTicketValidationError(
+                    raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "String value required for {0}".format(attrib))
         for attrib, value in data.items():
             # Check all attributes for validity
             if attrib not in TdxTicket.valid_attributes:
-                raise tdx_api_exceptions.TdxApiTicketValidationError(
+                raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "{0} with value {1} is not a valid ticket attribute".format(attrib, value))
             # Check editable attributes for correct type
             if attrib in TdxTicket.editable_int_attributes:
                 try:
                     int(data[attrib])
                 except ValueError:
-                    raise tdx_api_exceptions.TdxApiTicketValidationError(
+                    raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value for {0} cannot be converted to Int".format(attrib))
             if attrib in TdxTicket.editable_double_attributes:
                 try:
                     float(data[attrib])
                 except ValueError:
-                    raise tdx_api_exceptions.TdxApiTicketValidationError(
+                    raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value for {0} cannot be converted to decimal number".format(attrib))
             if attrib in TdxTicket.editable_date_attributes:
                 if not isinstance(data[attrib], datetime.datetime):
                     try:
                         self.tdx_api.import_tdx_date(data[attrib])
                     except TypeError:
-                        raise tdx_api_exceptions.TdxApiTicketValidationError(
-                            "Value {1} for {0} cannot be converted to a datetime object".format(attrib,value))
+                        raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
+                            "Value {1} for {0} cannot be converted to a datetime object".format(attrib, value))
             # Check for editable attributes only
             if editable_only:
                 if attrib not in TdxTicket.editable_attributes:
-                    raise tdx_api_exceptions.TdxApiTicketValidationError(
+                    raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Attribute {0} not editable (editable-only validation)".format(attrib))
 
     def export(self, validate=False):

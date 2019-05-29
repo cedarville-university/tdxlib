@@ -1,10 +1,10 @@
-import tdx_integration
 import datetime
+import tdxlib.tdx_integration
 
 
-class TDXAssetIntegration(tdx_integration.TDXIntegration):
+class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     def __init__(self, filename):
-        tdx_integration.TDXIntegration.__init__(self, filename)
+        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
         if self.asset_app_id is None:
             raise ValueError("Asset App Id is required. Check your config file")
         self.assetForms = self.get_all_asset_forms()
