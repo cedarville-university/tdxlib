@@ -3,6 +3,7 @@
 .idea/
 __pycache__/
 venv/
+docs/_build
 .vscode/launch.json
 TicketMaster.code-workspace
 .vscode/settings.json
