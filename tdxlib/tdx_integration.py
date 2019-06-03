@@ -606,12 +606,11 @@ class TDXIntegration:
             locations = self.make_post(url_string, post_body)
             for location in locations:
                 if key in location['Name']:
-                    self.cache['locations']['key']['key'] = location
+                    self.cache['locations']['key'] = location
                     return location
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
-    @staticmethod
-    def get_room_by_name(location, room):
+    def get_room_by_name(self, location, room):
         """
         Gets a room with name key.
         :param location: dict of location info from get_location_by_name()
@@ -620,7 +619,8 @@ class TDXIntegration:
         :return: a dict of room data (including ID)
 
         """
-        for i in location['Rooms']:
+        full_location=self.get_location_by_id(location['ID'])
+        for i in full_location['Rooms']:
             if room in i['Name']:
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(

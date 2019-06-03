@@ -7,3 +7,4 @@ venv/
 tdxlib.code-workspace
 .vscode/settings.json
 notes.txt
+docs/_build
