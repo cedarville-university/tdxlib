@@ -16,6 +16,16 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.asset_type_cache = dict()
         # Overriding parent method to limit re-definition
 
+    def make_asset_call(self, url, action, post_body=None):
+        url_string = '/' + str(self.asset_app_id) + '/assets'
+        if len(url) > 0:
+            url_string += '/' + url
+        if action == 'get':
+            return self.make_get(url_string)
+        if action == 'post' and post_body:
+            return self.make_post(url_string, post_body)
+        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
+
     def make_call(self, url, action, post_body=None):
         return self.make_asset_call(url, action, post_body)
 
