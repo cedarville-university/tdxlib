@@ -1,13 +1,32 @@
 import tdxlib.tdx_ticket_integration
-import gsheet
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-SHEET_URL = 'https://docs.google.com/spreadsheets/d/<big_long_string>/edit#gid=0'
+# Edit the following values to customize:
+#  Name of the spreadsheet
+SHEET_NAME = 'My Big Spreadsheet'
+#  Name of the tab in the spreadsheet
 SHEET_TAB = 'Sheet1'
-HEADERS = 1
+#  Path to your TDXLlib configuration file
 CONFIGFILE = 'tdxlib.ini'
+#  Path to your the downloaded JSON file with your Google Service Account information
+#  NOTE: You will need to:
+#   1. Set up a Project in console.developers.google.com
+#   2. Enable the Google Sheets APIs in your project
+#   3. Create a Service Account Credential
+#   4. Share the spreadsheet with the service account (ending in "@<project-name>.iam.gserviceaccount.com")
+JSONFILE = 'json-credentials.json'
+# See: https://github.com/burnash/gspread for more info
 
-# Set ticket data from Google Sheets
-tickets = gsheet.read(SHEET_URL, SHEET_TAB, HEADERS)
+# Authenticate to Google and open the Sheets
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+credential = ServiceAccountCredentials.from_json_keyfile_name(JSONFILE, scope)
+client = gspread.authorize(credential)
+sheet = client.open(SHEET_NAME)
+tab = sheet.worksheet(SHEET_TAB)
+
+# Extract all of the values in the spreadsheet
+tickets = tab.get_all_records()
 
 # Set up TDX connection for tickets
 tdx = tdxlib.tdx_ticket_integration.TDXTicketIntegration(CONFIGFILE)
