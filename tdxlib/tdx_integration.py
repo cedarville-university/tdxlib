@@ -4,8 +4,8 @@ import json
 import os
 import getpass
 import dateutil.parser
-import tdx_api_exceptions
 import datetime
+import tdxlib.tdx_api_exceptions
 
 
 class TDXIntegration:
@@ -38,24 +38,7 @@ class TDXIntegration:
         else:
             filename = 'tdxlib.ini'
             self.config.read(filename)
-        if 'TDX API Settings' in self.config:
-            self.settings = self.config['TDX API Settings']
-            self.org_name = self.settings.get('orgname')
-            self.sandbox = self.settings.getboolean('sandbox')
-            self.username = self.settings.get('username')
-            self.password = self.settings.get('password')
-            self.ticket_app_id = self.settings.get('ticketAppId')
-            self.asset_app_id = self.settings.get('assetAppId')
-            self.caching = self.settings.getboolean('caching')
-            if self.sandbox:
-                api_end = '/SBTDWebApi/api'
-            else:
-                api_end = '/TDWebApi/api'
-            self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
-            if self.password == 'Prompt':
-                pass_prompt = 'Enter the TDX Password for user ' + self.username + ': '
-                self.password = getpass.getpass(pass_prompt)
-        else:
+        if not 'TDX API Settings' in self.config:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
                 'sandbox': True,
@@ -63,13 +46,78 @@ class TDXIntegration:
                 'password': 'Prompt',
                 'ticketAppId': '',
                 'assetAppId': '',
-                'caching': True
+                'caching': False
             }
+            print("No configuration file found. Please enter the following information: ")
+            print("Please enter your TeamDynamix organization name.")
+            print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
+            init_orgname = input("Organization Name (<orgname>.teamdynamix.com): ")
+            self.config.set('TDX API Settings', 'orgname', init_orgname)
+            sandbox_invalid = True
+            while sandbox_invalid:
+                sandbox_choice = input("Use Sandbox? [Y/N]: ")
+                if sandbox_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                    self.config.set('TDX API Settings', 'sandbox', 'true')
+                    sandbox_invalid = False
+                elif sandbox_choice.lower() in ['n', 'no', 'false']:
+                    self.config.set('TDX API Settings', 'sandbox', 'false')
+                    sandbox_invalid = False
+            init_username = input("TDX API Username (tdxuser@orgname.com): ")
+            self.config.set('TDX API Settings', 'username', init_username)
+            print("TDXLib can store the password for the API user in the configuration file.")
+            print("This is convenient, but not very secure.")
+            password_invalid = True
+            while password_invalid:
+                password_choice = input("Store password for " + init_username + "? [Y/N]: ")
+                if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                    password_prompt = 'Enter Password for ' + init_username + ": "
+                    init_password = getpass.getpass(password_prompt)
+                    self.config.set('TDX API Settings', 'password', init_password)
+                    password_invalid = False
+                elif password_choice.lower() in ['n', 'no', 'false']:
+                    self.config.set('TDX API Settings', 'password', 'Prompt')
+                    password_invalid = False
+                if password_invalid:
+                    print("Invalid Response.")
+            init_ticket_id = input("Tickets App ID (optional): ")
+            self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
+            init_asset_id = input("Assets App ID (optional): ")
+            self.config.set('TDX API Settings', 'assetAppId', init_asset_id)
+            print("TDXLib uses (mostly) intelligent caching to speed up API calls on repetitive operations.")
+            print("In very dynamic environments, TDXLib's caching can cause issues.")
+            caching_invalid = True
+            while caching_invalid:
+                caching_choice = input("Disable Caching? [Y/N]: ")
+                if caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                    self.config.set('TDX API Settings', 'caching', 'true')
+                    self.caching = False
+                    caching_invalid = False
+                elif caching_choice.lower() in ['n', 'no', 'false']:
+                    self.config.set('TDX API Settings', 'caching', 'false')
+                    self.caching = True
+                    caching_invalid = False
+                if caching_invalid:
+                    print("Invalid Response.")
+            print('Initial settings saved to: ' + filename)
             with open(filename, 'w') as configfile:
                 self.config.write(configfile)
-            raise FileNotFoundError(f'No config settings at {filename}. ' +
-                                    'Writing sample config to ' + 
-                                    os.path.join(os.getcwd(), filename))
+        # Read settings into
+        self.settings = self.config['TDX API Settings']
+        self.org_name = self.settings.get('orgname')
+        self.sandbox = bool(self.settings.get('sandbox'))
+        self.username = self.settings.get('username')
+        self.password = self.settings.get('password')
+        self.ticket_app_id = self.settings.get('ticketAppId')
+        self.asset_app_id = self.settings.get('assetAppId')
+        self.caching = bool(self.settings.get('caching'))
+        if self.sandbox:
+            api_end = '/SBTDWebApi/api'
+        else:
+            api_end = '/TDWebApi/api'
+        self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
+        if self.password == 'Prompt':
+            pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
+            self.password = getpass.getpass(pass_prompt)
         try:
             response = requests.post(
                 url=str(self.api_url) + '/auth',
@@ -82,14 +130,14 @@ class TDXIntegration:
                 })
             )
             if response.status_code != 200:
-                raise tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                         response.reason + "\n" + " Returned: " + response.text)
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
+                                                                response.reason + "\n" + " Returned: " + response.text)
             else:
                 self.token = response.text
                 self.password = None
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
-        except tdx_api_exceptions.TdxApiHTTPError as e:
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('Authorization failed.\n' + str(e))
             exit(1)
         self.cache = {}
@@ -115,13 +163,13 @@ class TDXIntegration:
                 }
             )
             if response.status_code != 200:
-                raise tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                         response.reason + "\n" + " Returned: " + response.text)
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
+                                                                response.reason + "\n" + " Returned: " + response.text)
             val = response.json()
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
-        except tdx_api_exceptions.TdxApiHTTPError as e:
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('GET failed: to ' + get_url + "\nReturned: " + str(e))
         except json.decoder.JSONDecodeError:
             message = 'Invalid JSON received from ' + get_url + ':'
@@ -150,14 +198,14 @@ class TDXIntegration:
                 },
                 data=json.dumps(body))
             if response.status_code not in [200, 201]:
-                raise tdx_api_exceptions.TdxApiHTTPError(
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
-        except tdx_api_exceptions.TdxApiHTTPError as e:
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('POST failed: to ' + post_url + "\nReturned: " + str(e))
         except json.decoder.JSONDecodeError:
             message = 'Invalid JSON received from ' + post_url + ':\n'
@@ -186,14 +234,14 @@ class TDXIntegration:
                 },
                 data=json.dumps(body))
             if response.status_code not in [200, 202, 204]:
-                raise tdx_api_exceptions.TdxApiHTTPError(
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
-        except tdx_api_exceptions.TdxApiHTTPError as e:
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('PUT failed: to ' + put_url + "\nReturned: " + str(e))
         except json.decoder.JSONDecodeError:
             message = 'Invalid JSON received from ' + put_url + ':\n'
@@ -220,14 +268,14 @@ class TDXIntegration:
                     "Content-Type": "application/json; charset=utf-8",
                 })
             if response.status_code not in [200, 201]:
-                raise tdx_api_exceptions.TdxApiHTTPError(
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
             return val
         except requests.exceptions.RequestException:
             print('HTTP DELETE Request failed')
-        except tdx_api_exceptions.TdxApiHTTPError as e:
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('DELETE failed: to ' + delete_url + "\nReturned: " + str(e))
         except json.decoder.JSONDecodeError:
             message = 'Invalid JSON received from ' + delete_url + ':\n'
@@ -262,14 +310,14 @@ class TDXIntegration:
             )
 
             if response.status_code not in [200, 201]:
-                raise tdx_api_exceptions.TdxApiHTTPError(
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
             return val
         except requests.exceptions.RequestException:
             print('HTTP PATCH Request failed')
-        except tdx_api_exceptions.TdxApiHTTPError as e:
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('PATCH failed: to ' + patch_url + "\nReturned: " + str(e))
         except json.decoder.JSONDecodeError:
             message = 'Invalid JSON received from ' + patch_url + ':\n'
@@ -286,6 +334,17 @@ class TDXIntegration:
             'accounts': {},
             'custom_attributes': {}
         }
+
+    # TODO: Move this method into tdx_asset_integration
+    def make_asset_call(self, url, action, post_body=None):
+        url_string = '/' + str(self.asset_app_id) + '/assets'
+        if len(url) > 0:
+            url_string += '/' + url
+        if action == 'get':
+            return self.make_get(url_string)
+        if action == 'post' and post_body:
+            return self.make_post(url_string, post_body)
+        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
     # #### GETTING TDX OBJECTS #### #
 
@@ -372,14 +431,16 @@ class TDXIntegration:
             url_string = "/people/lookup?searchText=" + str(key) + "&maxResults=1"
             people = self.make_get(url_string)
             if len(people) == 0:
-                raise tdx_api_exceptions.TdxApiObjectNotFoundError("No person found for " + key)
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No person found for " + key)
             self.cache['people'][key] = people[0]
             return people[0]
 
     def get_all_accounts(self):
         """
         Gets all accounts
+
         :return: list of Account data in json format
+
         """
         url_string = "/accounts"
         return self.make_get(url_string)
@@ -407,12 +468,14 @@ class TDXIntegration:
                 if account['Name'] == key:
                     self.cache['accounts'][key] = account
                     return account
-            raise tdx_api_exceptions.TdxApiObjectNotFoundError('No account found for ' + key)
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No account found for ' + key)
 
     def get_all_groups(self):
         """
         Gets a list of groups
+
         :return: list of group data in json format
+
         """
         url_string = "/groups/search"
         post_body = {'search': {'NameLike': "", 'IsActive': 'True'}}
@@ -446,7 +509,7 @@ class TDXIntegration:
                     if group['Name'] == key:
                         self.cache['groups'][key] = group
                         return group
-            raise tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
 
     def get_all_group_members(self, key):
         """
@@ -492,7 +555,7 @@ class TDXIntegration:
             if item['Name'] == key:
                 self.cache['custom_attributes'][str(object_type)][key] = item
                 return item
-        raise tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + key + ' and object type ' + str(object_type))
 
     def get_asset_attribute_by_name(self, key):
@@ -515,7 +578,7 @@ class TDXIntegration:
         for i in attribute['Choices']:
             if key in i['Name']:
                 return i
-        raise tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute value for " + key + " found in " + attribute['Name'])
 
     def get_all_locations(self):
@@ -545,7 +608,7 @@ class TDXIntegration:
                 if key in location['Name']:
                     self.cache['locations']['key']['key'] = location
                     return location
-            raise tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
     @staticmethod
     def get_room_by_name(location, room):
@@ -560,7 +623,7 @@ class TDXIntegration:
         for i in location['Rooms']:
             if room in i['Name']:
                 return i
-        raise tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No room found for " + room + " in location " + location['Name'])
 
     # #### CREATING TDX OBJECTS #### #
@@ -587,8 +650,8 @@ class TDXIntegration:
     #  This should ingest a list of people. We need to decide whether or not it should be a list of email
     #  addresses, or a list of UUID's that could be generated from another method.
 
-    # #### #### PEOPLE #### #### #
-    # https: // api.teamdynamix.com / TDWebApi / Home / section / People  # summary
+    # #### PEOPLE #### #
+    # https://api.teamdynamix.com/TDWebApi/Home/section/People #summary
 
     # TODO: def create_person()
 

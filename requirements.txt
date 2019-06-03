@@ -1,5 +1,2 @@
-# Requirements to use tdxlib. To install, use pip install -r requirements.txt.
-requests
 python-dateutil
-gspread
-oauth2client
+requests

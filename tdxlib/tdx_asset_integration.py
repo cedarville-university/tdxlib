@@ -1,11 +1,10 @@
-import tdx_integration
-import tdx_api_exceptions
 import datetime
+import tdxlib.tdx_integration
 
 
-class TDXAssetIntegration(tdx_integration.TDXIntegration):
+class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     def __init__(self, filename):
-        tdx_integration.TDXIntegration.__init__(self, filename)
+        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
         if self.asset_app_id is None:
             raise ValueError("Asset App Id is required. Check your config file")
         self.assetForms = self.get_all_asset_forms()
@@ -25,7 +24,7 @@ class TDXAssetIntegration(tdx_integration.TDXIntegration):
             return self.make_get(url_string)
         if action == 'post' and post_body:
             return self.make_post(url_string, post_body)
-        raise tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
+        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
     def make_call(self, url, action, post_body=None):
         return self.make_asset_call(url, action, post_body)
