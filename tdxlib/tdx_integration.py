@@ -249,9 +249,81 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    # TODO: def make_delete(self, request_url body):
+    def make_delete(self, request_url):
+        """
+        Makes an HTTP DELETE request to the TDX Api.
 
-    # TODO: def make_patch(self, request_url, body?): ?????
+        :param request_url: the path (everything after /TDWebAPI/api/) to call
+
+        :return: the API's response
+
+        """
+        delete_url = self.api_url + request_url
+        response = None
+        try:
+            response = requests.delete(
+                url=delete_url,
+                headers={
+                    "Authorization": 'Bearer ' + self.token,
+                    "Content-Type": "application/json; charset=utf-8",
+                })
+            if response.status_code not in [200, 201]:
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    " Response code: " + str(response.status_code) + " " +
+                    response.reason + "\n" + "Returned: " + response.text)
+            val = response.json()
+            return val
+        except requests.exceptions.RequestException:
+            print('HTTP DELETE Request failed')
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+            print('DELETE failed: to ' + delete_url + "\nReturned: " + str(e))
+        except json.decoder.JSONDecodeError:
+            message = 'Invalid JSON received from ' + delete_url + ':\n'
+            if response:
+                message += response.text
+            print(message)
+
+    def make_patch(self, request_url, body: list):
+        """
+        Makes an HTTP PATH request to the TDX Api.
+
+        The TeamDyanmix API supports limited PATCH functionality. Since TDX data is highly structured, items are
+        referenced explicitly by their TDX ID, and not by their order in the object. Likewise, since the fields
+        in a TDX object are all predefined, a PATCH call cannot add or remove any fields in the object.
+
+        :param request_url: the path (everything after /TDWebAPI/api/) to call
+        :param body: a list of PATCH operations as dictionaries, each including the keys "op", "path", and "value"
+
+        :return: the API's response
+
+        """
+        patch_url = self.api_url + request_url
+        response = None
+        try:
+            response = requests.patch(
+                url=patch_url,
+                headers={
+                    "Authorization": 'Bearer ' + self.token,
+                    "Content-Type": "application/json; charset=utf-8",
+                },
+                data=json.dumps(body)
+            )
+
+            if response.status_code not in [200, 201]:
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    " Response code: " + str(response.status_code) + " " +
+                    response.reason + "\n" + "Returned: " + response.text)
+            val = response.json()
+            return val
+        except requests.exceptions.RequestException:
+            print('HTTP PATCH Request failed')
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+            print('PATCH failed: to ' + patch_url + "\nReturned: " + str(e))
+        except json.decoder.JSONDecodeError:
+            message = 'Invalid JSON received from ' + patch_url + ':\n'
+            if response:
+                message += response.text
+            print(message)
 
     def clean_cache(self):
         self.cache = {
@@ -277,20 +349,68 @@ class TDXIntegration:
     # #### GETTING TDX OBJECTS #### #
 
     def get_tdx_item_by_id(self, obj_type, key):
+        """
+        A generic function to get something from the TDX API using its ID/UID.
+
+        Since the TDX API endpoints are almost all in the form /<object type>/id, this method gives an easy way
+        to template all the different get_<object>_by_id methods.
+
+        :param obj_type: the type of object to get.
+
+        :return: list of person data
+        """
         url_string = f'/{obj_type}/{key}'
         return self.make_get(url_string)
 
-    def get_location_by_id(self, key):
-        return self.get_tdx_item_by_id('locations', key)
+    def get_location_by_id(self, location_id):
+        """
+        Gets a group by the group ID.
 
-    def get_account_by_id(self, key):
-        return self.get_tdx_item_by_id('accounts', key)
+        :param location_id: ID number of group to get members of
 
-    def get_group_by_id(self, key):
-        return self.get_tdx_item_by_id('groups', key)
+        :return: list of person data
+        """
+        return self.get_tdx_item_by_id('locations', location_id)
+
+    def get_account_by_id(self, account_id):
+        """
+        Gets an account by the account ID.
+
+        :param account_id: ID number of group to get members of
+
+        :return: list of person data
+        """
+        return self.get_tdx_item_by_id('accounts', account_id)
+
+    def get_group_by_id(self, group_id):
+        """
+        Gets a group by the group ID.
+
+        :param group_id: ID number of group to get members of
+
+        :return: list of person data
+        """
+        return self.get_tdx_item_by_id('groups', group_id)
 
     def get_person_by_uid(self, uid):
+        """
+        Gets a a person by UID.
+
+        :param uid: uid string of a person
+
+        :return: dict of person data
+        """
         return self.get_tdx_item_by_id('people', uid)
+
+    def get_group_members_by_id(self, group_id):
+        """
+        Gets a list of group members by the group ID.
+
+        :param group_id: ID number of group to get members of
+
+        :return: list of person data
+        """
+        return self.get_tdx_item_by_id('groups', group_id + '/members')
     
     def search_people(self, key):
         """
@@ -302,7 +422,7 @@ class TDXIntegration:
 
         :param key: string with search text of person to search with
 
-        :return: person data in json format
+        :return: dict of person data
 
         """
         if key in self.cache['people']:
@@ -391,7 +511,15 @@ class TDXIntegration:
                         return group
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
 
-    # TODO: def get_all_group_members()
+    def get_all_group_members(self, key):
+        """
+        Gets all the members of a group as person objects.
+
+        :param key: a partial name
+
+        :return: list of groups
+
+        """
 
     def get_all_custom_attributes(self, object_type, associated_type=0, app_id=0):
         """

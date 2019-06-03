@@ -1,782 +1,179 @@
 
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>Welcome to tdxlib’s documentation! &#8212; tdxlib  documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>TDXLib Method &amp; Class Documentation &mdash; tdxlib  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TDX Integration" href="tdx-integration.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
           
 
-          <div class="body" role="main">
+          
+            <a href="#" class="icon icon-home"> tdxlib
+          
+
+          
+          </a>
+
+          
             
-  <div class="section" id="welcome-to-tdxlib-s-documentation">
-<h1>Welcome to tdxlib’s documentation!<a class="headerlink" href="#welcome-to-tdxlib-s-documentation" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="tdx_integration.TDXIntegration">
-<em class="property">class </em><code class="descclassname">tdx_integration.</code><code class="descname">TDXIntegration</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="tdx_integration.TDXIntegration.clean_cache">
-<code class="descname">clean_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.clean_cache" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+            
+          
 
-<dl class="attribute">
-<dt id="tdx_integration.TDXIntegration.component_ids">
-<code class="descname">component_ids</code><em class="property"> = {'account': 14, 'asset': 27, 'configuration_item': 63, 'contract': 29, 'file_cabinet': 8, 'issue': 3, 'opportunity': 11, 'person': 31, 'product': 37, 'product_model': 30, 'project': 1, 'ticket': 9, 'vendor': 28}</em><a class="headerlink" href="#tdx_integration.TDXIntegration.component_ids" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
 
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.export_tdx_date">
-<em class="property">static </em><code class="descname">export_tdx_date</code><span class="sig-paren">(</span><em>date: &lt;module 'datetime' from 'c:\\program files\\python36\\Lib\\datetime.py'&gt;</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#tdx_integration.TDXIntegration.export_tdx_date" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+          
+        </div>
 
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_account_by_id">
-<code class="descname">get_account_by_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_account_by_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_account_by_name">
-<code class="descname">get_account_by_name</code><span class="sig-paren">(</span><em>key</em>, <em>additional_params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_account_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets an account with name key
-:param key: name of an account to search for
-:param additional_params: other search items, as a dict, as described in TDX Api Docs
-:return: dict of account data (not complete, but including the ID)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_all_accounts">
-<code class="descname">get_all_accounts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_all_accounts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets all accounts
-:return: list of Account data in json format</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_all_custom_attributes">
-<code class="descname">get_all_custom_attributes</code><span class="sig-paren">(</span><em>object_type</em>, <em>associated_type=0</em>, <em>app_id=0</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_all_custom_attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets all custom attributes for the component type.
-See <a class="reference external" href="https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203">https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203</a> for possible values
-:param associated_type: the associated type of object to get attributes for, default: 0
-:param app_id: the application number to get attributes from, default: 0
-:param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI’s = 63)
-:return: the API response</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_all_groups">
-<code class="descname">get_all_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_all_groups" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of groups
-:return: list of group data in json format</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_all_locations">
-<code class="descname">get_all_locations</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_all_locations" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_asset_attribute_by_name">
-<code class="descname">get_asset_attribute_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_asset_attribute_by_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_custom_attribute_by_name">
-<code class="descname">get_custom_attribute_by_name</code><span class="sig-paren">(</span><em>key</em>, <em>object_type</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_custom_attribute_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a custom attribute for the component type.
-See <a class="reference external" href="https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203">https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203</a> for possible values
-:param key: the name of the custom attribute to search for
-:param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI’s = 63)
-:return: the attribute as a dict, with all choice items included</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.get_custom_attribute_value_by_name">
-<em class="property">static </em><code class="descname">get_custom_attribute_value_by_name</code><span class="sig-paren">(</span><em>attribute</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_custom_attribute_value_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the choice item from a custom attribute for the component type.
-See <a class="reference external" href="https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203">https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203</a> for possible values
-:param key: the name of the choice to look for
-:param attribute: the attribute (as retrieved from get_attribute_by_name())
-:return: the the choice object from this attribute whose name matches the key</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_group_by_id">
-<code class="descname">get_group_by_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_group_by_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_group_by_name">
-<code class="descname">get_group_by_name</code><span class="sig-paren">(</span><em>key</em>, <em>additional_params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_group_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a group with name key
-:param key: name of Group to search for
-:param additional_params: other search items, as a dict, as described in TDX Api Docs
-:return: a dict of group data (not complete, but including the ID)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_location_by_id">
-<code class="descname">get_location_by_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_location_by_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_location_by_name">
-<code class="descname">get_location_by_name</code><span class="sig-paren">(</span><em>key</em>, <em>additional_params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_location_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a location with name key
-:param key: name of location to search for
-:param additional_params: other search items, as a dict, as described in TDX Api Docs
-:return: a dict of location data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_person_by_uid">
-<code class="descname">get_person_by_uid</code><span class="sig-paren">(</span><em>uid</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_person_by_uid" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.get_room_by_name">
-<em class="property">static </em><code class="descname">get_room_by_name</code><span class="sig-paren">(</span><em>location</em>, <em>room</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_room_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a room with name key
-:param location: dict of location info from get_location_by_name()
-:param room: name/number of a room to search for (must be exact)
-:return: a dict of room data (including ID)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.get_tdx_item_by_id">
-<code class="descname">get_tdx_item_by_id</code><span class="sig-paren">(</span><em>obj_type</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.get_tdx_item_by_id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.import_tdx_date">
-<em class="property">static </em><code class="descname">import_tdx_date</code><span class="sig-paren">(</span><em>date_string: str</em><span class="sig-paren">)</span> &#x2192; &lt;module 'datetime' from 'c:\\program files\\python36\\Lib\\datetime.py'&gt;<a class="headerlink" href="#tdx_integration.TDXIntegration.import_tdx_date" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.make_asset_call">
-<code class="descname">make_asset_call</code><span class="sig-paren">(</span><em>url</em>, <em>action</em>, <em>post_body=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.make_asset_call" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.make_get">
-<code class="descname">make_get</code><span class="sig-paren">(</span><em>request_url</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.make_get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a HTTP GET request to the TDX Api
-:param request_url: the path (everything after /TDWebAPI/api/) to call
-:return: the API response</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.make_post">
-<code class="descname">make_post</code><span class="sig-paren">(</span><em>request_url</em>, <em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.make_post" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a HTTP POST request to the TDX Api
-:param request_url: the path (everything after /TDWebAPI/api/) to call
-:param body: dumped JSON data to send with the POST
-:return: the API response</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.make_put">
-<code class="descname">make_put</code><span class="sig-paren">(</span><em>request_url</em>, <em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.make_put" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes an HTTP PUT request to the TDX API
-:param request_url: the path (everything after /TDWebAPI/api/) to call
-:param body: dumped JSON data to send with the PUT
-:return: the API response</p>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.print_names">
-<em class="property">static </em><code class="descname">print_names</code><span class="sig-paren">(</span><em>myjson</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.print_names" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.print_nice">
-<em class="property">static </em><code class="descname">print_nice</code><span class="sig-paren">(</span><em>myjson</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.print_nice" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="tdx_integration.TDXIntegration.print_simple">
-<em class="property">static </em><code class="descname">print_simple</code><span class="sig-paren">(</span><em>myjson</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.print_simple" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_integration.TDXIntegration.search_people">
-<code class="descname">search_people</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_integration.TDXIntegration.search_people" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Gets the top match of people with search text, such as:</dt><dd><ul class="simple">
-<li><p>Name</p></li>
-<li><p>Email</p></li>
-<li><p>Username</p></li>
-<li><p>Organizational ID</p></li>
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tdx-integration.html">TDX Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdx-ticket-integration.html">TDX Ticket Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdx-asset-integration.html">TDX Asset Integration</a></li>
 </ul>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>key</strong> – string with search text of person to search with</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>person data in json format</p>
-</dd>
-</dl>
-</dd></dl>
 
-</dd></dl>
+            
+          
+        </div>
+      </div>
+    </nav>
 
-<dl class="class">
-<dt id="tdx_ticket_integration.TDXTicketIntegration">
-<em class="property">class </em><code class="descclassname">tdx_ticket_integration.</code><code class="descname">TDXTicketIntegration</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.clean_cache">
-<code class="descname">clean_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.clean_cache" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.create_ticket">
-<code class="descname">create_ticket</code><span class="sig-paren">(</span><em>ticket</em>, <em>silent=True</em><span class="sig-paren">)</span> &#x2192; tdx_ticket.TdxTicket<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.create_ticket" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a ticket using pre-generated data
-:param ticket: TDXTicket Object
-:param silent: Boolean – if False, no notifications are sent to requestor and responsible, default: True
-:returns: Created ticket, if successful</p>
-</dd></dl>
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">tdxlib</a>
+        
+      </nav>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.create_ticket_task">
-<code class="descname">create_ticket_task</code><span class="sig-paren">(</span><em>ticket_id</em>, <em>task</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.create_ticket_task" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a ticket task to a ticket.
-:param ticket_id: The ticket ID on which to create the ticket task.
-:param task: dict of task to create, possibly generated from generate_ticket_task</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_impact">
-<code class="descname">edit_ticket_impact</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>key</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_impact" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates impact of ticket, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param key: Desired urgency. Supports update by ID (int) or Name (str).</p>
-</dd></dl>
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_priority">
-<code class="descname">edit_ticket_priority</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>key</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_priority" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates priority of ticket, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param key: Desired priority. Supports update by ID (int) or Name (str).</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_source">
-<code class="descname">edit_ticket_source</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>key</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_source" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates source of ticket, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param key: Desired source. Supports update by ID (int) or Name (str).</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_status">
-<code class="descname">edit_ticket_status</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>key</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_status" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates status of ticket, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param key: Desired status. Supports search for ID (int) or Name (str).</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_task">
-<code class="descname">edit_ticket_task</code><span class="sig-paren">(</span><em>ticket_id</em>, <em>task_list</em>, <em>changed_attributes</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_task" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates ticket task(s) with a set of new values.
-:param ticket_id: The ticket Id on which the ticket task exists.
-:param task_list: list of tasks, maybe from get_all_ticket_tasks,</p>
-<blockquote>
-<div><p>or a single ticket task in dict (must include task ID).</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>changed_attributes</strong> – The new values ot set on the ticket task.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The modified ticket task(s), if the operation was sucessful</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict or list of dict</p>
-</dd>
-</dl>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_type">
-<code class="descname">edit_ticket_type</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>key</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates type of ticket, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param key: Desired type. Supports update by ID (int) or Name (str).</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_ticket_urgency">
-<code class="descname">edit_ticket_urgency</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>key</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_ticket_urgency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates urgency of ticket, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param key: Desired urgency. Supports update by ID (int) or Name (str).</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.edit_tickets">
-<code class="descname">edit_tickets</code><span class="sig-paren">(</span><em>ticket_list</em>, <em>changed_attributes</em>, <em>notify=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.edit_tickets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Edits one or more tickets, based on:
-:param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
-:param changed_attributes: Attributes to alter in selected tickets
-:param notify: If true, will notify newly-responsible resource(s) if changed because of edit
-:return: list of edited tickets, with complete data in json format</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.generate_ticket">
-<code class="descname">generate_ticket</code><span class="sig-paren">(</span><em>title_template</em>, <em>ticket_type</em>, <em>account</em>, <em>responsible</em>, <em>ticket_values=None</em>, <em>body_template=None</em>, <em>attrib_prefix=None</em>, <em>due_date=None</em>, <em>location=None</em>, <em>room=None</em>, <em>active_days=5</em>, <em>priority='Low'</em>, <em>status='New'</em>, <em>requestor=None</em>, <em>classification='Incident'</em>, <em>form_id=0</em><span class="sig-paren">)</span> &#x2192; tdx_ticket.TdxTicket<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.generate_ticket" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a TdxTicket object based on complex information
-:param title_template: a string with {placeholders} that correspond to keys in ticket parameter (REQUIRED)
-:param ticket_type: ticket Type (REQUIRED)
-:param account: Requesting Account for Ticket (REQUIRED)
-:param responsible: Group/email responsible for ticket (REQUIRED)
-:param ticket_values: a dictionary (potentially loaded from google sheet) with substitutions for title/body
-:param body_template: a string with {placeholders} that correspond to keys in ticket parameter
-:param attrib_prefix: the string that prefixes all the custom attribute column names in the ticket dict
-:param due_date: Due Date for ticket, default None (may be included with ticket) (
-:param location: Building name of location (optional)
-:param room: Room name of location (optional)
-:param active_days: number of days before due date to assign start date, default 5
-:param priority: Priority of ticket, default “Low”
-:param status: Status for new ticket, default “New”
-:param requestor: Requester for the ticket, defaults to username of integration (optional)
-:param classification: Classification name for ticket, default “Incident” (optional)
-:param form_id: ID of a form that you’d like to assign to this ticket (Form ID’s not accessible via</p>
-<blockquote>
-<div><p>API – Must be looked up manually in TDAdmin)</p>
-</div></blockquote>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_tasks_by_ticket_id">
-<code class="descname">get_all_tasks_by_ticket_id</code><span class="sig-paren">(</span><em>ticket_id</em>, <em>is_eligible_predecessor=None</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_tasks_by_ticket_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of tasks currently on an open ticket.
-:param ticket_id: The ticket ID to retrieve ticket tasks for.
-:param is_eligible_predecessor: (optional) If true, will only retrieve tasks that can be assigned as a predecessor for other tasks.
-Note: If the ticket is closed, no tasks will be returned.</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_custom_attributes">
-<code class="descname">get_all_ticket_custom_attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_custom_attributes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_impacts">
-<code class="descname">get_all_ticket_impacts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_impacts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of all ticket impacts from TDX
-:return: list of impacts in dict</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_priorities">
-<code class="descname">get_all_ticket_priorities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_priorities" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of all ticket priorities from TDX
-:return: list of priorities in dict</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_sources">
-<code class="descname">get_all_ticket_sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_sources" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of all ticket sources from TDX
-:return: list of sources in dict</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_statuses">
-<code class="descname">get_all_ticket_statuses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_statuses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of all ticket statuses from TDX
-:return: list of status data in dict</p>
-</dd></dl>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_types">
-<code class="descname">get_all_ticket_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of all ticket types from TDX
-:return: list of type data</p>
-</dd></dl>
+<div role="navigation" aria-label="breadcrumbs navigation">
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_urgencies">
-<code class="descname">get_all_ticket_urgencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_all_ticket_urgencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets all urgencies from the tickets app
-:return: list of priorities in dict</p>
-</dd></dl>
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>TDXLib Method &amp; Class Documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
 
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_by_id">
-<code class="descname">get_ticket_by_id</code><span class="sig-paren">(</span><em>ticket_id</em><span class="sig-paren">)</span> &#x2192; tdx_ticket.TdxTicket<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_by_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a ticket, based on its ID
-:param ticket_id: ticket ID of required ticket
-:return: json format of ticket info</p>
-</dd></dl>
-
-<dl class="classmethod">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_classification_id_by_name">
-<em class="property">classmethod </em><code class="descname">get_ticket_classification_id_by_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_classification_id_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket classification data by searching by the name of the classification
-:param name: the name of the classification to search for
-:return:</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_custom_attribute_by_name">
-<code class="descname">get_ticket_custom_attribute_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_custom_attribute_by_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_impact_by_name_id">
-<code class="descname">get_ticket_impact_by_name_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_impact_by_name_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket impact based on ID or Name
-:param key: Name or ID of impact to search for
-:return: impact data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_priority_by_name_id">
-<code class="descname">get_ticket_priority_by_name_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_priority_by_name_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket priority based on ID or Name
-:param key: ID or Name of priority to search for
-:return: priority data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_source_by_name_id">
-<code class="descname">get_ticket_source_by_name_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_source_by_name_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket source based on ID or Name
-:param key: Name or ID of source to search for.
-Supports search for exact name (‘1. Phone’), or part of name (‘Phone’).
-:return: source data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_status_by_id">
-<code class="descname">get_ticket_status_by_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_status_by_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket status based on ID or Name
-:param key: ID of ticket status to search for
-:return: status data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_status_by_name">
-<code class="descname">get_ticket_status_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_status_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket status based on name
-:param key: Name of ticket status to search for
-:return: status data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_task_by_id">
-<code class="descname">get_ticket_task_by_id</code><span class="sig-paren">(</span><em>ticket_id</em>, <em>task_id</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_task_by_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket task by ID.
-:param ticket_id: The ticket ID on which the ticket task exists.
-:param task_id: The ticket task ID.
-:return: Task data in dict
-:rtype: dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_type_by_name_id">
-<code class="descname">get_ticket_type_by_name_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_type_by_name_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket type based on ID or Name
-:param key: Name or ID of attribute to search for
-:return: type data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.get_ticket_urgency_by_name_id">
-<code class="descname">get_ticket_urgency_by_name_id</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.get_ticket_urgency_by_name_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets ticket urgency based on ID or Name
-:param key: ID or Name of urgency to search for
-:return: urgency data in dict</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.make_call">
-<code class="descname">make_call</code><span class="sig-paren">(</span><em>url</em>, <em>action</em>, <em>post_body=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.make_call" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.make_ticket_call">
-<code class="descname">make_ticket_call</code><span class="sig-paren">(</span><em>url</em>, <em>action</em>, <em>post_body=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.make_ticket_call" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.search_tickets">
-<code class="descname">search_tickets</code><span class="sig-paren">(</span><em>criteria</em>, <em>max_results=25</em>, <em>closed=False</em>, <em>cancelled=False</em>, <em>other_status=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.search_tickets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a ticket, based on criteria
-:param max_results: maximum number of results to return
-:param criteria: a string, list or dict to search for tickets with</p>
-<blockquote>
-<div><dl>
-<dt>Common criteria:</dt><dd><dl class="simple">
-<dt>{</dt><dd><p>‘TicketClassification’: [List of Int],
-‘SearchText’: [String],
-‘Status IDs’: [List of Int],
-‘ResponsibilityUids’: [List of String (GUID)],
-‘ResponsibilityGroupIDs’: [List of String (ID)],
-‘RequestorEmailSearch’: [String],
-‘LocationIDs’: [List of Int],
-‘LocationRoomIds’: [List of Int],
-‘CreatedDateFrom’: [DateTime],
-‘CreatedDateTo’: [DateTime],
-‘SlaViolationStatus’: [Boolean – true = SLA Violated]</p>
-</dd>
-</dl>
-<p>}
-(<a class="reference external" href="https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch">https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch</a>)</p>
-</dd>
-</dl>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>cancelled</strong> – include cancelled tickets in search if true</p></li>
-<li><p><strong>closed</strong> – include closed tickets in search if true</p></li>
-<li><p><strong>other_status</strong> – Status ID of a custom status</p></li>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tdxlib-method-class-documentation">
+<h1>TDXLib Method &amp; Class Documentation<a class="headerlink" href="#tdxlib-method-class-documentation" title="Permalink to this headline">¶</a></h1>
+<p>TDXLib is a suite of Python libraries that can interact with the <a class="reference external" href="https://teamdynamix.com">TeamDynamix</a> Web API.</p>
+<div class="section" id="quick-links">
+<h2>Quick Links<a class="headerlink" href="#quick-links" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/cedarville-university/tdxlib">GitHub Repository</a> (includes quick-start guide)</p></li>
+<li><p><a class="reference external" href="https://api.teamdynamix.com/TDWebApi/">Teamdynamix Web API Documentation</a></p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>list of TDXTicket objects</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.ticket_classifications">
-<code class="descname">ticket_classifications</code><em class="property"> = {'Change': 34, 'Incident': 32, 'MajorIncident': 77, 'Problem': 33, 'Release': 35, 'ServiceRequest': 46, 'Ticket': 9, 'TicketTemplate': 36}</em><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.ticket_classifications" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="tdx_ticket_integration.TDXTicketIntegration.ticket_status_classes">
-<code class="descname">ticket_status_classes</code><em class="property"> = {'Cancelled': 4, 'Completed': 3, 'InProcess': 2, 'New': 1, 'None': 0, 'OnHold': 5, 'Requested': 6}</em><a class="headerlink" href="#tdx_ticket_integration.TDXTicketIntegration.ticket_status_classes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="tdx_asset_integration.TDXAssetIntegration">
-<em class="property">class </em><code class="descclassname">tdx_asset_integration.</code><code class="descname">TDXAssetIntegration</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.change_asset_owner">
-<code class="descname">change_asset_owner</code><span class="sig-paren">(</span><em>asset</em>, <em>new_owner_email</em>, <em>new_dept_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.change_asset_owner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets updates data in a list of assets
-:param asset: asset to update (doesn’t have to be full record)
-:param new_owner_email: email of new owner
-:param new_dept_name: name of new department
-:return: dict of the updated assets</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.copy_asset_attributes">
-<code class="descname">copy_asset_attributes</code><span class="sig-paren">(</span><em>source_asset</em>, <em>target_asset</em>, <em>copy_name=False</em>, <em>exclude=None</em>, <em>new_status_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.copy_asset_attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Copies asset attributes from one asset to another
-:param source_asset: asset to copy attributes from (doesn’t have to be full record)
-:param target_asset: asset to copy attributes to (doesn’t have to full record (OVERWRITES FULL RECORD)
-:param copy_name: Set to true to copy the name of the asset
-:param exclude: List of attributes to be excluded, in addition to defaults
-:param new_status_name: String of name of new status for source asset
-:return: list of the target and source asset data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.create_asset">
-<code class="descname">create_asset</code><span class="sig-paren">(</span><em>asset_json</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.create_asset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an asset
-:param asset_json: a dict of asset info (maybe from make_asset_json()) to use in creation
-:return: dict of created asset details</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.find_asset_by_sn">
-<code class="descname">find_asset_by_sn</code><span class="sig-paren">(</span><em>sn</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.find_asset_by_sn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets an asset based on its serial number
-:param sn: serial number as a string or int
-:return: the asset with the corresponding serial number</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.find_asset_by_tag">
-<code class="descname">find_asset_by_tag</code><span class="sig-paren">(</span><em>tag</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.find_asset_by_tag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets an asset based on its asset tag
-:param tag: asset tag as a string or int
-:return: the asset with the corresponding tag</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_all_asset_forms">
-<code class="descname">get_all_asset_forms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_all_asset_forms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list asset forms
-:return: list of form data in json format</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_all_asset_statuses">
-<code class="descname">get_all_asset_statuses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_all_asset_statuses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list asset statuses
-:return: list of status data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_all_product_models">
-<code class="descname">get_all_product_models</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_all_product_models" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list asset models
-:return: list of model data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_all_product_types">
-<code class="descname">get_all_product_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_all_product_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list of product types
-:return: list of product type data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_asset_by_id">
-<code class="descname">get_asset_by_id</code><span class="sig-paren">(</span><em>asset_id</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_asset_by_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a full list of asset attributes and values
-:param asset_id: asset ID from TDX
-:return: dict of asset data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_asset_form_by_name">
-<code class="descname">get_asset_form_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_asset_form_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list asset forms
-:param key: name of AssetForm to search for
-:return: list of form data in json format</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_asset_status_by_name">
-<code class="descname">get_asset_status_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_asset_status_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a list asset forms
-:param key: name of Asset Status to search for
-:return: list of status data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_product_model_by_name">
-<code class="descname">get_product_model_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_product_model_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a specific product model
-:param key: name of product model to search for
-:return: dict of model data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.get_product_type_by_name">
-<code class="descname">get_product_type_by_name</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.get_product_type_by_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a product type object
-:param key: name of product type to search for
-:return: dict of product type data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.make_basic_asset_json">
-<code class="descname">make_basic_asset_json</code><span class="sig-paren">(</span><em>asset_values</em>, <em>asset_name</em>, <em>serial_number</em>, <em>status_name</em>, <em>location_name</em>, <em>room_name</em>, <em>asset_tag</em>, <em>acquisition_date=None</em>, <em>asset_lifespan=None</em>, <em>attrib_prefix=None</em>, <em>requester=None</em>, <em>requesting_dept=None</em>, <em>owner=None</em>, <em>owning_dept=None</em>, <em>parent=None</em>, <em>external_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.make_basic_asset_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a JSON object for inputting into makeTicket function
-:param asset_values: a dictionary (potentially loaded from google sheet) with asset info and custom attribs
-:param asset_name: a string containing the name for the asset
-:param serial_number: String with serial number of new asset
-:param status_name: String with name of status of new asset
-:param location_name: String with name of location for new asset
-:param room_name: String with name of room for new asset
-:param asset_tag: String with asset tag value for new asset
-:param acquisition_date: Building name of location (Default: date of execution)
-:param asset_lifespan: Years you expect this device to be in service (Default: 4)
-:param attrib_prefix: the string that prefixes all the custom attribute column names in the asset_values dict
-:param requester: String with email of requester for new asset (Default: integration username)
-:param requesting_dept: Account Name of requesting department for new asset
-:param owner: String with Email of owner of new asset
-:param owning_dept: String with Account name of owning department
-:param parent: Int with ID or String with serial number of a parent asset. Parent Asset must exist.
-:param external_id: String with external id for new asset (Default: serial Number)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.make_call">
-<code class="descname">make_call</code><span class="sig-paren">(</span><em>url</em>, <em>action</em>, <em>post_body=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.make_call" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.move_child_assets">
-<code class="descname">move_child_assets</code><span class="sig-paren">(</span><em>source_asset</em>, <em>target_asset</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.move_child_assets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Moves child assets from one asset to another
-:param source_asset: asset to move children from (doesn’t have to be full record)
-:param target_asset: asset to move children to
-:return: dict of the updated assets</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.search_assets">
-<code class="descname">search_assets</code><span class="sig-paren">(</span><em>criteria</em>, <em>max_results=25</em>, <em>retired=False</em>, <em>disposed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.search_assets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a ticket, based on criteria
-:param max_results: maximum number of results to return
-:param criteria: a string or dict to search for tickets with. If a string, use as ‘SearchString’</p>
-<blockquote>
-<div><dl>
-<dt>Common criteria to put in dict:</dt><dd><dl class="simple">
-<dt>{</dt><dd><p>‘SerialLike’: [List of Int],
-‘SearchText’: [String],
-‘StatusIDs’: [List of Int],
-‘CustomAttributes’: [Dict of CA],
-‘ParentIDs’: [List of Int]</p>
-</dd>
-</dl>
-<p>}
-(<a class="reference external" href="https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch">https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch</a>)</p>
-</dd>
-</dl>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>retired</strong> – include retired assets in search if true</p></li>
-<li><p><strong>disposed</strong> – include disposed assets in search if true</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>list of asset info (NOT FULL ASSET RECORDS, must do get asset by id to get full record)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="tdx_asset_integration.TDXAssetIntegration.update_assets">
-<code class="descname">update_assets</code><span class="sig-paren">(</span><em>asset_list</em>, <em>changed_attributes</em><span class="sig-paren">)</span><a class="headerlink" href="#tdx_asset_integration.TDXAssetIntegration.update_assets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates data in a list of assets
-:param asset_list: a list of assets (maybe from search_assets())
-:param changed_attributes: a dict of attributes in the ticket to be changed
-:return: list of updated assets</p>
-</dd></dl>
-
-</dd></dl>
-
 <div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tdx-integration.html">TDX Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tdx-integration.html#class-methods">Class &amp; Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tdx-ticket-integration.html">TDX Ticket Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tdx-ticket-integration.html#class-methods">Class &amp; Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tdx-asset-integration.html">TDX Asset Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tdx-asset-integration.html#class-methods">Class &amp; Methods</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -789,66 +186,50 @@ Supports search for exact name (‘1. Phone’), or part of name (‘Phone’).
 </div>
 
 
+           </div>
+           
           </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="#">tdxlib</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="#">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-    </form>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tdx-integration.html" class="btn btn-neutral float-right" title="TDX Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
     </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  
 
+  <hr/>
 
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Cedarville University IT
 
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-
-
-
+</footer>
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2019, Cedarville University IT.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/index.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>
