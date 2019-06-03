@@ -1,7 +1,6 @@
 import configparser
 import requests
 import json
-import os
 import getpass
 import dateutil.parser
 import datetime
@@ -9,6 +8,7 @@ import tdxlib.tdx_api_exceptions
 
 
 class TDXIntegration:
+
     # Hard-coded into TDX
     component_ids = {
         'account': 14,
@@ -33,12 +33,14 @@ class TDXIntegration:
         self.password = None
         self.token = None
         self.config = configparser.ConfigParser()
+
+        # Read in configuration
         if filename is not None:
             self.config.read(filename)
         else:
             filename = 'tdxlib.ini'
             self.config.read(filename)
-        if not 'TDX API Settings' in self.config:
+        if 'TDX API Settings' not in self.config:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
                 'sandbox': True,
@@ -48,29 +50,31 @@ class TDXIntegration:
                 'assetAppId': '',
                 'caching': False
             }
-            print("No configuration file found. Please enter the following information: ")
-            print("Please enter your TeamDynamix organization name.")
+
+            # Initialization wizard
+            print("\nNo configuration file found. Please enter the following information: ")
+            print("\n\nPlease enter your TeamDynamix organization name.")
             print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
             init_orgname = input("Organization Name (<orgname>.teamdynamix.com): ")
             self.config.set('TDX API Settings', 'orgname', init_orgname)
             sandbox_invalid = True
             while sandbox_invalid:
-                sandbox_choice = input("Use Sandbox? [Y/N]: ")
+                sandbox_choice = input("\nUse TeamDynamix Sandbox? [Y/N]: ")
                 if sandbox_choice.lower() in ['y', 'ye', 'yes', 'true']:
                     self.config.set('TDX API Settings', 'sandbox', 'true')
                     sandbox_invalid = False
                 elif sandbox_choice.lower() in ['n', 'no', 'false']:
                     self.config.set('TDX API Settings', 'sandbox', 'false')
                     sandbox_invalid = False
-            init_username = input("TDX API Username (tdxuser@orgname.com): ")
+            init_username = input("\nTDX API Username (tdxuser@orgname.com): ")
             self.config.set('TDX API Settings', 'username', init_username)
-            print("TDXLib can store the password for the API user in the configuration file.")
+            print("\nTDXLib can store the password for the API user in the configuration file.")
             print("This is convenient, but not very secure.")
             password_invalid = True
             while password_invalid:
                 password_choice = input("Store password for " + init_username + "? [Y/N]: ")
                 if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                    password_prompt = 'Enter Password for ' + init_username + ": "
+                    password_prompt = '\nEnter Password for ' + init_username + ": "
                     init_password = getpass.getpass(password_prompt)
                     self.config.set('TDX API Settings', 'password', init_password)
                     password_invalid = False
@@ -79,11 +83,11 @@ class TDXIntegration:
                     password_invalid = False
                 if password_invalid:
                     print("Invalid Response.")
-            init_ticket_id = input("Tickets App ID (optional): ")
+            init_ticket_id = input("\nTickets App ID (optional): ")
             self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
-            init_asset_id = input("Assets App ID (optional): ")
+            init_asset_id = input("\nAssets App ID (optional): ")
             self.config.set('TDX API Settings', 'assetAppId', init_asset_id)
-            print("TDXLib uses (mostly) intelligent caching to speed up API calls on repetitive operations.")
+            print("\nTDXLib uses intelligent caching to speed up API calls on repetitive operations.")
             print("In very dynamic environments, TDXLib's caching can cause issues.")
             caching_invalid = True
             while caching_invalid:
@@ -98,10 +102,11 @@ class TDXIntegration:
                     caching_invalid = False
                 if caching_invalid:
                     print("Invalid Response.")
-            print('Initial settings saved to: ' + filename)
+            print('\n\nInitial settings saved to: ' + filename)
             with open(filename, 'w') as configfile:
                 self.config.write(configfile)
-        # Read settings into
+
+        # Read settings in
         self.settings = self.config['TDX API Settings']
         self.org_name = self.settings.get('orgname')
         self.sandbox = bool(self.settings.get('sandbox'))
@@ -356,6 +361,7 @@ class TDXIntegration:
         to template all the different get_<object>_by_id methods.
 
         :param obj_type: the type of object to get.
+        :param key: the ID number of an object to get, as a string
 
         :return: list of person data
         """
@@ -474,7 +480,7 @@ class TDXIntegration:
         """
         Gets a list of groups
 
-        :return: list of group data in json format
+        :return: list of group data as dicts
 
         """
         url_string = "/groups/search"
@@ -606,8 +612,9 @@ class TDXIntegration:
             locations = self.make_post(url_string, post_body)
             for location in locations:
                 if key in location['Name']:
-                    self.cache['locations']['key'] = location
-                    return location
+                    full_location = self.get_location_by_id(location['ID'])
+                    self.cache['locations']['key'] = full_location
+                    return full_location
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
     def get_room_by_name(self, location, room):
@@ -619,8 +626,7 @@ class TDXIntegration:
         :return: a dict of room data (including ID)
 
         """
-        full_location=self.get_location_by_id(location['ID'])
-        for i in full_location['Rooms']:
+        for i in location['Rooms']:
             if room in i['Name']:
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
