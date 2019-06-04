@@ -678,6 +678,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                     new_attrib['ID'] = attrib['ID']
                     new_attrib['Value'] = value['ID']
                     data['Attributes'].append(new_attrib)
+
+        # TODO: Make these date conversions use the tdx_utils library
+
         if due_date:
             # Set some date-related properties
             target_date = parse(due_date)

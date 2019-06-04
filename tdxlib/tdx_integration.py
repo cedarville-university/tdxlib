@@ -1,10 +1,7 @@
 import configparser
 import requests
 import json
-import os
 import getpass
-import dateutil.parser
-import datetime
 import tdxlib.tdx_api_exceptions
 
 
@@ -38,7 +35,7 @@ class TDXIntegration:
         else:
             filename = 'tdxlib.ini'
             self.config.read(filename)
-        if not 'TDX API Settings' in self.config:
+        if 'TDX API Settings' not in self.config:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
                 'sandbox': True,
@@ -335,17 +332,6 @@ class TDXIntegration:
             'custom_attributes': {}
         }
 
-    # TODO: Move this method into tdx_asset_integration
-    def make_asset_call(self, url, action, post_body=None):
-        url_string = '/' + str(self.asset_app_id) + '/assets'
-        if len(url) > 0:
-            url_string += '/' + url
-        if action == 'get':
-            return self.make_get(url_string)
-        if action == 'post' and post_body:
-            return self.make_post(url_string, post_body)
-        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
-
     # #### GETTING TDX OBJECTS #### #
 
     def get_tdx_item_by_id(self, obj_type, key):
@@ -356,6 +342,7 @@ class TDXIntegration:
         to template all the different get_<object>_by_id methods.
 
         :param obj_type: the type of object to get.
+        :param key: the ID of the item to get
 
         :return: list of person data
         """
@@ -558,11 +545,6 @@ class TDXIntegration:
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + key + ' and object type ' + str(object_type))
 
-    def get_asset_attribute_by_name(self, key):
-        return self.get_custom_attribute_by_name(key, 27)
-
-    # TODO: other object type attributes by hard-coded IDs -- May want to move the above into their own integrations.
-
     @staticmethod
     def get_custom_attribute_value_by_name(attribute, key):
         """
@@ -619,7 +601,7 @@ class TDXIntegration:
         :return: a dict of room data (including ID)
 
         """
-        full_location=self.get_location_by_id(location['ID'])
+        full_location = self.get_location_by_id(location['ID'])
         for i in full_location['Rooms']:
             if room in i['Name']:
                 return i
@@ -631,7 +613,21 @@ class TDXIntegration:
     # #### #### ACCOUNTS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Accounts
 
-    # TODO: def create_account()
+    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict, custom_attributes: dict):
+        editable_account_attribs = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr', 'PostalCode',
+                                   'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
+        # Set up data for account
+        data = {'account': {}}
+        data['account']['Name'] = name
+        data['account']['ManagerUID'] = self.search_people(manager)['UID']
+        for attrib, value in additional_info:
+            if attrib in editable_account_attribs:
+                data['account'][attrib] = additional_info[attrib]
+        for attrib, value in custom_attributes:
+            tdx_attrib = self.get_custom_attribute_by_name(attrib)
+            tdx_attrib_value = self.get_custom_attribute_value_by_name(value)
+
+
 
     # TODO: def edit_account()
     #   https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
@@ -693,38 +689,4 @@ class TDXIntegration:
 
     # TODO: delete_custom_attribute_choice()
 
-    # TODO: edit_custom_attribute_choice()
-
-    # #### HANDY UTILITIES #### #
-
-    # Prints out dict as JSON with indents
-    @staticmethod
-    def print_nice(myjson):
-        print(json.dumps(myjson, indent=4))
-        print("")
-
-    # Print summary of ticket, or dict of tickets
-    @staticmethod
-    def print_simple(myjson):
-        for i in myjson:
-            for j in i:
-                print('ID:\t', j['ID'])
-                print('Title:\t', j['Title'])
-                print('Requestor:\t', j['Requestor'])
-                print('Type:\t', j['TypeName'])
-
-    # Print only ['Name'] attribute of list of objects
-    @staticmethod
-    def print_names(myjson):
-        for i in myjson:
-            print(i['Name'])
-
-    # Imports a string from a TDX Datetime attribute, returns a python datetime object
-    @staticmethod
-    def import_tdx_date(date_string: str) -> datetime:
-        return dateutil.parser.parse(date_string)
-
-    # Takes a python datetime object, returns a string compatible with a TDX Datetime attribute
-    @staticmethod
-    def export_tdx_date(date: datetime) -> str:
-        return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    # TODO: edit_custom_attribute_choice():
