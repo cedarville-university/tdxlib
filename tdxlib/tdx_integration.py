@@ -599,13 +599,15 @@ class TDXIntegration:
                     return full_location
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
-    def get_room_by_name(self, location, room):
+    @staticmethod
+    def get_room_by_name(location, room):
         """
-        Gets a room with name key.
-        :param location: dict of location info from get_location_by_name()
-        :param room: name/number of a room to search for (must be exact)
+        Gets a room by its name.
 
-        :return: a dict of room data (including ID)
+        :param location: dict of location info from get_location_by_name()
+        :param room: name of a room to search for (must be exact)
+
+        :return: a dict with all the the information regarding the room. Use this to retrieve the ID attribute.
 
         """
         for i in location['Rooms']:
@@ -619,21 +621,37 @@ class TDXIntegration:
     # #### #### ACCOUNTS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Accounts
 
-    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict, custom_attributes: dict):
-        editable_account_attribs = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr', 'PostalCode',
-                                   'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
+    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict,
+                       custom_attributes: dict) -> dict:
+        """
+        Creates an account in TeamDynamix
+
+        :param name: Name of account to create.
+        :param manager: email address of the TDX Person who will be the manager of the group
+        :param additional_info: dict of other attributes to set on account. Retrieved from:
+                                https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
+        :param custom_attributes: dict of names of custom attributes and corresponding names of the choices to set
+                                  on each attribute. These names must match the names in TDX exactly.
+
+        :return: a dict with information about the created account
+
+        """
+        editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
+                                       'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
+        url_string = '/accounts'
         # Set up data for account
-        data = {'account': {}}
-        data['account']['Name'] = name
-        data['account']['ManagerUID'] = self.search_people(manager)['UID']
+        data = dict()
+        data['Name'] = name
+        data['ManagerUID'] = self.search_people(manager)['UID']
         for attrib, value in additional_info:
-            if attrib in editable_account_attribs:
-                data['account'][attrib] = additional_info[attrib]
+            if attrib in editable_account_attributes:
+                data[attrib] = additional_info[attrib]
         for attrib, value in custom_attributes:
-            tdx_attrib = self.get_custom_attribute_by_name(attrib)
-            tdx_attrib_value = self.get_custom_attribute_value_by_name(value)
-
-
+            tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
+            tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
+            data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
+        post_body = dict({'account': data})
+        return self.make_post(url_string, post_body)
 
     # TODO: def edit_account()
     #   https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
