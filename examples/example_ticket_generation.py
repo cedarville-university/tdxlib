@@ -18,7 +18,7 @@ CONFIGFILE = 'tdxlib.ini'
 JSONFILE = 'json-credentials.json'
 # See: https://github.com/burnash/gspread for more info
 
-# Authenticate to Google and open the Sheets
+# Authenticate to Google and open the spreadsheet
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credential = ServiceAccountCredentials.from_json_keyfile_name(JSONFILE, scope)
 client = gspread.authorize(credential)
