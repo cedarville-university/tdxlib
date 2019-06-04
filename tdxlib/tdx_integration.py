@@ -584,7 +584,7 @@ class TDXIntegration:
 
         """
         if key in self.cache['locations']:
-            return self.cache['locations']['key']
+            return self.cache['locations'][key]
         else:
             url_string = '/locations/search'
             search_params = {'NameLike': key, 'IsActive': True}
@@ -595,7 +595,7 @@ class TDXIntegration:
             for location in locations:
                 if key in location['Name']:
                     full_location = self.get_location_by_id(location['ID'])
-                    self.cache['locations']['key'] = full_location
+                    self.cache['locations'][key] = full_location
                     return full_location
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
