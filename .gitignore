@@ -9,3 +9,6 @@ tdxlib.code-workspace
 notes.txt
 docs/_build
 dist/
+build/
+MANIFEST
+testing*
