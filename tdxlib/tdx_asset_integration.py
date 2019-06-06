@@ -18,6 +18,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def make_asset_call(self, url, action, post_body=None):
         url_string = '/' + str(self.asset_app_id) + '/assets'
+        url_string = '/' + str(self.asset_app_id) + '/assets'
         if len(url) > 0:
             url_string += '/' + url
         if action == 'get':
@@ -156,6 +157,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param disposed: include disposed assets in search if true
 
         :return: list of asset info (NOT FULL ASSET RECORDS, must do get asset by id to get full record)
+
         """
         # Set default statuses
         statuses = list()
