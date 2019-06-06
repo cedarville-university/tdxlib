@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='TDXLib',
     description='a python library for interacting with the TeamDynamix Web API',
-    version='0.1.5',
+    version='0.1.7',
     author='Nat Biggs & Stephen Gaines',
     author_email='tdxlib@cedarville.edu',
     packages=['tdxlib'],

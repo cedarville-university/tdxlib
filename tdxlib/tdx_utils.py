@@ -11,28 +11,28 @@ def print_nice(myjson):
 
 
 # Print summary of ticket, or dict of tickets
-def print_simple(myjson):
-    for i in myjson:
-        for j in i:
-            if j['Name']:
-                print('Name:\t', j['Name'])
-            if j['Title']:
-                print('Title:\t', j['Title'])
-            if j['ID']:
-                print('ID:\t', j['ID'])
-            if j['UID']:
-                print('ID:\t', j['UID'])
-            if j['Requestor']:
-                print('Requestor:\t', j['Requestor'])
-            if j['TypeName']:
-                print('Type:\t', j['TypeName'])
-            
-
+def print_simple(my_json, attributes=None):
+    if isinstance(my_json, list):
+        this_json = my_json
+    else:
+        this_json = list([my_json])
+    default_attributes = ['FullName', 'Name', 'Title',  'ID', 'UID', 'Requestor', 'TypeName']
+    if not attributes:
+        attributes = default_attributes
+    for j in this_json:
+        for i in attributes:
+            if i in j:
+                print(i,':\t', j[i])
 
 # Print only ['Name'] attribute of list of objects
 def print_names(myjson):
-    for i in myjson:
-        print(i['Name'])
+    if isinstance(myjson,list):
+        this_json = myjson
+    else:
+        this_json = list([myjson])
+    for i in this_json:
+        if 'Name' in i:
+            print(i['Name'])
 
 
 # Imports a string from an excel date string, returns a python datetime object

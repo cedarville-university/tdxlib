@@ -234,26 +234,26 @@ class TdxTicketTesting(unittest.TestCase):
         edited_task = self.tix.edit_ticket_task(4944908, task, changed_attributes)
         self.assertEqual(edited_task['Description'], changed_attributes['Description'])
 
-    def test_delete_ticket_task(self):
-        # NOTE: If create_ticket_task is not working, this test will not work properly.
-        # Protect production from deleting tasks
-        if not self.tix.sandbox:
-            return
-        else:
-            ticket_id = 4944908
-            task = {
-                'Title': f'Delete this task at {dt.now()}'
-            }
-            
-            # Create new task
-            created_task = self.tix.create_ticket_task(ticket_id, task)
-            
-            # Delete the task
-            self.tix.delete_ticket_task(ticket_id, created_task['ID'])
-            
-            # Make sure the task is deleted
-            deleted_task = self.tix.get_ticket_task_by_id(ticket_id, created_task['ID'])
-            self.assertEqual(deleted_task, False)
+    # def test_delete_ticket_task(self):
+    #     # NOTE: If create_ticket_task is not working, this test will not work properly.
+    #     # Protect production from deleting tasks
+    #     if not self.tix.sandbox:
+    #         return
+    #     else:
+    #         ticket_id = 4944908
+    #         task = {
+    #             'Title': f'Delete this task at {dt.now()}'
+    #         }
+    #
+    #         # Create new task
+    #         created_task = self.tix.create_ticket_task(ticket_id, task)
+    #
+    #         # Delete the task
+    #         self.tix.delete_ticket_task(ticket_id, created_task['ID'])
+    #
+    #         # Make sure the task is deleted
+    #         deleted_task = self.tix.get_ticket_task_by_id(ticket_id, created_task['ID'])
+    #         self.assertEqual(deleted_task, False)
 
 
 
