@@ -142,7 +142,6 @@ class TDXIntegration:
             print('HTTP Request failed')
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('Authorization failed.\n' + str(e))
-            exit(1)
         self.cache = {}
         self.clean_cache()
 
