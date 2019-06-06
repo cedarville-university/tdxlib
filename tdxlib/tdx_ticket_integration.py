@@ -136,6 +136,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     # #### CHANGING TICKETS #### #
 
     def edit_tickets(self, ticket_list, changed_attributes, notify=False) -> list:
+        # TODO: make this return a list of ticket objects, not a list of dicts
         """
         Edits one or more tickets, based on parameters.
 
@@ -285,6 +286,35 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # #### GETTING TICKET ATTRIBUTES #### #
 
+    def get_all_ticket_forms(self):
+        """
+        Gets a list of all ticket forms from TDX.
+
+        :return: list of available ticket forms as dicts
+
+        """
+        url_string = "forms"
+        return self.make_call(url_string, 'get')
+
+    def get_ticket_form_by_name_id(self, key):
+        """
+        Gets ticket form based on ID or Name.
+
+        :param key: Name or ID of form to search for
+
+        :return: form data in dict
+
+        """
+        if not 'ticket_form' in self.cache:
+            self.cache['ticket_form'] = self.get_all_ticket_forms()
+        for ticket_form in self.cache['ticket_form']:
+            if ticket_form['ID'] == key:
+                return ticket_form
+            if key.lower() in ticket_form['Name'].lower():
+                return ticket_form
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+                f'No type found with ID or Name {key}')
+
     def get_all_ticket_types(self):
         """
         Gets a list of all ticket types from TDX.
@@ -304,12 +334,12 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: type data in dict
 
         """
-        if not self.cache['ticket_type']:
+        if not 'ticket_type' in self.cache:
             self.cache['ticket_type'] = self.get_all_ticket_types()
         for ticket_type in self.cache['ticket_type']:
             if ticket_type['ID'] == key:
                 return ticket_type
-            if ticket_type['Name'] == key:
+            if key.lower() in ticket_type['Name'].lower():
                 return ticket_type
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
                 f'No type found with ID or Name {key}')
@@ -361,7 +391,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                 # Add result to cache under searched key
                 self.cache['ticket_status'][key] = data[0]
                 if key != data[0]['Name']:
-                    # Add result to cache under ['Name'] property
+                    # Add result to cache under ['Name'] property too, just for extra fun
                     self.cache['ticket_status'][data[0]['Name']] = data[0]
                 return data[0]
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f"No status found for {key}")
@@ -390,7 +420,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         for ticket_priority in self.cache['ticket_priority']:
             if ticket_priority['ID'] == key:
                 return ticket_priority
-            if ticket_priority['Name'] == key:
+            if key.lower() in ticket_priority['Name'].lower():
                 return ticket_priority
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No priority found for {key}')
 
@@ -418,7 +448,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         for ticket_urgency in self.cache['ticket_urgency']:
             if ticket_urgency['ID'] == key:
                 return ticket_urgency
-            if ticket_urgency['Name'] == key:
+            if key.lower() in ticket_urgency['Name'].lower():
                 return ticket_urgency
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No urgency found for {key}')
     
@@ -446,7 +476,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         for ticket_impact in self.cache['ticket_impact']:
             if ticket_impact['ID'] == key:
                 return ticket_impact
-            if ticket_impact['Name'] == key:
+            if key.lower() in ticket_impact['Name'].lower():
                 return ticket_impact
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No impact found for {key}')
 
@@ -475,7 +505,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         for ticket_source in self.cache['ticket_source']:
             if key == ticket_source['ID']:
                 return ticket_source
-            if key in ticket_source['Name']:
+            if key.lower() in ticket_source['Name'].lower():
                 return ticket_source
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No source found for {key}')
 

@@ -16,7 +16,7 @@ def print_simple(my_json, attributes=None):
         this_json = my_json
     else:
         this_json = list([my_json])
-    default_attributes = ['Name', 'Title', 'ID', 'UID', 'Requestor', 'TypeName']
+    default_attributes = ['FullName', 'Name', 'Title',  'ID', 'UID', 'Requestor', 'TypeName']
     if not attributes:
         attributes = default_attributes
     for j in this_json:
