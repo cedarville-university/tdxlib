@@ -7,8 +7,8 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 * Python 3.6+
 * requests
 * python-dateutil
-* gspread (for Google Sheets integration)
-* oauth2client (for Google Sheets integration)
+* gspread (for Google Sheets integration -- not an official dependency)
+* oauth2client (for Google Sheets integration -- not an official dependency)
 
 ## Getting Started
 
