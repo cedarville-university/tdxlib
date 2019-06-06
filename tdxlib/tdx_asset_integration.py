@@ -146,6 +146,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param max_results: maximum number of results to return
         :param criteria: a string or dict to search for tickets with. If a string, use as 'SearchString'
+        :param retired: include retired assets in search if true
+        :param disposed: include disposed assets in search if true
+
+        :return: list of asset info (NOT FULL ASSET RECORDS, must do get asset by id to get full record)
+
         Common criteria to put in dict:
         {'SerialLike': [List of Int],
         'SearchText': [String],
@@ -153,11 +158,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         'CustomAttributes': [Dict of CA],
         'ParentIDs': [List of Int]}
         (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch)
-        :param retired: include retired assets in search if true
-        :param disposed: include disposed assets in search if true
-
-        :return: list of asset info (NOT FULL ASSET RECORDS, must do get asset by id to get full record)
-
+        
         """
         # Set default statuses
         statuses = list()

@@ -93,7 +93,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: list of TDXTicket objects
 
-         Common criteria:
+        Common criteria:
         {'TicketClassification': [List of Int],
         'SearchText': [String],
         'Status IDs': [List of Int],
