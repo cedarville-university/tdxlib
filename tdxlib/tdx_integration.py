@@ -458,7 +458,7 @@ class TDXIntegration:
             post_body = dict({'search': search_params})
             accounts = self.make_post(url_string, post_body)
             for account in accounts:
-                if account['Name'] == key:
+                if key.lower() in account['Name'].lower():
                     self.cache['accounts'][key] = account
                     return account
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No account found for ' + key)
@@ -494,12 +494,12 @@ class TDXIntegration:
             post_body = dict({'search': search_params})
             groups = self.make_post(url_string, post_body)
             if type(groups) is not list:
-                if groups['Name'] == key:
+                if key.lower() in groups['Name'].lower():
                     self.cache['groups'][key] = groups
                     return groups
             else:
                 for group in groups:
-                    if group['Name'] == key:
+                    if key.lower() in group['Name'].lower():
                         self.cache['groups'][key] = group
                         return group
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
@@ -545,7 +545,7 @@ class TDXIntegration:
             # There is no API for searching attributes -- the only way is to get them all.
             self.cache['custom_attributes'][str(object_type)] = self.get_all_custom_attributes(object_type)
         for item in self.cache['custom_attributes'][str(object_type)]:
-            if item['Name'] == key:
+            if key.lower() in item['Name'].lower():
                 self.cache['custom_attributes'][str(object_type)][key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
@@ -564,7 +564,7 @@ class TDXIntegration:
 
         """
         for i in attribute['Choices']:
-            if key in i['Name']:
+            if key.lower() in i['Name'].lower():
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute value for " + key + " found in " + attribute['Name'])
@@ -593,7 +593,7 @@ class TDXIntegration:
             post_body = dict({'search': search_params})
             locations = self.make_post(url_string, post_body)
             for location in locations:
-                if key in location['Name']:
+                if key.lower() in location['Name'].lower():
                     full_location = self.get_location_by_id(location['ID'])
                     self.cache['locations'][key] = full_location
                     return full_location
@@ -611,7 +611,7 @@ class TDXIntegration:
 
         """
         for i in location['Rooms']:
-            if room in i['Name']:
+            if room.lower in i['Name'].lower():
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No room found for " + room + " in location " + location['Name'])
