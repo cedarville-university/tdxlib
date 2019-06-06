@@ -1,14 +1,12 @@
 import configparser
 import requests
 import json
-import os
 import getpass
-import dateutil.parser
-import datetime
 import tdxlib.tdx_api_exceptions
 
 
 class TDXIntegration:
+
     # Hard-coded into TDX
     component_ids = {
         'account': 14,
@@ -33,12 +31,14 @@ class TDXIntegration:
         self.password = None
         self.token = None
         self.config = configparser.ConfigParser()
+
+        # Read in configuration
         if filename is not None:
             self.config.read(filename)
         else:
             filename = 'tdxlib.ini'
             self.config.read(filename)
-        if not 'TDX API Settings' in self.config:
+        if 'TDX API Settings' not in self.config:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
                 'sandbox': True,
@@ -48,29 +48,31 @@ class TDXIntegration:
                 'assetAppId': '',
                 'caching': False
             }
-            print("No configuration file found. Please enter the following information: ")
-            print("Please enter your TeamDynamix organization name.")
+
+            # Initialization wizard
+            print("\nNo configuration file found. Please enter the following information: ")
+            print("\n\nPlease enter your TeamDynamix organization name.")
             print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
             init_orgname = input("Organization Name (<orgname>.teamdynamix.com): ")
             self.config.set('TDX API Settings', 'orgname', init_orgname)
             sandbox_invalid = True
             while sandbox_invalid:
-                sandbox_choice = input("Use Sandbox? [Y/N]: ")
+                sandbox_choice = input("\nUse TeamDynamix Sandbox? [Y/N]: ")
                 if sandbox_choice.lower() in ['y', 'ye', 'yes', 'true']:
                     self.config.set('TDX API Settings', 'sandbox', 'true')
                     sandbox_invalid = False
                 elif sandbox_choice.lower() in ['n', 'no', 'false']:
                     self.config.set('TDX API Settings', 'sandbox', 'false')
                     sandbox_invalid = False
-            init_username = input("TDX API Username (tdxuser@orgname.com): ")
+            init_username = input("\nTDX API Username (tdxuser@orgname.com): ")
             self.config.set('TDX API Settings', 'username', init_username)
-            print("TDXLib can store the password for the API user in the configuration file.")
+            print("\nTDXLib can store the password for the API user in the configuration file.")
             print("This is convenient, but not very secure.")
             password_invalid = True
             while password_invalid:
                 password_choice = input("Store password for " + init_username + "? [Y/N]: ")
                 if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                    password_prompt = 'Enter Password for ' + init_username + ": "
+                    password_prompt = '\nEnter Password for ' + init_username + ": "
                     init_password = getpass.getpass(password_prompt)
                     self.config.set('TDX API Settings', 'password', init_password)
                     password_invalid = False
@@ -79,11 +81,11 @@ class TDXIntegration:
                     password_invalid = False
                 if password_invalid:
                     print("Invalid Response.")
-            init_ticket_id = input("Tickets App ID (optional): ")
+            init_ticket_id = input("\nTickets App ID (optional): ")
             self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
-            init_asset_id = input("Assets App ID (optional): ")
+            init_asset_id = input("\nAssets App ID (optional): ")
             self.config.set('TDX API Settings', 'assetAppId', init_asset_id)
-            print("TDXLib uses (mostly) intelligent caching to speed up API calls on repetitive operations.")
+            print("\nTDXLib uses intelligent caching to speed up API calls on repetitive operations.")
             print("In very dynamic environments, TDXLib's caching can cause issues.")
             caching_invalid = True
             while caching_invalid:
@@ -98,10 +100,11 @@ class TDXIntegration:
                     caching_invalid = False
                 if caching_invalid:
                     print("Invalid Response.")
-            print('Initial settings saved to: ' + filename)
+            print('\n\nInitial settings saved to: ' + filename)
             with open(filename, 'w') as configfile:
                 self.config.write(configfile)
-        # Read settings into
+
+        # Read settings in
         self.settings = self.config['TDX API Settings']
         self.org_name = self.settings.get('orgname')
         self.sandbox = bool(self.settings.get('sandbox'))
@@ -335,17 +338,6 @@ class TDXIntegration:
             'custom_attributes': {}
         }
 
-    # TODO: Move this method into tdx_asset_integration
-    def make_asset_call(self, url, action, post_body=None):
-        url_string = '/' + str(self.asset_app_id) + '/assets'
-        if len(url) > 0:
-            url_string += '/' + url
-        if action == 'get':
-            return self.make_get(url_string)
-        if action == 'post' and post_body:
-            return self.make_post(url_string, post_body)
-        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
-
     # #### GETTING TDX OBJECTS #### #
 
     def get_tdx_item_by_id(self, obj_type, key):
@@ -356,6 +348,7 @@ class TDXIntegration:
         to template all the different get_<object>_by_id methods.
 
         :param obj_type: the type of object to get.
+        :param key: the ID number of an object to get, as a string
 
         :return: list of person data
         """
@@ -474,7 +467,7 @@ class TDXIntegration:
         """
         Gets a list of groups
 
-        :return: list of group data in json format
+        :return: list of group data as dicts
 
         """
         url_string = "/groups/search"
@@ -558,11 +551,6 @@ class TDXIntegration:
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + key + ' and object type ' + str(object_type))
 
-    def get_asset_attribute_by_name(self, key):
-        return self.get_custom_attribute_by_name(key, 27)
-
-    # TODO: other object type attributes by hard-coded IDs -- May want to move the above into their own integrations.
-
     @staticmethod
     def get_custom_attribute_value_by_name(attribute, key):
         """
@@ -596,7 +584,7 @@ class TDXIntegration:
 
         """
         if key in self.cache['locations']:
-            return self.cache['locations']['key']
+            return self.cache['locations'][key]
         else:
             url_string = '/locations/search'
             search_params = {'NameLike': key, 'IsActive': True}
@@ -606,18 +594,20 @@ class TDXIntegration:
             locations = self.make_post(url_string, post_body)
             for location in locations:
                 if key in location['Name']:
-                    self.cache['locations']['key']['key'] = location
-                    return location
+                    full_location = self.get_location_by_id(location['ID'])
+                    self.cache['locations'][key] = full_location
+                    return full_location
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
     @staticmethod
     def get_room_by_name(location, room):
         """
-        Gets a room with name key.
-        :param location: dict of location info from get_location_by_name()
-        :param room: name/number of a room to search for (must be exact)
+        Gets a room by its name.
 
-        :return: a dict of room data (including ID)
+        :param location: dict of location info from get_location_by_name()
+        :param room: name of a room to search for (must be exact)
+
+        :return: a dict with all the the information regarding the room. Use this to retrieve the ID attribute.
 
         """
         for i in location['Rooms']:
@@ -631,7 +621,37 @@ class TDXIntegration:
     # #### #### ACCOUNTS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Accounts
 
-    # TODO: def create_account()
+    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict,
+                       custom_attributes: dict) -> dict:
+        """
+        Creates an account in TeamDynamix
+
+        :param name: Name of account to create.
+        :param manager: email address of the TDX Person who will be the manager of the group
+        :param additional_info: dict of other attributes to set on account. Retrieved from:
+                                https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
+        :param custom_attributes: dict of names of custom attributes and corresponding names of the choices to set
+                                  on each attribute. These names must match the names in TDX exactly.
+
+        :return: a dict with information about the created account
+
+        """
+        editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
+                                       'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
+        url_string = '/accounts'
+        # Set up data for account
+        data = dict()
+        data['Name'] = name
+        data['ManagerUID'] = self.search_people(manager)['UID']
+        for attrib, value in additional_info:
+            if attrib in editable_account_attributes:
+                data[attrib] = additional_info[attrib]
+        for attrib, value in custom_attributes:
+            tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
+            tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
+            data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
+        post_body = dict({'account': data})
+        return self.make_post(url_string, post_body)
 
     # TODO: def edit_account()
     #   https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
@@ -693,38 +713,4 @@ class TDXIntegration:
 
     # TODO: delete_custom_attribute_choice()
 
-    # TODO: edit_custom_attribute_choice()
-
-    # #### HANDY UTILITIES #### #
-
-    # Prints out dict as JSON with indents
-    @staticmethod
-    def print_nice(myjson):
-        print(json.dumps(myjson, indent=4))
-        print("")
-
-    # Print summary of ticket, or dict of tickets
-    @staticmethod
-    def print_simple(myjson):
-        for i in myjson:
-            for j in i:
-                print('ID:\t', j['ID'])
-                print('Title:\t', j['Title'])
-                print('Requestor:\t', j['Requestor'])
-                print('Type:\t', j['TypeName'])
-
-    # Print only ['Name'] attribute of list of objects
-    @staticmethod
-    def print_names(myjson):
-        for i in myjson:
-            print(i['Name'])
-
-    # Imports a string from a TDX Datetime attribute, returns a python datetime object
-    @staticmethod
-    def import_tdx_date(date_string: str) -> datetime:
-        return dateutil.parser.parse(date_string)
-
-    # Takes a python datetime object, returns a string compatible with a TDX Datetime attribute
-    @staticmethod
-    def export_tdx_date(date: datetime) -> str:
-        return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+    # TODO: edit_custom_attribute_choice():

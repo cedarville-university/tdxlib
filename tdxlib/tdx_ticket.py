@@ -1,4 +1,5 @@
 import tdxlib.tdx_api_exceptions
+import tdxlib.tdx_utils
 import datetime
 from typing import TYPE_CHECKING
 
@@ -117,7 +118,7 @@ class TdxTicket:
                 elif key in TdxTicket.valid_decimal_attributes:
                     self.ticket_data[key]: float = value
                 elif key in TdxTicket.valid_date_attributes:
-                    self.ticket_data[key]: datetime = self.tdx_api.import_tdx_date(value)
+                    self.ticket_data[key]: datetime = tdxlib.tdx_utils.import_tdx_date(value)
                 elif key in TdxTicket.valid_dict_attributes:
                     self.ticket_data[key]: dict = value
                 elif key in TdxTicket.valid_list_attributes:
@@ -165,7 +166,7 @@ class TdxTicket:
             if attrib in TdxTicket.editable_date_attributes:
                 if not isinstance(data[attrib], datetime.datetime):
                     try:
-                        self.tdx_api.import_tdx_date(data[attrib])
+                       tdxlib.tdx_utils.import_tdx_date(data[attrib])
                     except TypeError:
                         raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                             "Value {1} for {0} cannot be converted to a datetime object".format(attrib, value))

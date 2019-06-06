@@ -678,6 +678,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                     new_attrib['ID'] = attrib['ID']
                     new_attrib['Value'] = value['ID']
                     data['Attributes'].append(new_attrib)
+
+        # TODO: Make these date conversions use the tdx_utils library
+
         if due_date:
             # Set some date-related properties
             target_date = parse(due_date)
@@ -715,7 +718,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         Creates a ticket in TeamDynamix using a TdxTicket object
 
         :param ticket: TDXTicket Object
-        :param silent: Boolean -- if False, no notifications are sent to requestor and responsible, default: True
+        :param silent: Boolean -- if False, notifications are sent to requestor and responsible, default: True
 
         :returns: Created ticket, if successful
 
