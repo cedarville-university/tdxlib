@@ -235,7 +235,7 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(edited_task['Description'], changed_attributes['Description'])
 
     def test_delete_ticket_task(self):
-        # NOTE: If create_ticket_task is not working, this test will not work properlry.
+        # NOTE: If create_ticket_task is not working, this test will not work properly.
         # Protect production from deleting tasks
         if not self.tix.sandbox:
             return
