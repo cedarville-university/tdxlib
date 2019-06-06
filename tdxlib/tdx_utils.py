@@ -14,10 +14,19 @@ def print_nice(myjson):
 def print_simple(myjson):
     for i in myjson:
         for j in i:
-            print('ID:\t', j['ID'])
-            print('Title:\t', j['Title'])
-            print('Requestor:\t', j['Requestor'])
-            print('Type:\t', j['TypeName'])
+            if j['Name']:
+                print('Name:\t', j['Name'])
+            if j['Title']:
+                print('Title:\t', j['Title'])
+            if j['ID']:
+                print('ID:\t', j['ID'])
+            if j['UID']:
+                print('ID:\t', j['UID'])
+            if j['Requestor']:
+                print('Requestor:\t', j['Requestor'])
+            if j['TypeName']:
+                print('Type:\t', j['TypeName'])
+            
 
 
 # Print only ['Name'] attribute of list of objects
