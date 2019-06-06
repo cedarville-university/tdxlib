@@ -1,4 +1,5 @@
 import tdxlib.tdx_api_exceptions
+import tdxlib.tdx_utils
 import datetime
 from typing import TYPE_CHECKING
 
@@ -30,7 +31,7 @@ class TdxTicket:
     valid_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
         'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'ParentID', 'TypeCategoryID', 'SlaID', 'ActualMinutes',
-        'DaysOld', 'ReviewingGroupID', 'TaskProjectID', 'TaskPlanID', 'TaskID', 'TaskPercentComplete',
+        'DaysOld', 'ReviewingGroupID', 'TaskProjectID', 'TaskPlanID', 'TaskID', 'TaskPercentComplete', 'FormID',
         'ServiceCategoryID', 'ArticleID', 'AppID', 'ParentClass', 'Classification', 'StatusClass', 'ArticleStatus'
     ]
     valid_decimal_attributes = ['TimeBudget', 'ExpensesBudget', 'PriorityOrder', 'TimeBudgetUsed', 'ExpensesBudgetUsed']
@@ -48,7 +49,7 @@ class TdxTicket:
     editable_attributes = [
         'Description', 'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'TimeBudget',
         'ExpensesBudget', 'LocationID', 'LocationRoomID', 'ServiceID', 'Attributes', 'GoesOffHoldDate', 'StartDate',
-        'EndDate', 'ResponsibleUid', 'TypeID', 'AccountID', 'PriorityID', 'RequestorUid', 'Title', 'StatusID'
+        'EndDate', 'ResponsibleUid', 'TypeID', 'AccountID', 'PriorityID', 'RequestorUid', 'Title', 'StatusID', 'FormID',
     ]
     editable_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
@@ -108,7 +109,7 @@ class TdxTicket:
         self.ticket_data = {}
         for key, value in data.items():
             if key in TdxTicket.valid_attributes:
-                if not value or value is '':
+                if value is False or value is '':
                     continue
                 if key in TdxTicket.valid_bool_attributes:
                     self.ticket_data[key]: bool = value
@@ -116,8 +117,11 @@ class TdxTicket:
                     self.ticket_data[key]: int = value
                 elif key in TdxTicket.valid_decimal_attributes:
                     self.ticket_data[key]: float = value
-                elif key in TdxTicket.valid_date_attributes:
-                    self.ticket_data[key]: datetime = self.tdx_api.import_tdx_date(value)
+                elif key in TdxTicket.valid_date_attributes \
+                        and value is not 0 \
+                        and value is not '0001-01-01T05:00:00Z'\
+                        and value is not None:
+                    self.ticket_data[key]: datetime = tdxlib.tdx_utils.import_tdx_date(value)
                 elif key in TdxTicket.valid_dict_attributes:
                     self.ticket_data[key]: dict = value
                 elif key in TdxTicket.valid_list_attributes:
@@ -165,7 +169,7 @@ class TdxTicket:
             if attrib in TdxTicket.editable_date_attributes:
                 if not isinstance(data[attrib], datetime.datetime):
                     try:
-                        self.tdx_api.import_tdx_date(data[attrib])
+                       tdxlib.tdx_utils.import_tdx_date(data[attrib])
                     except TypeError:
                         raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                             "Value {1} for {0} cannot be converted to a datetime object".format(attrib, value))
@@ -184,9 +188,9 @@ class TdxTicket:
         exported_ticket_data = dict()
         # We need to strip out non-existent values that TDX won't be able to handle
         for key, value in self.ticket_data.items():
-            if value is not None and value is not '':
+            if value is not None and value != '' and value is not False and value != 0:
                 if key in TdxTicket.valid_date_attributes:
-                    exported_ticket_data[key] = self.tdx_api.export_tdx_date(value)
+                    exported_ticket_data[key] = tdxlib.tdx_utils.export_tdx_date(value)
                 else:
                     exported_ticket_data[key] = value
         if validate:
@@ -195,6 +199,12 @@ class TdxTicket:
 
     def get_id(self):
         return self.ticket_data['ID']
+
+    def get_attribute(self, attribute: str):
+        if attribute in self.ticket_data:
+            return self.ticket_data[attribute]
+        else:
+            return False
 
     def update(self, updated_values, validate=True):
         if validate:

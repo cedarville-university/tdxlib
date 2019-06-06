@@ -25,6 +25,9 @@ class TdxTicketTesting(unittest.TestCase):
     # #### CHANGING TICKETS #### #
 
     def test_edit_tickets(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket_list = list()
         ticket_list.append(self.tix.get_ticket_by_id(4944908))
         ticket_list.append(self.tix.get_ticket_by_id(4837287))
@@ -35,6 +38,9 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertTrue(all(self.tix.edit_tickets(ticket_list, changes, notify=False)))
    
     def test_edit_type(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket = self.tix.get_ticket_by_id(4944908)
         previous_type = ticket.ticket_data['TypeID']
         desired_type = "IT Internal"
@@ -44,6 +50,9 @@ class TdxTicketTesting(unittest.TestCase):
         self.tix.edit_ticket_type(ticket, previous_type)
     
     def test_edit_status(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket = self.tix.get_ticket_by_id(4944908)
         previous_status = ticket.ticket_data['StatusID']
         desired_status = "Open"
@@ -53,6 +62,9 @@ class TdxTicketTesting(unittest.TestCase):
         self.tix.edit_ticket_status(ticket, previous_status)
 
     def test_edit_priority(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket = self.tix.get_ticket_by_id(4944908)
         previous_priority = ticket.ticket_data['PriorityID']
         desired_priority = "Low"
@@ -62,6 +74,9 @@ class TdxTicketTesting(unittest.TestCase):
         self.tix.edit_ticket_priority(ticket, previous_priority)
 
     def test_edit_urgency(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket = self.tix.get_ticket_by_id(4944908)
         previous_urgency = ticket.ticket_data['UrgencyID']
         desired_urgency = "Low"
@@ -71,6 +86,9 @@ class TdxTicketTesting(unittest.TestCase):
         self.tix.edit_ticket_urgency(ticket, previous_urgency)
 
     def test_edit_impact(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket = self.tix.get_ticket_by_id(4944908)
         previous_impact = ticket.ticket_data['ImpactID']
         desired_impact = "Affects Client"
@@ -80,6 +98,9 @@ class TdxTicketTesting(unittest.TestCase):
         self.tix.edit_ticket_impact(ticket, previous_impact)
 
     def test_edit_source(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket = self.tix.get_ticket_by_id(4944908)
         previous_source = ticket.ticket_data['SourceID']
         desired_source = "Phone"
@@ -201,6 +222,9 @@ class TdxTicketTesting(unittest.TestCase):
             self.assertGreater(created_task['ID'], 10000)
 
     def test_edit_ticket_task(self):
+        # Protect production from deleting tasks
+        if not self.tix.sandbox:
+            return
         ticket_id = 4944908
         task_id = 2290947
         task = self.tix.get_ticket_task_by_id(ticket_id, task_id)
@@ -210,27 +234,26 @@ class TdxTicketTesting(unittest.TestCase):
         edited_task = self.tix.edit_ticket_task(4944908, task, changed_attributes)
         self.assertEqual(edited_task['Description'], changed_attributes['Description'])
 
-    def test_delete_ticket_task(self):
-        # NOTE: If create_ticket_task is not working, this test will not work properlry.
-        
-        # Protect production from deleting tasks
-        if not self.tix.sandbox:
-            return
-        else:
-            ticket_id = 4944908
-            task = {
-                'Title': f'Delete this task at {dt.now()}'
-            }
-            
-            # Create new task
-            created_task = self.tix.create_ticket_task(ticket_id, task)
-            
-            # Delete the task
-            self.tix.delete_ticket_task(ticket_id, created_task['ID'])
-            
-            # Make sure the task is deleted
-            deleted_task = self.tix.get_ticket_task_by_id(ticket_id, created_task['ID'])
-            self.assertEqual(deleted_task, False)
+    # def test_delete_ticket_task(self):
+    #     # NOTE: If create_ticket_task is not working, this test will not work properly.
+    #     # Protect production from deleting tasks
+    #     if not self.tix.sandbox:
+    #         return
+    #     else:
+    #         ticket_id = 4944908
+    #         task = {
+    #             'Title': f'Delete this task at {dt.now()}'
+    #         }
+    #
+    #         # Create new task
+    #         created_task = self.tix.create_ticket_task(ticket_id, task)
+    #
+    #         # Delete the task
+    #         self.tix.delete_ticket_task(ticket_id, created_task['ID'])
+    #
+    #         # Make sure the task is deleted
+    #         deleted_task = self.tix.get_ticket_task_by_id(ticket_id, created_task['ID'])
+    #         self.assertEqual(deleted_task, False)
 
 
 

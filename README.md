@@ -8,38 +8,62 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
 ## Dependencies
 
+### Required: 
 * Python 3.6+
 * requests
 * python-dateutil
-* gspread (for Google Sheets integration)
-* oauth2client (for Google Sheets integration)
+### Optional:
+* gspread (for Google Sheets integration -- not an official dependency)
+* oauth2client (for Google Sheets integration -- not an official dependency)
 
-## Getting Started
+## Quick-Start Guide
+
+### Installation
 
 1. [Download](https://www.python.org/) and install Python 3.6 or later. If you're new to Python, check out this [setup tutorial](https://realpython.com/installing-python/ "Python 3 Installation & Setup Guide"). For an introduction to basic Python syntax and use, check out the guides on [python.org](https://www.python.org/about/gettingstarted/) 
 
-   *NOTE: although Python comes pre-installed on MacOS and many GNU/Linux systems, it's often version 2.7. For GNU/Linux, install python3 packages if available. For MacOS, check out [homebrew](brew.sh).*
+   _NOTE: although Python comes pre-installed on MacOS and many GNU/Linux systems, it's often version 2.7. For GNU/Linux, install python3 packages if available. For MacOS, check out [homebrew](brew.sh)._
 
-2. Clone or download TDXLib from [GitHub](https://github.com/cedarville-university/tdxlib).
+2. **OPTION 1:**
+   
+   Install via [pip](https://pypi.org) using the following command:
+   
+         pip install tdxlib
+       
+   This command will install any other required packages automatically.
+   
+   _Note: if you installed python3 packages, the Python v3 Pip may be called using ```pip3```_
+   
+   **OPTION 2:** 
+   
+   1. Clone or download TDXLib from [GitHub](https://github.com/cedarville-university/tdxlib).
+   
+      _NOTE: If you use Option 2, the root folder of the repository will need to be your scripts' working directory so you can import TDXLib without making changes to your ```PYTHONPATH``` variable_
 
-3. Install the required dependencies to your environment using `pip`, which is bundled with Python 3.4+. If you run into issues on Windows, be sure that the location of your Python installation is specified in your system's `PATH` variable.
+   2. Install the required dependencies to your environment using `pip`, which is bundled with Python 3.4+. If you run into issues on Windows, be sure that the location of your Python installation is specified in your system's `PATH` variable.
 
-    The necessary packages are specified in `requirements.txt` and can be installed with `pip` 
+      The necessary packages are specified in `requirements.txt` and can be installed with `pip` 
     
-    If your OS comes with Python 2.7, use `pip3` or whatever the name of the Python 3.6+ pip binary is on your system. A [virtual environment](https://docs.python.org/3/library/venv.html) can be helpful here:
+      If your OS comes with Python 2.7, use `pip3` or whatever the name of the Python 3.6+ pip binary is on your system. A [virtual environment](https://docs.python.org/3/library/venv.html) can be helpful here:
 
-       pip install -r requirements.txt
+          pip install -r requirements.txt
 
-    Alternatively, install all the packages manually:
+      Alternatively, install all the packages manually:
 
-       pip install requests python-dateutil
+          pip install requests python-dateutil
     
-    To get the libraries necessary to work with Google Sheets (as in the [sample script](examples/example_ticket_generation.py)), you can also install them with `pip`:
+      To get the libraries necessary to work with Google Sheets (as in the [sample script](examples/example_ticket_generation.py)), you can also install them with `pip`:
         
-       pip install gspread oauth2client
+          pip install gspread oauth2client
 
-4. Import TDXLib into your console or script: 
+### Making a TDXlib integration object
+
+4. Start a Python console:  
         
+       python
+       
+5. Import TDXLib into your scripting environment:
+
        import tdxlib
     
 5. To interact with the TDX API, you'll need to create an api integration object, through which all of the TDXLib commands are run. TDXLib currently supports two types of integrations:
@@ -55,9 +79,9 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 6. In order to store settings, TDXLib uses a INI-style configuration file. 
    If there is no file set up in your working directory, TDXLib will walk you through the generation of one the first time you instantiate an integration object:
   
-   <pre>
+      <pre>
         $ python
-        Python 3.7.3 (...) [...] on win32
+        Python 3.7.3 (...) [...] on [...]
         Type "help", "copyright", "credits" or "license" for more information.
         >>> <b>import tdxlib</b>
         >>> <b>tdx = tdxlib.tdx_ticket_integration.TDXTicketIntegration()</b>
@@ -84,7 +108,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         Disable Caching? [Y/N]: <b>no</b>
         
         Initial settings saved to: tdxlib.ini
-   </pre>
+       </pre>
 
     The generated file will look something like this:
 
@@ -97,32 +121,32 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         'assetAppId': '456',
         'caching': True
      
-    The `orgname` field is whatever subdomain your organization uses to access TeamDynamix. For example, `https://myuniversity.teamdynamix.com`.
+    * The `orgname` field is whatever subdomain your organization uses to access TeamDynamix. For example, `https://myuniversity.teamdynamix.com`.
 
-    The `sandbox` field specifies whether TDXLib should interact with a sandbox version of the TDX Environment, which is written over by production monthly. It is recommended to use the sandbox environment when first getting familiar with the API environment.
+    * The `sandbox` field specifies whether TDXLib should interact with a sandbox version of the TDX Environment, which is written over by production monthly. It is recommended to use the sandbox environment when first getting familiar with the API environment.
 
-    The `username` and `password` fields are the login credentials for an account to be used with the TeamDynamix API. Many API endpoints (such as creating objects in TDX) require elevated permissions beyond the average user. You may need to create a user specifically for use with TDXLib and grant permissions based on what you need to do.
+    * The `username` and `password` fields are the login credentials for an account to be used with the TeamDynamix API. Many API endpoints (such as creating objects in TDX) require elevated permissions beyond the average user. You may need to create a user specifically for use with TDXLib and grant permissions based on what you need to do.
     
-    If the `password` field is set to `'Prompt'`, then whenever a new integration object is made, it will request a password, and dispose of the password after getting an API token: 
+    * If the `password` field is set to `'Prompt'`, then whenever a new integration object is made, it will request a password, and dispose of the password after getting an API token: 
     
        Enter the TDX Password for user myuser@myuniversity.edu (this password will not be stored):   
 
-    The `ticketAppId` and `assetAppId` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. For example: 
+    * The `ticketAppId` and `assetAppId` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. For example: 
     
-    Tickets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{ticketAppId}/Tickets/...`  
-    Assets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{assetAppId}/Assets/...`
+      * Tickets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{ticketAppId}/Tickets/...`  
+      * Assets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{assetAppId}/Assets/...`
 
-    The `caching` field specifies whether or not TDXLib should cache TeamDynamix objects such as valid ticket types, statuses and priorities. Setting this option to `True` reduces the volume of API calls and allows TDXLib to perform some batch operations much faster.
+    * The `caching` field specifies whether or not TDXLib should cache TeamDynamix objects such as valid ticket types, statuses and priorities. Setting this option to `True` reduces the volume of API calls and allows TDXLib to perform some batch operations much faster.
 
-    You can optionally specify an alternative configuration file that TDXLib should search for in your working directory. By default, it will look for `tdxlib.ini`.
+    * You can optionally specify an alternative configuration file that TDXLib should search for in your working directory. By default, it will look for `tdxlib.ini`.
 
-        >>> tdx = tdx_ticket_integration.TDXTicketIntegration("specialconfig.ini")
+          >>> tdx = tdx_ticket_integration.TDXTicketIntegration("specialconfig.ini")
 
-    Depending on your `tdxlib.ini` settings, you may be prompted for a password to authenticate into the TeamDynamix API. Once everything is working, go ahead and test out a method:
+    * Depending on your `tdxlib.ini` settings, you may be prompted for a password to authenticate into the TeamDynamix API. Once everything is working, go ahead and test out a method:
 
-        >>> accounts = tdx.get_all_accounts()
+          >>> accounts = tdx.get_all_accounts()
 
-7. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For information on the methods included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
+7. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
     
 
 ##  TDXLib Implementation status and Future Plans
