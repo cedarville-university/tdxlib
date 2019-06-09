@@ -610,7 +610,7 @@ class TDXIntegration:
 
         """
         for i in location['Rooms']:
-            if room.lower in i['Name'].lower():
+            if room.lower() in i['Name'].lower():
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No room found for " + room + " in location " + location['Name'])
