@@ -334,7 +334,8 @@ class TDXIntegration:
             'people': {},
             'groups': {},
             'accounts': {},
-            'custom_attributes': {}
+            'custom_attributes': {},
+            'ca_search': {}
         }
 
     # #### GETTING TDX OBJECTS #### #
@@ -529,7 +530,7 @@ class TDXIntegration:
             str(associated_type) + '&appId=' + str(app_id)
         return self.make_get(url_string)
 
-    def get_custom_attribute_by_name(self, key, object_type):
+    def get_custom_attribute_by_name(self, key: str, object_type: int):
         """
         Gets a custom attribute for the component type.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
@@ -540,12 +541,15 @@ class TDXIntegration:
         :return: the attribute as a dict, with all choice items included
 
         """
-        if not self.cache['custom_attributes'][str(object_type)]:
+        search_key = key + "_" + str(object_type)
+        if search_key in self.cache['ca_search']:
+            return self.cache['ca_search'][search_key]
+        if str(object_type) not in self.cache['custom_attributes']:
             # There is no API for searching attributes -- the only way is to get them all.
             self.cache['custom_attributes'][str(object_type)] = self.get_all_custom_attributes(object_type)
         for item in self.cache['custom_attributes'][str(object_type)]:
             if key.lower() in item['Name'].lower():
-                self.cache['custom_attributes'][str(object_type)][key] = item
+                self.cache['ca_search'][key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + key + ' and object type ' + str(object_type))

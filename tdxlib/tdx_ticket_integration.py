@@ -31,13 +31,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
         if self.ticket_app_id is None:
             raise ValueError("Ticket App Id is required. Check your config file for 'ticketappid = 000'")
-        self.cache['ticket_type'] = {}
-        self.cache['ticket_status'] = {}
-        self.cache['ticket_priority'] = {}
-        self.cache['ticket_urgency'] = {}
-        self.cache['ticket_impact'] = {}
-        self.cache['ticket_source'] = {}
-        self.cache['ticket_form'] = {}
+        self.clean_cache()
 
     def clean_cache(self):
         super().clean_cache()
