@@ -403,7 +403,7 @@ class TDXIntegration:
 
         :return: list of person data
         """
-        return self.get_tdx_item_by_id('groups', group_id + '/members')
+        return self.get_tdx_item_by_id('groups', str(group_id) + '/members')
     
     def search_people(self, key):
         """

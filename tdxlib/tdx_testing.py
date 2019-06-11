@@ -52,14 +52,14 @@ class TdxTesting(unittest.TestCase):
         self.assertEqual(test['ID'],standard['ID'])
 
     def test_search_people_name(self):
-        standard = self.testing_vars('person')
+        standard = self.testing_vars['person']
         test = self.tdx.search_people(standard['FullName'])
-        self.assertEqual(test['ID'], standard['ID'])
+        self.assertEqual(test['UID'], standard['UID'])
 
     def test_search_people_email(self):
-        standard = self.testing_vars('person')
+        standard = self.testing_vars['person']
         test = self.tdx.search_people(standard['PrimaryEmail'])
-        self.assertEqual(test['ID'], standard['ID'])
+        self.assertEqual(test['UID'], standard['UID'])
 
     def test_get_all_accounts(self):
         test = self.tdx.get_all_accounts()
