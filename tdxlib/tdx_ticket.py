@@ -84,7 +84,7 @@ class TdxTicket:
             self.ticket_data['TypeID']: int = (self.tdx_api.get_ticket_type_by_name_id(ticket_type)['ID'])
             self.ticket_data['AccountID']: int = (self.tdx_api.get_account_by_name(account)['ID'])
             self.ticket_data['PriorityID']: int = (self.tdx_api.get_ticket_priority_by_name_id(priority)['ID'])
-            self.ticket_data['RequestorUid']: str = (self.tdx_api.search_people(requestor)['UID'])
+            self.ticket_data['RequestorUid']: str = (self.tdx_api.get_person_by_name_email(requestor)['UID'])
             self.ticket_data['Title']: str = "Auto-Generated Ticket"
 
             # default some helpful stuff

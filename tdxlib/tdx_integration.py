@@ -173,7 +173,7 @@ class TDXIntegration:
         self.rate_limit()
         get_url = self.api_url + request_url
         response = None
-        attempts=0
+        attempts = 0
         while attempts < retries:
             try:
                 response = requests.get(
@@ -447,7 +447,7 @@ class TDXIntegration:
         """
         return self.get_tdx_item_by_id('groups', str(group_id) + '/members')
     
-    def search_people(self, key):
+    def get_person_by_name_email(self, key):
         """
         Gets the top match of people with search text, such as:
         - Name
@@ -460,15 +460,26 @@ class TDXIntegration:
         :return: dict of person data
 
         """
+        return self.search_people(key, 1)[0]
+
+    def search_people(self, key, max_results):
+        """
+        Gets a list of people, based on a search text, which may match Name, Email, Username or ID
+
+        :param key: string with search text of person to search with
+        :param max_results: maximum number of matches to return
+
+        :return: list of dicts of person data
+        """
         if key in self.cache['people']:
             return self.cache['people'][key]
         else:
-            url_string = "/people/lookup?searchText=" + str(key) + "&maxResults=1"
+            url_string = "/people/lookup?searchText=" + str(key) + "&maxResults=" + str(max_results)
             people = self.make_get(url_string)
             if len(people) == 0:
                 raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No person found for " + key)
-            self.cache['people'][key] = people[0]
-            return people[0]
+            self.cache['people'][key] = people
+            return people
 
     def get_all_accounts(self):
         """
@@ -585,18 +596,18 @@ class TDXIntegration:
         :return: the attribute as a dict, with all choice items included
 
         """
-        search_key = key + "_" + str(object_type)
+        search_key = str(key) + "_" + str(object_type)
         if search_key in self.cache['ca_search']:
             return self.cache['ca_search'][search_key]
         if str(object_type) not in self.cache['custom_attributes']:
             # There is no API for searching attributes -- the only way is to get them all.
             self.cache['custom_attributes'][str(object_type)] = self.get_all_custom_attributes(object_type)
         for item in self.cache['custom_attributes'][str(object_type)]:
-            if key.lower() in item['Name'].lower():
+            if str(key).lower() in item['Name'].lower():
                 self.cache['ca_search'][key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            "No custom attribute found for " + key + ' and object type ' + str(object_type))
+            "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))
 
     @staticmethod
     def get_custom_attribute_value_by_name(attribute, key):
@@ -678,7 +689,7 @@ class TDXIntegration:
         :param additional_info: dict of other attributes to set on account. Retrieved from:
                                 https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
         :param custom_attributes: dict of names of custom attributes and corresponding names of the choices to set
-                                  on each attribute. These names must match the names in TDX exactly.
+                                  on each attribute. These names must match the names in TDX, not IDs.
 
         :return: a dict with information about the created account
 
@@ -689,12 +700,13 @@ class TDXIntegration:
         # Set up data for account
         data = dict()
         data['Name'] = name
-        data['ManagerUID'] = self.search_people(manager)['UID']
+        data['ManagerUID'] = self.get_person_by_name_email(manager)['UID']
         if additional_info.items():
             for attrib, value in additional_info.items():
                 if attrib in editable_account_attributes:
                     data[attrib] = additional_info[attrib]
         if custom_attributes:
+                data['Attributes'] = {}
                 for attrib, value in custom_attributes.items():
                     tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
                     tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)

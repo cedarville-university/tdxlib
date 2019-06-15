@@ -236,7 +236,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: dict of the updated assets
         """
-        new_owner_uid = self.search_people(new_owner_email)['UID']
+        new_owner_uid = self.get_person_by_name_email(new_owner_email)['UID']
         changed_attributes = {'OwningCustomerID': new_owner_uid}
         if new_dept_name:
             changed_attributes['OwningDepartmentID'] = self.get_account_by_name(new_dept_name)['ID']

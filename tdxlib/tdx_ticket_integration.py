@@ -674,7 +674,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         data['AccountID'] = self.get_account_by_name(account)['ID']
         data['StatusID'] = self.get_ticket_status_by_name(status)['ID']
         data['PriorityID'] = self.get_ticket_priority_by_name_id(priority)['ID']
-        data['RequestorUid'] = self.search_people(requestor)['UID']
+        data['RequestorUid'] = self.get_person_by_name_email(requestor)['UID']
         data['FormID'] = form_id
 
         # map per-ticket values into title and body
@@ -725,7 +725,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if responsible.find("@") == -1:
             data['ResponsibleGroupID'] = self.get_group_by_name(responsible)['ID']
         else:
-            data['ResponsibleUid'] = self.search_people(responsible)['UID']
+            data['ResponsibleUid'] = self.get_person_by_name_email(responsible)['UID']
 
         new_ticket = tdxlib.tdx_ticket.TdxTicket(self, data)
         new_ticket.validate()

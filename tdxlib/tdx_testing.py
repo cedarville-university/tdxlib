@@ -48,12 +48,12 @@ class TdxTesting(unittest.TestCase):
 
     def test_search_people_name(self):
         standard = self.testing_vars['person']
-        test = self.tdx.search_people(standard['FullName'])
+        test = self.tdx.get_person_by_name_email(standard['FullName'])
         self.assertEqual(test['UID'], standard['UID'])
 
     def test_search_people_email(self):
         standard = self.testing_vars['person']
-        test = self.tdx.search_people(standard['PrimaryEmail'])
+        test = self.tdx.get_person_by_name_email(standard['PrimaryEmail'])
         self.assertEqual(test['UID'], standard['UID'])
 
     def test_get_all_accounts(self):
@@ -68,7 +68,7 @@ class TdxTesting(unittest.TestCase):
 
     def test_get_account_by_name_partial(self):
         standard = self.testing_vars['account']
-        test = self.tdx.get_account_by_name(standard['Name'][1:5])
+        test = self.tdx.get_account_by_name(standard['PartialName'])
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_all_groups(self):
@@ -83,7 +83,7 @@ class TdxTesting(unittest.TestCase):
 
     def test_get_group_by_name_partial(self):
         standard = self.testing_vars['group']
-        test = self.tdx.get_group_by_name(standard['Name'][1:5])
+        test = self.tdx.get_group_by_name(standard['PartialName'])
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_group_members_by_name(self):
@@ -123,7 +123,7 @@ class TdxTesting(unittest.TestCase):
 
     def test_get_location_by_name_partial(self):
         standard = self.testing_vars['location']
-        test = self.tdx.get_location_by_name(standard['Name'][1:5])
+        test = self.tdx.get_location_by_name(standard['PartialName'])
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_room_by_name(self):
@@ -137,7 +137,7 @@ class TdxTesting(unittest.TestCase):
         location = self.testing_vars['location']
         standard = self.testing_vars['room']
         test_location = self.tdx.get_location_by_name(location['Name'])
-        test_room = self.tdx.get_room_by_name(test_location, standard['Name'][1:5])
+        test_room = self.tdx.get_room_by_name(test_location, standard['PartialName'])
         self.assertEqual(test_room['ID'], standard['ID'])
 
     def test_create_account(self):
@@ -146,7 +146,7 @@ class TdxTesting(unittest.TestCase):
         name = 'Testing Account'
         additional_info = {'Address1': '123 Main Street'}
         ca = self.testing_vars['account_ca']
-        custom_attributes = [{ca['ID']:ca['choice']['ID']}]
+        custom_attributes = {ca['Name']:ca['choice']['Name']}
         account = self.tdx.create_account(name, True, self.tdx.username, additional_info,
                                           custom_attributes)
         self.assertEqual(account['Address1'], additional_info['Address1'])
