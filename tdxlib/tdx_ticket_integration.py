@@ -132,12 +132,31 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # #### CHANGING TICKETS #### #
 
-    def edit_tickets(self, ticket_list, changed_attributes, notify=False, visual=False) -> list:
-        # TODO: make this return a list of ticket objects, not a list of dicts
+    def edit_ticket(self, ticket, changed_attributes,
+                    notify=False) -> tdxlib.tdx_ticket.TDXTicket:
+        """
+        Edits one a ticket, based on parameters.
+
+        :param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
+        :param changed_attributes: Attributes to alter in the ticket
+        :param notify: If true, will notify newly-responsible resource if changed because of edit (default: false)
+        :param visual: If true, print a . for each successful ticket that is edited (default: false)
+
+        :return: edited ticket as TDXTicket
+
+        """
+        url_string = '{ID}?notifyNewResponsible=' + str(notify)
+        ticket.update(changed_attributes, validate=True)
+        post_body = ticket.export(validate=True)
+        edited_dict = self.make_call(url_string.format_map(
+            {'ID': str(ticket.get_id())}), 'post', post_body)
+        return tdxlib.tdx_ticket.TdxTicket(self,json=edited_dict)
+
+    def edit_tickets(self, ticket_list: list, changed_attributes, notify=False, visual=False) -> list:
         """
         Edits one or more tickets, based on parameters.
 
-        :param ticket_list: list of TDXTicket objects, maybe from search_tickets, or a single ticket
+        :param ticket_list: list of TDXTicket objects, maybe from search_tickets
         :param changed_attributes: Attributes to alter in selected tickets
         :param notify: If true, will notify newly-responsible resource(s) if changed because of edit
         :param visual: If true, print a . for each successful ticket that is edited
@@ -147,26 +166,15 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         url_string = '{ID}?notifyNewResponsible=' + str(notify)
         edited_tickets = list()
-        if isinstance(ticket_list, list) and all(isinstance(elem, tdxlib.tdx_ticket.TdxTicket) for elem in ticket_list):
-            for ticket in ticket_list:
-                ticket.update(changed_attributes, validate=True)
-                post_body = ticket.export(validate=True)
-                edited_tickets.append(self.make_call(url_string.format_map(
-                    {'ID': str(ticket.get_id())}), 'post', post_body))
-                if visual:
-                    print('.', end='')
-        elif isinstance(ticket_list, tdxlib.tdx_ticket.TdxTicket):
-            ticket_list.update(changed_attributes, validate=True)
-            post_body = ticket_list.export(validate=True)
-            edited_tickets.append(self.make_call(url_string.format_map(
-                {'ID': str(ticket_list.get_id())}), 'post', post_body))
-            if visual:
+        for ticket in ticket_list:
+            if not isinstance(ticket, tdxlib.tdx_ticket.TdxTicket):
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+                    'edit_tickets() method accepts only lists of TDXTicket objects\n' +
+                    'Object found: ' + str(type(ticket)))
+            edited_ticket = self.edit_ticket(ticket, changed_attributes, notify)
+            edited_tickets.append(edited_ticket)
+            if visual and edited_ticket:
                 print('.', end='')
-        else:
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
-                'edit_tickets() method accepts only TDXTicket objects (or lists of same)\n' +
-                'Object found: ' + str(type(ticket_list)))
-        
         return edited_tickets
 
     def edit_ticket_type(self, ticket_list, key) -> list:
