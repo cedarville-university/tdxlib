@@ -43,13 +43,8 @@ class TdxTesting(unittest.TestCase):
 
     def test_get_group_members_by_id(self):
         test = self.tdx.get_group_members_by_id(self.testing_vars['group']['ID'])
+        self.assertTrue(isinstance(test, list))
         self.assertGreaterEqual(len(test), 2)
-
-    def test_get_ca_by_name(self):
-        standard = self.testing_vars['ca']
-        type_id = self.tdx.component_ids[standard['type']]
-        test = self.tdx.get_custom_attribute_by_name(standard['Name'], type_id)
-        self.assertEqual(test['ID'],standard['ID'])
 
     def test_search_people_name(self):
         standard = self.testing_vars['person']
@@ -63,16 +58,101 @@ class TdxTesting(unittest.TestCase):
 
     def test_get_all_accounts(self):
         test = self.tdx.get_all_accounts()
-        self.assertGreaterEqual(len(test), 2)
-
-    def test_get_all_accounts(self):
-        test = self.tdx.get_all_accounts()
+        self.assertTrue(isinstance(test, list))
         self.assertGreaterEqual(len(test), 2)
 
     def test_get_account_by_name(self):
         standard = self.testing_vars['account']
         test = self.tdx.get_account_by_name(standard['Name'])
         self.assertEqual(test['ID'],standard['ID'])
+
+    def test_get_account_by_name_partial(self):
+        standard = self.testing_vars['account']
+        test = self.tdx.get_account_by_name(standard['Name'][1:5])
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_all_groups(self):
+        test = self.tdx.get_all_groups()
+        self.assertTrue(isinstance(test, list))
+        self.assertGreaterEqual(len(test), 2)
+
+    def test_get_group_by_name(self):
+        standard = self.testing_vars['group']
+        test= self.tdx.get_group_by_name(standard['Name'])
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_group_by_name_partial(self):
+        standard = self.testing_vars['group']
+        test = self.tdx.get_group_by_name(standard['Name'][1:5])
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_group_members_by_name(self):
+        standard = self.testing_vars['group']
+        test = self.tdx.get_group_members_by_name(standard['Name'])
+        self.assertTrue(isinstance(test, list))
+        self.assertGreaterEqual(len(test),2)
+
+    def test_get_all_custom_attributes(self):
+        test = self.tdx.get_all_custom_attributes(self.tdx.component_ids['ticket'])
+        self.assertTrue(isinstance(test, list))
+        self.assertGreaterEqual(len(test), 2)
+
+    def test_get_ca_by_name(self):
+        standard = self.testing_vars['ticket_ca']
+        type_id = self.tdx.component_ids[standard['type']]
+        test = self.tdx.get_custom_attribute_by_name(standard['Name'], type_id)
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_ca_value_by_name(self):
+        ca_standard = self.testing_vars['ticket_ca']
+        standard = ca_standard['choice']
+        type_id = self.tdx.component_ids[ca_standard['type']]
+        ca = self.tdx.get_custom_attribute_by_name(ca_standard['Name'], type_id)
+        test = self.tdx.get_custom_attribute_value_by_name(ca, standard['Name'])
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_all_locations(self):
+        test = self.tdx.get_all_locations()
+        self.assertTrue(isinstance(test, list))
+        self.assertGreaterEqual(len(test), 2)
+
+    def test_get_location_by_name(self):
+        standard = self.testing_vars['location']
+        test = self.tdx.get_location_by_name(standard['Name'])
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_location_by_name_partial(self):
+        standard = self.testing_vars['location']
+        test = self.tdx.get_location_by_name(standard['Name'][1:5])
+        self.assertEqual(test['ID'], standard['ID'])
+
+    def test_get_room_by_name(self):
+        location = self.testing_vars['location']
+        standard = self.testing_vars['room']
+        test_location = self.tdx.get_location_by_name(location['Name'])
+        test_room = self.tdx.get_room_by_name(test_location, standard['Name'])
+        self.assertEqual(test_room['ID'], standard['ID'])
+
+    def test_get_room_by_name(self):
+        location = self.testing_vars['location']
+        standard = self.testing_vars['room']
+        test_location = self.tdx.get_location_by_name(location['Name'])
+        test_room = self.tdx.get_room_by_name(test_location, standard['Name'][1:5])
+        self.assertEqual(test_room['ID'], standard['ID'])
+
+    def test_create_account(self):
+        if not self.tdx.sandbox:
+            return
+        name = 'Testing Account'
+        additional_info = {'Address1': '123 Main Street'}
+        ca = self.testing_vars['account_ca']
+        custom_attributes = [{ca['ID']:ca['choice']['ID']}]
+        account = self.tdx.create_account(name, True, self.tdx.username, additional_info,
+                                          custom_attributes)
+        self.assertEqual(account['Address1'], additional_info['Address1'])
+        self.assertEqual(account['attributes'][0]['ID'], ca['choice']['ID'])
+        self.assertEqual(account['Name'], name)
+
 
 
 if __name__ == "__main__":

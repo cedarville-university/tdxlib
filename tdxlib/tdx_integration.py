@@ -3,6 +3,8 @@ import requests
 import json
 import getpass
 import tdxlib.tdx_api_exceptions
+import datetime
+import time
 
 
 class TDXIntegration:
@@ -145,39 +147,62 @@ class TDXIntegration:
         self.cache = {}
         self.clean_cache()
 
-    def make_get(self, request_url):
+    def rate_limit(self, skew_mitigation_secs=5):
+        if 'remaining' in self.cache['rate_limit']:
+            if not self.cache['rate_limit']['remaining'] > 1:
+                if 'reset_time' in self.cache['rate_limit']:
+                    reset_datetime = datetime.datetime.strptime(self.cache['rate_limit']['reset_time'],
+                                                                '%a, %d %b %Y %H:%M:%S GMT')
+                    now = datetime.datetime.utcnow()
+                    if reset_datetime > now:
+                        difference = reset_datetime - now
+                        sleep_time = difference + datetime.timedelta(0,skew_mitigation_secs)
+                        print("Rate-limited by TeamDynamix. Sleeping " + str(sleep_time.seconds) + " seconds.")
+                        time.sleep(sleep_time.seconds)
+
+    def make_get(self, request_url, retries=3):
         """
         Makes a HTTP GET request to the TDX Api.
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
+        :param retries: the number of times to retry a failed request (defaults to 3)
 
         :return: the API response
 
         """
+        self.rate_limit()
         get_url = self.api_url + request_url
         response = None
-        try:
-            response = requests.get(
-                url=get_url,
-                headers={
-                    "Authorization": 'Bearer ' + self.token,
-                    "Content-Type": "application/json; charset=utf-8",
-                }
-            )
-            if response.status_code != 200:
-                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                                response.reason + "\n" + " Returned: " + response.text)
-            val = response.json()
-            return val
-        except requests.exceptions.RequestException:
-            print('HTTP Request failed')
-        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('GET failed: to ' + get_url + "\nReturned: " + str(e))
-        except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + get_url + ':'
-            if response:
-                message += response.text
-            print(message)
+        attempts=0
+        while attempts < retries:
+            try:
+                response = requests.get(
+                    url=get_url,
+                    headers={
+                        "Authorization": 'Bearer ' + self.token,
+                        "Content-Type": "application/json; charset=utf-8",
+                    }
+                )
+                if response.status_code != 200:
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
+                                                                    response.reason + "\n" + " Returned: " + response.text)
+                val = response.json()
+                self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+                self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+                self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
+                self.cache['rate_limit']['last_url'] = request_url
+                return val
+            except requests.exceptions.RequestException:
+                print('HTTP Request failed')
+            except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+                print('GET failed: to ' + get_url + "\nReturned: " + str(e))
+            except json.decoder.JSONDecodeError:
+                message = 'Invalid JSON received from ' + get_url + ':'
+                if response:
+                    message += response.text
+                print(message)
+            finally:
+                attempts += 1
 
     def make_post(self, request_url, body):
         """
@@ -189,6 +214,7 @@ class TDXIntegration:
         :return: the API response
 
         """
+        self.rate_limit()
         post_url = self.api_url + request_url
         response = None
         try:
@@ -204,6 +230,9 @@ class TDXIntegration:
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
@@ -225,6 +254,7 @@ class TDXIntegration:
         :return: the API response
 
         """
+        self.rate_limit()
         put_url = self.api_url + request_url
         response = None
         try:
@@ -240,6 +270,9 @@ class TDXIntegration:
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
@@ -260,6 +293,7 @@ class TDXIntegration:
         :return: the API's response
 
         """
+        self.rate_limit()
         delete_url = self.api_url + request_url
         response = None
         try:
@@ -274,6 +308,9 @@ class TDXIntegration:
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP DELETE Request failed')
@@ -299,6 +336,7 @@ class TDXIntegration:
         :return: the API's response
 
         """
+        self.rate_limit()
         patch_url = self.api_url + request_url
         response = None
         try:
@@ -316,6 +354,9 @@ class TDXIntegration:
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP PATCH Request failed')
@@ -335,7 +376,8 @@ class TDXIntegration:
             'groups': {},
             'accounts': {},
             'custom_attributes': {},
-            'ca_search': {}
+            'ca_search': {},
+            'rate_limit': {}
         }
 
     # #### GETTING TDX OBJECTS #### #
@@ -504,15 +546,17 @@ class TDXIntegration:
                         return group
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
 
-    def get_all_group_members(self, key):
+    def get_group_members_by_name(self, key):
         """
         Gets all the members of a group as person objects.
 
-        :param key: a partial name
+        :param key: a partial or full name of a group
 
-        :return: list of groups
+        :return: list of group members
 
         """
+        group = self.get_group_by_name(key)
+        return self.get_group_members_by_id(group['ID'])
 
     def get_all_custom_attributes(self, object_type, associated_type=0, app_id=0):
         """
@@ -624,8 +668,8 @@ class TDXIntegration:
     # #### #### ACCOUNTS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Accounts
 
-    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict,
-                       custom_attributes: dict) -> dict:
+    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict = None,
+                       custom_attributes: dict = None) -> dict:
         """
         Creates an account in TeamDynamix
 
@@ -646,13 +690,15 @@ class TDXIntegration:
         data = dict()
         data['Name'] = name
         data['ManagerUID'] = self.search_people(manager)['UID']
-        for attrib, value in additional_info:
-            if attrib in editable_account_attributes:
-                data[attrib] = additional_info[attrib]
-        for attrib, value in custom_attributes:
-            tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
-            tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
-            data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
+        if additional_info.items():
+            for attrib, value in additional_info.items():
+                if attrib in editable_account_attributes:
+                    data[attrib] = additional_info[attrib]
+        if custom_attributes:
+                for attrib, value in custom_attributes.items():
+                    tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
+                    tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
+                    data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
         post_body = dict({'account': data})
         return self.make_post(url_string, post_body)
 
