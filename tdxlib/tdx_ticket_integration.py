@@ -49,11 +49,12 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             url_string += '/' + url
         if action == 'get':
             return self.make_get(url_string)
+        if action == 'delete':
+            return self.make_delete(url_string)
         if action == 'post' and post_body:
             return self.make_post(url_string, post_body)
         if action == 'put' and post_body:
-            return self.make_put(url_string, post_body)
-        # TODO: need to expand this when we add patch/put/delete
+            return self.make_patch(url_string, post_body)
         raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
     def make_call(self, url, action, post_body=None):
