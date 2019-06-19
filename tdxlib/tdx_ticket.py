@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     import tdxlib.tdx_ticket_integration
 
 
-class TdxTicket:
+class TDXTicket:
     valid_attributes = [
         'TypeID', 'AccountID', 'PriorityID', 'RequestorUid', 'Title', 'StatusID', 'Classification', 'Description',
         'FormID', 'Description', 'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID',
@@ -108,23 +108,23 @@ class TdxTicket:
     def import_data(self, data):
         self.ticket_data = {}
         for key, value in data.items():
-            if key in TdxTicket.valid_attributes:
+            if key in TDXTicket.valid_attributes:
                 if value is False or value is '':
                     continue
-                if key in TdxTicket.valid_bool_attributes:
+                if key in TDXTicket.valid_bool_attributes:
                     self.ticket_data[key]: bool = value
-                elif key in TdxTicket.valid_int_attributes:
+                elif key in TDXTicket.valid_int_attributes:
                     self.ticket_data[key]: int = value
-                elif key in TdxTicket.valid_decimal_attributes:
+                elif key in TDXTicket.valid_decimal_attributes:
                     self.ticket_data[key]: float = value
-                elif key in TdxTicket.valid_date_attributes \
+                elif key in TDXTicket.valid_date_attributes \
                         and value is not 0 \
                         and value is not '0001-01-01T05:00:00Z'\
                         and value is not None:
                     self.ticket_data[key]: datetime = tdxlib.tdx_utils.import_tdx_date(value)
-                elif key in TdxTicket.valid_dict_attributes:
+                elif key in TDXTicket.valid_dict_attributes:
                     self.ticket_data[key]: dict = value
-                elif key in TdxTicket.valid_list_attributes:
+                elif key in TDXTicket.valid_list_attributes:
                     self.ticket_data[key]: list = value
                 else:
                     self.ticket_data[key]: str = value
@@ -137,7 +137,7 @@ class TdxTicket:
             data = self.ticket_data
         # Check for required attributes
         if not editable_only:
-            for attrib in TdxTicket.required_attributes:
+            for attrib in TDXTicket.required_attributes:
                 if attrib not in data:
                     raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value required for {0}".format(attrib))
@@ -150,23 +150,23 @@ class TdxTicket:
                         "String value required for {0}".format(attrib))
         for attrib, value in data.items():
             # Check all attributes for validity
-            if attrib not in TdxTicket.valid_attributes:
+            if attrib not in TDXTicket.valid_attributes:
                 raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "{0} with value {1} is not a valid ticket attribute".format(attrib, value))
             # Check editable attributes for correct type
-            if attrib in TdxTicket.editable_int_attributes:
+            if attrib in TDXTicket.editable_int_attributes:
                 try:
                     int(data[attrib])
                 except ValueError:
                     raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value for {0} cannot be converted to Int".format(attrib))
-            if attrib in TdxTicket.editable_double_attributes:
+            if attrib in TDXTicket.editable_double_attributes:
                 try:
                     float(data[attrib])
                 except ValueError:
                     raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value for {0} cannot be converted to decimal number".format(attrib))
-            if attrib in TdxTicket.editable_date_attributes:
+            if attrib in TDXTicket.editable_date_attributes:
                 if not isinstance(data[attrib], datetime.datetime):
                     try:
                        tdxlib.tdx_utils.import_tdx_date(data[attrib])
@@ -175,7 +175,7 @@ class TdxTicket:
                             "Value {1} for {0} cannot be converted to a datetime object".format(attrib, value))
             # Check for editable attributes only
             if editable_only:
-                if attrib not in TdxTicket.editable_attributes:
+                if attrib not in TDXTicket.editable_attributes:
                     raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Attribute {0} not editable (editable-only validation)".format(attrib))
 
@@ -189,7 +189,7 @@ class TdxTicket:
         # We need to strip out non-existent values that TDX won't be able to handle
         for key, value in self.ticket_data.items():
             if value is not None and value != '' and value is not False and value != 0:
-                if key in TdxTicket.valid_date_attributes:
+                if key in TDXTicket.valid_date_attributes:
                     exported_ticket_data[key] = tdxlib.tdx_utils.export_tdx_date(value)
                 else:
                     exported_ticket_data[key] = value
