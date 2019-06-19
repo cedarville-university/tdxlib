@@ -109,12 +109,12 @@ class TDXIntegration:
         # Read settings in
         self.settings = self.config['TDX API Settings']
         self.org_name = self.settings.get('orgname')
-        self.sandbox = bool(self.settings.get('sandbox'))
+        self.sandbox = self.settings.getboolean('sandbox')
         self.username = self.settings.get('username')
         self.password = self.settings.get('password')
         self.ticket_app_id = self.settings.get('ticketAppId')
         self.asset_app_id = self.settings.get('assetAppId')
-        self.caching = bool(self.settings.get('caching'))
+        self.caching = self.settings.getboolean('caching')
         if self.sandbox:
             api_end = '/SBTDWebApi/api'
         else:
