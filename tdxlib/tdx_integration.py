@@ -156,7 +156,7 @@ class TDXIntegration:
                     now = datetime.datetime.utcnow()
                     if reset_datetime > now:
                         difference = reset_datetime - now
-                        sleep_time = difference + datetime.timedelta(0,skew_mitigation_secs)
+                        sleep_time = difference + datetime.timedelta(0, skew_mitigation_secs)
                         print("Rate-limited by TeamDynamix. Sleeping " + str(sleep_time.seconds) + " seconds.")
                         time.sleep(sleep_time.seconds)
 
@@ -184,8 +184,9 @@ class TDXIntegration:
                     }
                 )
                 if response.status_code != 200:
-                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                                    response.reason + "\n" + " Returned: " + response.text)
+                    err_string = " Response code: " + str(response.status_code) + \
+                        " " + response.reason + "\n" + " Returned: " + response.text
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(err_string)
                 val = response.json()
                 self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
                 self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
@@ -676,9 +677,6 @@ class TDXIntegration:
 
     # #### CREATING TDX OBJECTS #### #
 
-    # #### #### ACCOUNTS #### #### #
-    # https://api.teamdynamix.com/TDWebApi/Home/section/Accounts
-
     def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict = None,
                        custom_attributes: dict = None) -> dict:
         """
@@ -714,8 +712,17 @@ class TDXIntegration:
         post_body = dict({'account': data})
         return self.make_post(url_string, post_body)
 
-    # TODO: def edit_account()
-    #   https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
+    def edit_account(self, name: str, changed_attributes: dict) -> dict:
+        editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
+                                       'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
+        url_string = '/accounts'
+        for k in changed_attributes.keys():
+            if k not in editable_account_attributes:
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Account Attribute " + k + "is not editable")
+        existing_account = self.get_account_by_name(name)
+        existing_account.update(changed_attributes)
+        put_body = {'account': existing_account}
+        return self.make_put(url_string + "/" + existing_account['ID'], put_body)
 
     # #### #### GROUPS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Group

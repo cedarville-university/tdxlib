@@ -88,7 +88,7 @@ class TDXTicket:
             self.ticket_data['Title']: str = "Auto-Generated Ticket"
 
             # default some helpful stuff
-            self.ticket_data['StatusID']: int = (self.tdx_api.get_ticket_status_by_name(status)['ID'])
+            self.ticket_data['StatusID']: int = (self.tdx_api.search_ticket_status(status)['ID'])
             self.ticket_data['Classification']: int = (self.tdx_api.get_ticket_classification_id_by_name(
                 classification))
             self.ticket_data['Description']: str = "Auto-Generated Ticket from TicketMaster"

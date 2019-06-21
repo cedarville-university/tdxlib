@@ -36,7 +36,7 @@ class TdxTesting(unittest.TestCase):
         self.assertEqual(test['Name'], standard['Name'])
 
     def test_get_person_by_uid(self):
-        standard = self.testing_vars['person']
+        standard = self.testing_vars['person1']
         test = self.tdx.get_person_by_uid(standard['UID'])
         self.assertTrue(test)
         self.assertEqual(test['PrimaryEmail'], standard['PrimaryEmail'])
@@ -47,12 +47,12 @@ class TdxTesting(unittest.TestCase):
         self.assertGreaterEqual(len(test), 2)
 
     def test_search_people_name(self):
-        standard = self.testing_vars['person']
+        standard = self.testing_vars['person1']
         test = self.tdx.get_person_by_name_email(standard['FullName'])
         self.assertEqual(test['UID'], standard['UID'])
 
     def test_search_people_email(self):
-        standard = self.testing_vars['person']
+        standard = self.testing_vars['person1']
         test = self.tdx.get_person_by_name_email(standard['PrimaryEmail'])
         self.assertEqual(test['UID'], standard['UID'])
 
@@ -133,7 +133,7 @@ class TdxTesting(unittest.TestCase):
         test_room = self.tdx.get_room_by_name(test_location, standard['Name'])
         self.assertEqual(test_room['ID'], standard['ID'])
 
-    def test_get_room_by_name(self):
+    def test_get_room_by_partial_name(self):
         location = self.testing_vars['location']
         standard = self.testing_vars['room']
         test_location = self.tdx.get_location_by_name(location['Name'])
@@ -143,7 +143,7 @@ class TdxTesting(unittest.TestCase):
     def test_create_account(self):
         if not self.tdx.sandbox:
             return
-        name = 'Testing Account'
+        name = 'Testing Account ' + self.timestamp
         additional_info = {'Address1': '123 Main Street'}
         ca = self.testing_vars['account_ca']
         custom_attributes = {ca['Name']:ca['choice']['Name']}
@@ -153,6 +153,13 @@ class TdxTesting(unittest.TestCase):
         self.assertEqual(account['attributes'][0]['ID'], ca['choice']['ID'])
         self.assertEqual(account['Name'], name)
 
+    def test_edit_account(self):
+        if not self.tdx.sandbox:
+            return
+        name = 'Testing Account' + self.timestamp
+        changed_attributes = {'Name': 'Edited Account' + self.timestamp}
+        edited_account = self.tdx.edit_account(name, changed_attributes)
+        self.assertEqual(edited_account['Name'], changed_attributes['Name'])
 
 
 if __name__ == "__main__":
