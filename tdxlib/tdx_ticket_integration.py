@@ -1,5 +1,4 @@
 import tdxlib.tdx_ticket
-from dateutil.parser import parse
 import datetime
 import tdxlib.tdx_integration
 import tdxlib.tdx_api_exceptions
@@ -201,7 +200,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                           start_date: datetime.datetime = False,
                           end_date: datetime.datetime = False):
         """
-        Reassigns a ticket  to a person or group
+        Reschedules the start and end dates of a ticket. This is impossible if the ticket has a task.
 
         :param ticket_id: The ticket of the ticket you want to edit.
         :param start_date: datetime.datetime object for the start date of the ticket (defaults to now)
@@ -448,17 +447,46 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # #### CREATING/EDITING CUSTOM TICKET STATUSES #### #
 
-    # TODO: create_custom_status(self, name, description, order, status_class, active)
-    #   https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketStatus
-    #   https://api.teamdynamix.com/TDWebApi/Home/section/TicketStatuses
-    #   Might need to add a class variable to store the int values of the various status classes.
-    #   I don't think you can get them from the API.
+    def create_custom_ticket_status(self, name: str, order: float, status_class: str, description: str = None,
+                                    active: bool = True):
+        """
+        Creates a custom ticket status.
 
-    # TODO: edit_custom_status(self, name/id, changed_attributes)'
-    #   Need to implement HTTP PUT call for this one. Do this in tdx_integration if possible.
-    #   Don't need to write any additional methods to abstract this further -- just assume the user will
-    #   be able to craft their own dictionaries to edit statuses
-    #   Also, make sure to clear the local status cache if you edit a status.
+        :param name:            A string containing the name of the new status. (Required)
+        :param order:           A float containing the order number for sorting purposes.
+        :param status_class:    A name of a status class. These values are hard-coded into the TDWebApi, and stored in
+                                this class as a class variable.
+        :param description:     A string containing the description of the new status. (Default: Empty String)
+        :param active:          A bool indicating whether or not this new status should be active. (Default: True)
+
+        :return:                The new ticket status as a dict
+
+        """
+        status = dict({'Name': name, 'Order': order})
+        if status_class in self.ticket_status_classes:
+            status['StatusClass'] = self.ticket_status_classes[status_class]
+        else:
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(f"No status class found for {status_class}")
+        if description:
+            status['Description'] = description
+        if active:
+            status['IsActive'] = active
+
+    def edit_custom_ticket_status(self, name, changed_attributes):
+        """
+        Edits a custom ticket status
+
+        :param name: The name of the status (for finding the object to edit)
+        :param changed_attributes: A dict containing values to substitute for the status's current values.
+
+        :return: The edited status information
+
+        """
+        status = self.search_ticket_status(name)
+        url_string = f"statuses/{status['ID']}"
+        status.update(changed_attributes)
+        data = {'ticketStatus': status}
+        return self.make_call(url_string, 'put', data)
 
     # #### TICKET TASKS #### #
 
@@ -551,8 +579,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         """
         self.validate_ticket_task(changed_attributes)
-        if isinstance(task, str) or isinstance(task,int):
-            full_task = self.get_ticket_task_by_id(task)
+        if isinstance(task, str) or isinstance(task, int):
+            full_task = self.get_ticket_task_by_id(ticket_id, task)
         else:
             if not task['ID']:
                 raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
@@ -593,10 +621,10 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         return self.edit_ticket_task(ticket_id, task, reassign)
 
     def reschedule_ticket_task(self, ticket_id, task,
-                              start_date: datetime.datetime=None,
-                              end_date: datetime.datetime=None):
+                               start_date: datetime.datetime = None,
+                               end_date: datetime.datetime = None):
         """
-        Sets the start date and end date for a ticket task. This cannot be done if the parent ticket has a start date.
+        Sets the start date and end date for a ticket task. This will affect the start & end dates of the parent ticket.
 
         :param ticket_id: The ticket Id on which the ticket task exists.
         :param task: a single ticket task in dict (maybe from get_ticket_task_by_id), or a task ID
@@ -681,7 +709,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param status: Status for new ticket, default "New"
         :param requestor: Requester for the ticket, defaults to username of integration (optional)
         :param classification: Classification name for ticket, default "Incident" (optional)
-        :param form_id: ID of a form that you'd like to assign to this ticket (Form ID's not accessible via API -- Must be looked up manually in TDAdmin)
+        :param form_id: ID of a form that you'd like to assign to this ticket
 
         :return: TdxTicket object ready to be created via create_ticket()
 
@@ -729,20 +757,11 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                     new_attrib['Value'] = value['ID']
                     data['Attributes'].append(new_attrib)
 
-        # TODO: Make these date conversions use the tdx_utils library
-
         if due_date:
-            # Set some date-related properties
-            target_date = parse(due_date)
-            # Due at 5PM EST (converting from UTC)
-            target_date = target_date.replace(hour=21)
-            # Create start date object
+            target_date = tdxlib.tdx_utils.import_tdx_date(due_date)
             start_date = target_date - datetime.timedelta(days=active_days)
-            # Set start time to 8 a.m. (9 hours before 5 p.m.)
-            start_date = start_date - datetime.timedelta(hours=9)
-            # Convert dates to TDX-friendly strings
-            data['StartDate'] = start_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-            data['EndDate'] = target_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start_date)
+            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(target_date)
 
         if location:
             building = self.get_location_by_name(location)
@@ -758,8 +777,46 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         new_ticket.validate()
         return new_ticket
 
-    # TODO: generate_ticket_task(self, <some sort of ticket info>)
-    #   This could be similar to the one above. Obviously less complicated. Make sure it works with dates.
+    def generate_ticket_task(self, title: str, est_minutes: int = 30, description: str = None,
+                             start: datetime.datetime = None, end: datetime.datetime = None,
+                             completion_minutes: int = None, responsible: str = None, group: bool = False,
+                             predecessor: int = None):
+        """
+        Generates a dict with the information in the proper format for creating at ticket task.
+
+        :param title: A string indicating the title of the ticket (Required)
+        :param est_minutes: Estimation of minutes required to complete this task (Default: 30)
+                            This is used for comparison to actual hours when using time tracking
+        :param description: A string containing a description of the task (Default: Empty String)
+        :param start:       Datetime object indicating the start date of the ticket task (Default: date of creation)
+        :param end:         Datetime object indicating the end date of the ticket task. Sets the due date/time.
+                            (Default: one hour after start)
+        :param completion_minutes:  This parameter is used for tasks with predecessors.  (Default: 0)
+                                    They set the due date/time based on the activation date and time.
+        :param responsible: String containing the name or partial name of a group or individual to assign the task to.
+                            (Default: None)
+        :param group:       Boolean indicating whether the responsible parameter references a group (Default:false)
+        :param predecessor: Task ID of another task in the destination ticket to set as the predecessor. (Default: None)
+
+        :return: Dict of task information fit for creating a task on a ticket using create_task()
+
+        """
+        data = dict({'Title': title})
+        data['EstimatedMinutes'] = est_minutes
+        if description:
+            data['Description'] = description
+        if start and end:
+            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start)
+            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(end)
+        if completion_minutes:
+            data['CompleteWithinMinutes'] = completion_minutes
+        if group:
+            data['ResponsibleGroupID'] = self.get_group_by_name(responsible)['ID']
+        else:
+            data['ResponsibleUid'] = self.get_person_by_name_email(responsible)['UID']
+        if predecessor:
+            data['PredecessorID'] = predecessor
+        return data
 
     # #### CREATING TICKETS #### #
 
