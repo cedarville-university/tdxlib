@@ -1,5 +1,6 @@
 import unittest
 import json
+import time
 from datetime import datetime as dt
 from datetime import timedelta as td
 from tdxlib import tdx_ticket_integration
@@ -156,7 +157,6 @@ class TdxTicketTesting(unittest.TestCase):
             }
             created_task = self.tix.create_ticket_task(ticket_id, task)
             self.assertGreater(created_task['ID'], 10000)
-            self.task_id_to_delete = created_task['ID']
 
     def test_edit_ticket_task(self):
         # Protect production from deleting tasks
@@ -181,11 +181,12 @@ class TdxTicketTesting(unittest.TestCase):
             'Title': f'Delete this task at {dt.now()}'
         }
         created_task = self.tix.create_ticket_task(ticket_id, task)
+        time.sleep(3)
         # Delete the task
         self.tix.delete_ticket_task(ticket_id, created_task['ID'])
         # Make sure the task is deleted
-        deleted_task = self.tix.get_ticket_task_by_id(ticket_id, created_task['ID'])
-        self.assertFalse(deleted_task)
+        task_list = self.tix.get_all_tasks_by_ticket_id(ticket_id)
+        self.assertFalse(all(i['ID'] == created_task['ID'] for i in task_list))
 
     def test_reassign_ticket_task(self):
         ticket_id = self.testing_vars['ticket2']['ID']
@@ -206,7 +207,7 @@ class TdxTicketTesting(unittest.TestCase):
         else:
             reassign = self.testing_vars['person1']
         changed_ticket = self.tix.reassign_ticket(ticket_id, reassign['FullName'])
-        self.assertEqual(changed_ticket.get_attribute('ResponsibleUid'), reassign['ResponsibleUid'])
+        self.assertEqual(changed_ticket.get_attribute('ResponsibleUid'), reassign['UID'])
 
     def test_reschedule_ticket(self):
         ticket_id = self.testing_vars['ticket1']['ID']
@@ -239,7 +240,7 @@ class TdxTicketTesting(unittest.TestCase):
         changed = self.tix.edit_custom_ticket_status('Never Gonna Happen', to_change)
         self.assertEqual(to_change['Name'],changed['Name'])
 
-    def test_update_ticket_task_feed(self):
+    def test_update_ticket_task(self):
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
         update = self.tix.update_ticket_task(ticket_id, task_id, 99, comments='almost done')
@@ -248,7 +249,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_update_ticket(self):
         ticket_id = self.testing_vars['ticket1']['ID']
         update = self.tix.update_ticket(ticket_id, comments=str(self.timestamp), new_status='Open')
-        self.assertEqual(update['Comments'], self.timestamp)
+        self.assertEqual(update['Body'], self.timestamp)
 
     def test_get_ticket_task_feed(self):
         ticket_id = self.testing_vars['ticket2']['ID']

@@ -190,7 +190,8 @@ class TDXTicket:
         for key, value in self.ticket_data.items():
             if value is not None and value != '' and value is not False and value != 0:
                 if key in TDXTicket.valid_date_attributes:
-                    exported_ticket_data[key] = tdxlib.tdx_utils.export_tdx_date(value)
+                    if isinstance(value, datetime.datetime) and not value.year == 1:
+                            exported_ticket_data[key] = tdxlib.tdx_utils.export_tdx_date(value)
                 else:
                     exported_ticket_data[key] = value
         if validate:

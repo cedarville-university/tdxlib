@@ -216,7 +216,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date),
             'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date)
         }
-        return tdxlib.tdx_ticket.TDXTicket(self, self.edit_ticket(ticket_id, new_dates))
+        return self.edit_ticket(ticket_id, new_dates)
 
     def update_ticket(self, ticket_id: int, comments: str, new_status: str = None, notify: list = None,
                       private: bool = True) -> dict:
@@ -244,8 +244,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['NewStatusID'] = self.search_ticket_status(new_status)['ID']
         else:
             data['NewStatusID'] = 0
-        post_body = dict({'itemUpdate': data})
-        return self.make_call(url_string, 'post', post_body)
+        return self.make_call(url_string, 'post', data)
 
     # #### GETTING TICKET ATTRIBUTES #### #
 
@@ -509,8 +508,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(f"No status class found for {status_class}")
         if description:
             status['Description'] = description
-        data = dict({'status': status})
-        return self.make_call(url_string, "post", data)
+        return self.make_call(url_string, "post", status)
 
     def edit_custom_ticket_status(self, name, changed_attributes) -> dict:
         """
@@ -525,8 +523,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         status = self.search_ticket_status(name)
         url_string = f"statuses/{status['ID']}"
         status.update(changed_attributes)
-        data = {'ticketStatus': status}
-        return self.make_call(url_string, 'put', data)
+        return self.make_call(url_string, 'put', status)
 
     # #### TICKET TASKS #### #
 
@@ -609,7 +606,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def edit_ticket_task(self, ticket_id: int, task, changed_attributes: dict) -> dict:
         """
-        Updates a ticket task with a set of new values.
+        Edits a ticket task with a set of new values.
 
         :param ticket_id: The ticket Id on which the ticket task exists.
         :param task: a single ticket task in dict (maybe from get_ticket_task_by_id), or a task ID
@@ -703,13 +700,12 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             notify = []
         url_string = f'{ticket_id}/tasks/{task_id}/feed'
         data = {
-            'PercentComplete': percent,
+            'PercentComplete': percent - (percent % 10),
             'Comments': comments,
             'Notify': notify,
             'IsPrivate': str(private)
             }
-        post_body = dict({'update': data})
-        return self.make_call(url_string, 'post', post_body)
+        return self.make_call(url_string, 'post', data)
 
     # #### TEMPLATING TICKETS #### #
 
