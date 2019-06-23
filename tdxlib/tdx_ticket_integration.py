@@ -196,9 +196,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             reassign = {'ResponsibleUid': self.get_person_by_name_email(responsible)}
         return self.edit_ticket(ticket_id, reassign)
 
-    def reschedule_ticket(self, ticket_id,
-                          start_date: datetime.datetime = False,
-                          end_date: datetime.datetime = False):
+    def reschedule_ticket(self, ticket_id, start_date: datetime.datetime = False,
+                          end_date: datetime.datetime = False) -> tdxlib.tdx_ticket.TDXTicket:
         """
         Reschedules the start and end dates of a ticket. This is impossible if the ticket has a task.
 
@@ -217,7 +216,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date),
             'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date)
         }
-        return self.edit_ticket(ticket_id, new_dates)
+        return tdxlib.tdx_ticket.TDXTicket(self, self.edit_ticket(ticket_id, new_dates))
 
     def update_ticket(self, ticket_id: int, comments: str, new_status: str = None, notify: list = None,
                       private: bool = True) -> dict:
@@ -230,7 +229,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param notify: a list of strings containing email addresses to notify regarding this ticket. Default: None
         :param private: boolean indicating whether or not the update to the task should be private. Default: True
 
-        :return: dict of ticket classification info
+        :return: dict of ticket update information
 
         """
         if not notify:
@@ -242,7 +241,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             'IsPrivate': str(private)
             }
         if new_status:
-            data['NewStatusID'] = self.get_ticket_status_by_id(new_status)['ID']
+            data['NewStatusID'] = self.search_ticket_status(new_status)['ID']
         else:
             data['NewStatusID'] = 0
         post_body = dict({'itemUpdate': data})
@@ -697,7 +696,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param notify: a list of strings containing email addresses to notify regarding this ticket. Default: None
         :param private: boolean indicating whether or not the update to the task should be private. Default: True
 
-        :return: dict of ticket classification info
+        :return: dict of update info
 
         """
         if not notify:

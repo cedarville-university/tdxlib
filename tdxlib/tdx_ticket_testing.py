@@ -1,7 +1,9 @@
 import unittest
 import json
 from datetime import datetime as dt
+from datetime import timedelta as td
 from tdxlib import tdx_ticket_integration
+from tdxlib import tdx_utils
 
 
 class TdxTicketTesting(unittest.TestCase):
@@ -180,7 +182,7 @@ class TdxTicketTesting(unittest.TestCase):
         }
         created_task = self.tix.create_ticket_task(ticket_id, task)
         # Delete the task
-        self.tix.delete_ticket_task(ticket_id, self.created_task['ID'])
+        self.tix.delete_ticket_task(ticket_id, created_task['ID'])
         # Make sure the task is deleted
         deleted_task = self.tix.get_ticket_task_by_id(ticket_id, created_task['ID'])
         self.assertFalse(deleted_task)
@@ -188,7 +190,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_reassign_ticket_task(self):
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
-        task = self.tix.get_ticket_task_by_id(task_id)
+        task = self.tix.get_ticket_task_by_id(ticket_id, task_id)
         if task['ResponsibleUid'] == self.testing_vars['person1']['UID']:
             reassign = {'ResponsibleUid': self.testing_vars['person2']['UID']}
         else:
@@ -196,18 +198,68 @@ class TdxTicketTesting(unittest.TestCase):
         changed_task = self.tix.edit_ticket_task(ticket_id, task_id, reassign)
         self.assertEqual(changed_task['ResponsibleUid'], reassign['ResponsibleUid'])
 
-    # TODO:
-    # test_reassign_ticket
-    # test_reschedule_ticket
-    # test_reassign_ticket_task
-    # test_reschedule_ticket_task
-    # test_generate_ticket_task
-    # test_create_custom_ticket_status
-    # test_edit_custom_ticket_status
-    # test_update_ticket_task_feed
-    # test_get_ticket_task_feed
-    # test_get_ticket_feed
-    # test_update_ticket_feed
+    def test_reassign_ticket(self):
+        ticket_id = self.testing_vars['ticket2']['ID']
+        ticket = self.tix.get_ticket_by_id(ticket_id)
+        if ticket.get_attribute('ResponsibleUid') == self.testing_vars['person1']['UID']:
+            reassign = self.testing_vars['person2']
+        else:
+            reassign = self.testing_vars['person1']
+        changed_ticket = self.tix.reassign_ticket(ticket_id, reassign['FullName'])
+        self.assertEqual(changed_ticket.get_attribute('ResponsibleUid'), reassign['ResponsibleUid'])
+
+    def test_reschedule_ticket(self):
+        ticket_id = self.testing_vars['ticket1']['ID']
+        start = dt.utcnow()
+        end = start + td(days=5)
+        changed_ticket = self.tix.reschedule_ticket(ticket_id, start, end)
+        self.assertEqual(changed_ticket.get_attribute('StartDate'), tdx_utils.export_tdx_date(start))
+
+    def test_reschedule_ticket_task(self):
+        ticket_id = self.testing_vars['ticket2']['ID']
+        task_id = self.testing_vars['ticket2']['task']['ID']
+        start = dt.utcnow()
+        end = start + td(days=5)
+        changed_ticket_task = self.tix.reschedule_ticket_task(ticket_id, task_id, start, end)
+        self.assertEqual(changed_ticket_task['StartDate'][0:8], tdx_utils.export_tdx_date(start)[0:8])
+
+    def test_generate_ticket_task(self):
+        task = self.tix.generate_ticket_task("Testing Task", description="this is a test",start=dt.utcnow(),
+                                             responsible=self.testing_vars['person1']['FullName'])
+        self.assertTrue(task)
+
+    def test_create_custom_ticket_status(self):
+        status = self.tix.create_custom_ticket_status('Never Gonna Happen', 1, 'Cancelled')
+        get_status = self.tix.get_ticket_status_by_id(status['ID'])
+        self.assertTrue(get_status)
+
+    def test_edit_custom_ticket_status(self):
+        self.test_create_custom_ticket_status()
+        to_change = {'Name': 'Never Gonna Give You Up'}
+        changed = self.tix.edit_custom_ticket_status('Never Gonna Happen', to_change)
+        self.assertEqual(to_change['Name'],changed['Name'])
+
+    def test_update_ticket_task_feed(self):
+        ticket_id = self.testing_vars['ticket2']['ID']
+        task_id = self.testing_vars['ticket2']['task']['ID']
+        update = self.tix.update_ticket_task(ticket_id, task_id, 99, comments='almost done')
+        self.assertTrue(update)
+
+    def test_update_ticket(self):
+        ticket_id = self.testing_vars['ticket1']['ID']
+        update = self.tix.update_ticket(ticket_id, comments=str(self.timestamp), new_status='Open')
+        self.assertEqual(update['Comments'], self.timestamp)
+
+    def test_get_ticket_task_feed(self):
+        ticket_id = self.testing_vars['ticket2']['ID']
+        task_id = self.testing_vars['ticket2']['task']['ID']
+        feed = self.tix.get_ticket_task_feed(ticket_id, task_id)
+        self.assertGreater(len(feed), 1)
+
+    def test_get_ticket_feed(self):
+        ticket_id = self.testing_vars['ticket2']['ID']
+        feed = self.tix.get_ticket_feed(ticket_id)
+        self.assertGreater(len(feed), 1)
 
 
 if __name__ == "__main__":
