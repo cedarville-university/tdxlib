@@ -197,9 +197,17 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(changed_task['ResponsibleUid'], reassign['ResponsibleUid'])
 
     # TODO:
-
-
-    # def test_set_ticket_task_dates():
+    # test_reassign_ticket
+    # test_reschedule_ticket
+    # test_reassign_ticket_task
+    # test_reschedule_ticket_task
+    # test_generate_ticket_task
+    # test_create_custom_ticket_status
+    # test_edit_custom_ticket_status
+    # test_update_ticket_task_feed
+    # test_get_ticket_task_feed
+    # test_get_ticket_feed
+    # test_update_ticket_feed
 
 
 if __name__ == "__main__":

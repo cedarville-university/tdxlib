@@ -219,7 +219,11 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         }
         return self.edit_ticket(ticket_id, new_dates)
 
+    # TODO: update_ticket()
+
     # #### GETTING TICKET ATTRIBUTES #### #
+
+    # TODO: get_ticket_feed()
 
     def get_all_ticket_forms(self):
         """
