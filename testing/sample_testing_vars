@@ -1,90 +1,90 @@
 {
   "ticket1": {
-    "ID": 5814276
+    "ID": 
   },
   "ticket2": {
-    "ID": 4944908,
+    "ID": 
     "task": {
-      "ID": 2290947
+      "ID": 
     }
   },
   "ticket3": {
-    "ID": 4837287
+    "ID": 
   },
   "ticket_type": {
-    "ID": 23286,
-    "Name": "IT Internal"
+    "ID": ,
+    "Name": ""
   },
   "ticket_status": {
-    "ID": 30793,
-    "Name": "New"
+    "ID": ,
+    "Name": ""
   },
   "ticket_priority": {
-    "ID": 3944,
-    "Name": "Low"
+    "ID": ,
+    "Name": ""
   },
   "ticket_classification": {
-    "ID": 0,
-    "Name": "Incident"
+    "ID": ,
+    "Name": ""
   },
   "ticket_urgency": {
-    "ID": 3941,
-    "Name": "Low"
+    "ID": ,
+    "Name": ""
   },
   "ticket_impact": {
-    "ID": 3937,
-    "Name": "Affects Client"
+    "ID": ,
+    "Name": ""
   },
   "ticket_source": {
-    "ID": 1318,
-    "Name": "Phone"
+    "ID": ,
+    "Name": ""
   },
   "location": {
-    "ID": 11983,
-    "Name": "Engineering & Science",
-    "PartialName": "Engineering"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
   },
   "room": {
-    "ID": 360858,
-    "Name": "117 (1s Data)",
-    "PartialName": "117"
+    "ID": ,
+    "Name": "
+    "PartialName": ""
   },
   "account": {
-    "ID": 56883,
-    "Name": "Information Technology",
-    "PartialName": "Inform"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
   },
   "group": {
-    "ID": 8325,
-    "Name": "Network Infrastructure Services",
-    "PartialName": "Infrastructure"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
   },
   "person1": {
-    "UID": "7f550e08-bdc4-e711-a95b-000d3a137856",
-    "PrimaryEmail": "ticketcreation@cedarville.edu",
-    "FullName": "ServeCU Ticket"
+    "UID": "",
+    "PrimaryEmail": "",
+    "FullName": ""
   },
   "person2": {
-    "UID": "85158e24-c4aa-e711-a953-000d3a1afc30",
-    "PrimaryEmail": "gainess@cedarville.edu",
-    "FullName": "Stephen Gaines"
+    "UID": "",
+    "PrimaryEmail": "",
+    "FullName": ""
   },
   "ticket_ca": {
-    "ID": 47288,
-    "Name": "Days Recurring",
-    "type": "ticket",
+    "ID": ,
+    "Name": "",
+    "type": "",
     "choice": {
-      "ID": 113513,
-      "Name": "Monday"
+      "ID": ,
+      "Name": ""
     }
   },
   "account_ca":{
-    "ID": 44772,
-    "Name": "Division",
-    "type": "account",
+    "ID": ,
+    "Name": "",
+    "type": "",
     "choice": {
-      "ID": 109236,
-      "Name": "Academic Vice-President"
+      "ID": ,
+      "Name": ""
     }
   }
 }

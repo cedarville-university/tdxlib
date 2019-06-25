@@ -12,5 +12,5 @@ docs/_build
 dist/
 build/
 MANIFEST
-testing*
+testing_*
 README
