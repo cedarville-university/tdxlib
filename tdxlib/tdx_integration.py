@@ -586,10 +586,16 @@ class TDXIntegration:
             str(associated_type) + '&appId=' + str(app_id)
         return self.make_get(url_string)
 
+    # TODO: look into figuring out what type the attribute is based on information from API,
+    #  for use in get_custom_attribute_value_by_name
     def get_custom_attribute_by_name(self, key: str, object_type: int):
         """
         Gets a custom attribute for the component type.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+        NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's) using
+        get_custom_attribute_value_by_name, and then if it returns false, directly assign the desired value to the CA.
+        Because of this, date-type and other format-specific attributes need to be in a TDX-acceptible format, this
+        means that a field designated to hold person objects needs to be set to a UID.
 
         :param key: the name of the custom attribute to search for
         :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
@@ -614,19 +620,22 @@ class TDXIntegration:
     def get_custom_attribute_value_by_name(attribute, key):
         """
         Gets the choice item from a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
+        NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this
+        method returns false, directly assign the desired value to the CA. Because of this, date-type and other format-
+        specific attributes need to be in a TDX-acceptible format, this means that a field designated to hold person
+        objects needs to be set to a UID.
 
         :param key: the name of the choice to look for
         :param attribute: the attribute (as retrieved from get_attribute_by_name())
 
-        :return: the the choice object from this attribute whose name matches the key
+        :return: the the choice object from this attribute whose name matches the key, or False if none matches.
 
         """
         for i in attribute['Choices']:
             if key.lower() in i['Name'].lower():
                 return i
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            "No custom attribute value for " + key + " found in " + attribute['Name'])
+        return False
 
     def get_all_locations(self):
         url_string = '/locations'
@@ -651,7 +660,11 @@ class TDXIntegration:
                 search_params.update(additional_params)
             post_body = dict({'search': search_params})
             locations = self.make_post(url_string, post_body)
-            for location in locations:
+            if isinstance(locations, list):
+                list_of_locations = list(locations)
+            else:
+                list_of_locations = locations
+            for location in list_of_locations:
                 if key.lower() in location['Name'].lower():
                     full_location = self.get_location_by_id(location['ID'])
                     self.cache['locations'][key] = full_location
@@ -670,7 +683,7 @@ class TDXIntegration:
 
         """
         for i in location['Rooms']:
-            if room.lower() in i['Name'].lower():
+            if str(room).lower() in i['Name'].lower():
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No room found for " + room + " in location " + location['Name'])
@@ -708,6 +721,8 @@ class TDXIntegration:
                 for attrib, value in custom_attributes.items():
                     tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
                     tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
+                    if not tdx_attrib_value:
+                        tdx_attrib_value = value
                     data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
         post_body = dict({'account': data})
         return self.make_post(url_string, post_body)

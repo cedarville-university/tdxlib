@@ -726,7 +726,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def generate_ticket(self, title_template, ticket_type, account, responsible, template_values=None,
                         body_template=None, attrib_prefix=None, due_date=None, location=None, room=None,
                         active_days=5, priority="Low", status="New", requestor=None,
-                        classification="Incident", form_id=0) -> tdxlib.tdx_ticket.TDXTicket:
+                        classification="Incident", form=None, group=False) -> tdxlib.tdx_ticket.TDXTicket:
         """
         Makes a TdxTicket object based on templates.
 
@@ -745,7 +745,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param status: Status for new ticket, default "New"
         :param requestor: Requester for the ticket, defaults to username of integration (optional)
         :param classification: Classification name for ticket, default "Incident" (optional)
-        :param form_id: ID of a form that you'd like to assign to this ticket
+        :param form: Name or ID of a form that you'd like to assign to this ticket
+        :param group: Boolean indicating whether or not 'responsible' refers to a group. (Default: False)
 
         :return: TdxTicket object ready to be created via create_ticket()
 
@@ -766,7 +767,10 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         data['StatusID'] = self.search_ticket_status(status)['ID']
         data['PriorityID'] = self.get_ticket_priority_by_name_id(priority)['ID']
         data['RequestorUid'] = self.get_person_by_name_email(requestor)['UID']
-        data['FormID'] = form_id
+        if form:
+            data['FormID'] = self.get_ticket_form_by_name_id(form)['ID']
+        else:
+            data['FormID'] = 0
 
         # map per-ticket values into title and body
         body = 'Auto-generated Ticket'
@@ -787,10 +791,15 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                 if attrib_prefix in key:
                     attrib_name = key.replace(attrib_prefix, "")
                     attrib = self.get_ticket_custom_attribute_by_name(attrib_name)
-                    value = self.get_custom_attribute_value_by_name(attrib, value)
+                    attrib_value = self.get_custom_attribute_value_by_name(attrib, value)
+                    # if not a set-choice attribute, we just need to set it directly.
+
                     new_attrib = dict()
                     new_attrib['ID'] = attrib['ID']
-                    new_attrib['Value'] = value['ID']
+                    if not attrib_value:
+                        new_attrib['Value'] = value
+                    else:
+                        new_attrib['Value'] = attrib_value['ID']
                     data['Attributes'].append(new_attrib)
 
         if due_date:
@@ -804,7 +813,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['LocationID'] = building['ID']
             data['LocationRoomID'] = self.get_room_by_name(building, room)['ID']
 
-        if responsible.find("@") == -1:
+        if group:
             data['ResponsibleGroupID'] = self.get_group_by_name(responsible)['ID']
         else:
             data['ResponsibleUid'] = self.get_person_by_name_email(responsible)['UID']
