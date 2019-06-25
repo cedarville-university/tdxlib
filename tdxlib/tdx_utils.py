@@ -46,5 +46,19 @@ def import_tdx_date(date_string: str) -> datetime:
 
 
 # Takes a python datetime object, returns a string compatible with a TDX Datetime attribute
-def export_tdx_date(date: datetime) -> str:
-    return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+def export_tdx_date(date: datetime, timezone: str = 'Z') -> str:
+    """
+    Takes a python datetime object, returns a string compatible with a TDX Datetime attribute, including timezone.
+    Note: This will not convert a UCT time to the timezone you specify.
+
+    :param date: Datetime object to output as TDX
+    :param timezone: A string indicating +/- hours:minutes. For EST this param is '-0500' (Default: Z [UTC])
+
+    :return: A string that TDX will accept
+
+    """
+    if date.tzinfo is None or date.tzinfo.utcoffset(date) is None:
+        date_string = date.strftime('%Y-%m-%dT%H:%M:%S' + timezone)
+    else:
+        date_string = date.strftime('%Y-%m-%dT%H:%M:%S%z')
+    return date_string
