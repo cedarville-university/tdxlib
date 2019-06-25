@@ -160,14 +160,14 @@ class TDXIntegration:
                         print("Rate-limited by TeamDynamix. Sleeping " + str(sleep_time.seconds) + " seconds.")
                         time.sleep(sleep_time.seconds)
 
-    def make_get(self, request_url, retries=3):
+    def make_get(self, request_url: str, retries: int = 3):
         """
         Makes a HTTP GET request to the TDX Api.
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param retries: the number of times to retry a failed request (defaults to 3)
 
-        :return: the API's response as a python dict
+        :return: the API's response as a python dict or list
 
         """
         self.rate_limit()
@@ -205,14 +205,14 @@ class TDXIntegration:
             finally:
                 attempts += 1
 
-    def make_post(self, request_url, body):
+    def make_post(self, request_url: str, body: dict):
         """
         Makes a HTTP POST request to the TDX Api
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the POST
 
-        :return: the API's response as a python dict
+        :return: the API's response as a python dict or list
 
         """
         self.rate_limit()
@@ -245,14 +245,14 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    def make_put(self, request_url, body):
+    def make_put(self, request_url: str, body: dict):
         """
         Makes an HTTP PUT request to the TDX API.
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the PUT
 
-        :return: the API's response as a python dict
+        :return: the API's response as a python dict or list
 
         """
         self.rate_limit()
@@ -285,7 +285,7 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    def make_delete(self, request_url):
+    def make_delete(self, request_url: str):
         """
         Makes an HTTP DELETE request to the TDX Api.
 
@@ -316,10 +316,9 @@ class TDXIntegration:
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('DELETE failed: to ' + delete_url + "\nReturned: " + str(e))
 
-
-    def make_patch(self, request_url, body: list):
+    def make_patch(self, request_url: str, body: list):
         """
-        Makes an HTTP PATH request to the TDX API.
+        Makes an HTTP PATCH request to the TDX API.
 
         The TeamDyanmix API supports limited PATCH functionality. Since TDX data is highly structured, items are
         referenced explicitly by their TDX ID, and not by their order in the object. Likewise, since the fields
@@ -328,7 +327,7 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: a list of PATCH operations as dictionaries, each including the keys "op", "path", and "value"
 
-        :return: the API's response, as a python dict
+        :return: the API's response, as a python dict or list
 
         """
         self.rate_limit()
@@ -388,6 +387,8 @@ class TDXIntegration:
         :param key: the ID number of an object to get, as a string
 
         :return: list of person data
+
+        :rtype: list
         """
         url_string = f'/{obj_type}/{key}'
         return self.make_get(url_string)
@@ -399,6 +400,8 @@ class TDXIntegration:
         :param location_id: ID number of location to get information about
 
         :return: dict of location data
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('locations', location_id)
 
@@ -409,6 +412,8 @@ class TDXIntegration:
         :param account_id: ID number of account to get information about
 
         :return: dict of account data
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('accounts', account_id)
 
@@ -419,6 +424,8 @@ class TDXIntegration:
         :param group_id: ID number of group to get information about
 
         :return: dict of group data, including members
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('groups', group_id)
 
@@ -429,6 +436,8 @@ class TDXIntegration:
         :param uid: UID string corresponding to a person
 
         :return: dict of person data
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('people', uid)
 
@@ -439,6 +448,8 @@ class TDXIntegration:
         :param group_id: ID number of group to get members of
 
         :return: list of person data for people in the group
+
+        :rtype: list
         """
         return self.get_tdx_item_by_id('groups', str(group_id) + '/members')
     
@@ -454,6 +465,8 @@ class TDXIntegration:
 
         :return: dict of person data
 
+        :rtype: dict
+
         """
         return self.search_people(key, 1)[0]
 
@@ -465,6 +478,8 @@ class TDXIntegration:
         :param max_results: maximum number of matches to return (Default: 20)
 
         :return: list of dicts of person data
+
+        :rtype: list
         """
         if key in self.cache['people']:
             return self.cache['people'][key]
@@ -482,6 +497,8 @@ class TDXIntegration:
 
         :return: list of dicts containing account data
 
+        :rtype: list
+
         """
         url_string = "/accounts"
         return self.make_get(url_string)
@@ -494,6 +511,8 @@ class TDXIntegration:
         :param additional_params: other search items, as a python dict, as described in TDX Api Docs
         
         :return: dict of account data (not complete, but including the ID)
+
+        :rtype: dict
 
         """
         if key in self.cache['accounts']:
@@ -517,6 +536,8 @@ class TDXIntegration:
 
         :return: list of dicts containing group data
 
+        :rtype: list
+
         """
         url_string = "/groups/search"
         post_body = {'search': {'NameLike': "", 'IsActive': 'True'}}
@@ -530,6 +551,8 @@ class TDXIntegration:
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
 
         :return: a dict of group data (not complete, but including the ID)
+
+        :rtype: dict
 
         """
         if key in self.cache['groups']:
@@ -560,6 +583,8 @@ class TDXIntegration:
 
         :return: list of group members
 
+        :rtype: list
+
         """
         group = self.get_group_by_name(key)
         return self.get_group_members_by_id(group['ID'])
@@ -574,6 +599,8 @@ class TDXIntegration:
         :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
 
         :return: list of dicts containing custom attributes, including choices and choice ID's
+
+        :rtype: list
 
         """
         url_string = '/attributes/custom?componentId=' + str(object_type) + '&associatedTypeId=' + \
@@ -595,6 +622,8 @@ class TDXIntegration:
         :param object_type: the object type ID to get attributes for
 
         :return: the attribute as a dict, with all choice items included
+
+        :rtype: dict
 
         """
         search_key = str(key) + "_" + str(object_type)
@@ -624,6 +653,8 @@ class TDXIntegration:
 
         :return: the the choice object from this attribute whose name matches 'key', or False if none matches.
 
+        :rtype: dict
+
         """
         for i in attribute['Choices']:
             if key.lower() in i['Name'].lower():
@@ -635,6 +666,8 @@ class TDXIntegration:
         Gets all locations in TDX.
 
         :return: a list of dicts containing location information
+
+        :rtype: list
 
         """
         url_string = '/locations'
@@ -648,6 +681,8 @@ class TDXIntegration:
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
 
         :return: a dict of location data
+
+        :rtype: dict
 
         """
         if key in self.cache['locations']:
@@ -680,6 +715,8 @@ class TDXIntegration:
 
         :return: a dict with all the the information regarding the room. Use this to retrieve the ID attribute.
 
+        :rtype: dict
+
         """
         for i in location['Rooms']:
             if str(room).lower() in i['Name'].lower():
@@ -702,6 +739,8 @@ class TDXIntegration:
                                   on each attribute. These names must match the names in TDX, not IDs.
 
         :return: a dict with information about the created account
+
+        :rtype: dict
 
         """
         editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
@@ -735,6 +774,8 @@ class TDXIntegration:
         :param changed_attributes: dict of names of attributes and corresponding data to set on each attribute.
 
         :return: a dict with information about the edited account
+
+        :rtype: dict
 
         """
         editable_account_attributes = ['Name', 'Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
