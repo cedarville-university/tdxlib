@@ -33,6 +33,12 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.clean_cache()
 
     def clean_cache(self):
+        """
+        Clears the tdx_ticket_integration cache.
+
+        :return:  None
+
+        """
         super().clean_cache()
         self.cache['ticket_type'] = {}
         self.cache['ticket_status'] = {}
@@ -58,29 +64,68 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             return self.make_patch(url_string, post_body)
         raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
-    def make_call(self, url, action, post_body=None):
+    def make_call(self, url: str, action: str, post_body=None):
+        """
+        Makes an HTTP call using the Tickets API information.
+
+        :param url: The URL (everything after tickets/) to call
+        :param action: The HTTP action (get, put, post, delete, patch) to perform.
+        :param post_body: A python dict of the information to post, put, or patch. Not used for get/delete.
+
+        :return: the API's response as a python dict or list
+
+        """
         return self.make_ticket_call(url, action, post_body)
 
     def get_all_ticket_custom_attributes(self):
         return self.get_all_custom_attributes(TDXTicketIntegration.component_ids['ticket'], app_id=self.ticket_app_id)
 
-    def get_ticket_custom_attribute_by_name(self, key):
+    def get_ticket_custom_attribute_by_name(self, key: str) -> dict:
+        """
+        Gets a ticket custom attribute based on its name. This hard-codes the component ID for tickets.
+
+        :param key: A full or partial name of the CA to get.
+
+        :return: a dict of custom attribute information
+
+        :rtype: dict
+
+        """
         return self.get_custom_attribute_by_name(key, TDXTicketIntegration.component_ids['ticket'])
 
     # #### GETTING TICKETS #### #
 
-    def get_ticket_by_id(self, ticket_id) -> tdxlib.tdx_ticket.TDXTicket:
+    def get_ticket_by_id(self, ticket_id: int) -> tdxlib.tdx_ticket.TDXTicket:
         """
-        Gets a ticket, based on its ID 
+        Gets a ticket, based on its ID
+
         :param ticket_id: ticket ID of required ticket
-        :return: json format of ticket info
+
+        :return: ticket info as python dict
+
+        :rtype: dict
         """
         return tdxlib.tdx_ticket.TDXTicket(self, self.make_call(str(ticket_id), 'get'))
 
     def search_tickets(self, criteria: dict, max_results: int = 25, closed: bool = False, cancelled: bool = False,
                        other_status: bool = False) -> list:
         """
-        Gets a ticket, based on criteria
+        Gets a ticket, based on a variety of criteria::
+
+            {'TicketClassification': [List of Int],
+            'SearchText': [String],
+            'Status IDs': [List of Int],
+            'ResponsibilityUids': [List of String (GUID)],
+            'ResponsibilityGroupIDs': [List of String (ID)],
+            'RequestorEmailSearch': [String],
+            'LocationIDs': [List of Int],
+            'LocationRoomIds': [List of Int],
+            'CreatedDateFrom': [DateTime],
+            'CreatedDateTo': [DateTime],
+            'SlaViolationStatus': [Boolean -- true = SLA Violated]}
+
+        (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch)
+
 
         :param max_results: maximum number of results to return
         :param criteria: a string, list or dict to search for tickets with
@@ -90,19 +135,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: list of TDXTicket objects
 
-        Common criteria:
-        {'TicketClassification': [List of Int],
-        'SearchText': [String],
-        'Status IDs': [List of Int],
-        'ResponsibilityUids': [List of String (GUID)],
-        'ResponsibilityGroupIDs': [List of String (ID)],
-        'RequestorEmailSearch': [String],
-        'LocationIDs': [List of Int],
-        'LocationRoomIds': [List of Int],
-        'CreatedDateFrom': [DateTime],
-        'CreatedDateTo': [DateTime],
-        'SlaViolationStatus': [Boolean -- true = SLA Violated]}
-        (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch)
+        :rtype: list
+
 
         """
         # Set default statuses
@@ -138,13 +172,15 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def edit_ticket(self, ticket, changed_attributes: dict,
                     notify: bool = False) -> tdxlib.tdx_ticket.TDXTicket:
         """
-        Edits one a ticket, based on parameters.
+        Edits one ticket, based on a dict of parameters to change.
 
         :param ticket: a TDXTicket object or a Ticket ID
         :param changed_attributes: Attributes to alter in the ticket
         :param notify: If true, will notify newly-responsible resource if changed because of edit (default: false)
 
         :return: edited ticket as TDXTicket
+
+        :rtype: tdxlib.tdx_ticket.TDXTicket
 
         """
         if not isinstance(ticket, tdxlib.tdx_ticket.TDXTicket):
@@ -158,10 +194,11 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             {'ID': str(full_ticket.get_id())}), 'post', post_body)
         return tdxlib.tdx_ticket.TDXTicket(self, json=edited_dict)
 
+    # TODO: Implement a HTTP Patch version of this
     def edit_tickets(self, ticket_list: list, changed_attributes: dict,
                      notify: bool = False, visual: bool = False) -> list:
         """
-        Edits one or more tickets, based on parameters.
+        Edits one or more tickets, based on a dict of parameters to change
 
         :param ticket_list: list of TDXTicket objects, maybe from search_tickets
         :param changed_attributes: Attributes to alter in selected tickets
@@ -169,6 +206,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param visual: If true, print a . for each successful ticket that is edited
 
         :return: list of edited TDXTicket objects, with complete data in json format
+
+        :rtype: list
 
         """
         edited_tickets = list()
@@ -179,7 +218,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                 print('.', end='')
         return edited_tickets
 
-    def reassign_ticket(self, ticket_id, responsible, group=False):
+    def reassign_ticket(self, ticket_id: int, responsible: str, group=False) -> tdxlib.tdx_ticket.TDXTicket:
         """
         Reassigns a ticket  to a person or group
     
@@ -188,6 +227,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param group: If this parameter is True, assign to group instead of individual
     
         :return: Edited TDXTicket object, if the operation was successful
+
+        :rtype: tdxlib.tdx_ticket.TDXTicket
     
         """
         if group:
@@ -207,6 +248,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: Edited TDXTicket object, if the operation was successful
 
+        :rtype: tdxlib.tdx_ticket.TDXTicket
+
         """
         if not start_date:
             start_date = datetime.datetime.utcnow()
@@ -221,7 +264,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def update_ticket(self, ticket_id: int, comments: str, new_status: str = None, notify: list = None,
                       private: bool = True) -> dict:
         """
-        Sends an update to a ticket task.
+        Sends an update to a ticket feed.
 
         :param ticket_id: the ticket ID whose task to update
         :param comments: a string to provide as a comment to the update.
@@ -229,7 +272,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param notify: a list of strings containing email addresses to notify regarding this ticket. Default: None
         :param private: boolean indicating whether or not the update to the task should be private. Default: True
 
-        :return: dict of ticket update information
+        :return: python dict containing creatd ticket update information
+
+        :rtype: dict
 
         """
         if not notify:
@@ -254,7 +299,10 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param ticket_id: The ticket ID on which the ticket task exists.
 
-        :return: list of feed entries from the task, if any exist
+        :return: list of feed entries from the task as python dicts, if any exist
+
+        :rtype: list
+
         """
         url_string = f'{ticket_id}/feed'
         return self.make_call(url_string, 'get')
@@ -263,7 +311,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets a list of all ticket forms from TDX.
 
-        :return: list of available ticket forms as dicts
+        :return: list of ticket forms as python dicts
+
+        :rtype: list
 
         """
         url_string = "forms"
@@ -275,7 +325,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: Name or ID of form to search for
 
-        :return: form data in dict
+        :return: form data in python dict
+
+        :rtype: dict
 
         """
         if not self.cache['ticket_form']:
@@ -292,7 +344,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets a list of all ticket types from TDX.
 
-        :return: list of type data
+        :return: list of type data in python dicts
+
+        :rtype: list
 
         """
         url_string = "types"
@@ -304,7 +358,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: Name or ID of attribute to search for
 
-        :return: type data in dict
+        :return: type data in python dict
+
+        :rtype: dict
 
         """
         if not self.cache['ticket_type']:
@@ -322,7 +378,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         Gets a list of all ticket statuses from TDX
 
-        :return: list of status data in dicts
+        :return: list of status data in python dicts
+
+        :rtype: list
 
         """
         url_string = "statuses"
@@ -334,7 +392,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: ID of ticket status to search for
 
-        :return: status data in dict
+        :return: status data in python dict
+
+        :rtype: dict
 
         """
         if key not in self.cache['ticket_status']:
@@ -348,13 +408,14 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: Name of ticket status to search for
 
-        :return: status data in dict
+        :return: status data in python dict
+
+        :rtype: dict
 
         """
         if key in self.cache['ticket_status']:
             return self.cache['ticket_status'][key]
         else:
-            # Search statuses using API search functionality
             post_body = {
                 'SearchText': key
             }
@@ -373,7 +434,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets a list of all ticket priorities from TDX.
 
-        :return: list of priorities in dict
+        :return: list of priorities in python dict
+
+        :rtype: list
 
         """
         url_string = "priorities"
@@ -385,7 +448,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: ID or Name of priority to search for
 
-        :return: priority data in dict
+        :return: priority data in python dict
+
+        :rtype: dict
 
         """
         if not self.cache['ticket_priority']:
@@ -401,7 +466,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets all ticket urgencies from the tickets app.
 
-        :return: list of priorities in dict
+        :return: list of priorities in python dict
+
+        :rtype: dict
 
         """
         url_string = "urgencies"
@@ -413,7 +480,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: ID or Name of urgency to search for
 
-        :return: urgency data in dict
+        :return: urgency data in python dict
+
+        :rtype: dict
 
         """
         if not self.cache['ticket_urgency']:
@@ -429,7 +498,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets a list of all ticket impacts from TDX.
 
-        :return: list of impacts in dict
+        :return: list of impacts in as python dicts
+
+        :rtype: dict
 
         """
         url_string = "impacts"
@@ -441,7 +512,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: Name or ID of impact to search for
 
-        :return: impact data in dict
+        :return: impact data in python dict
+
+        :rtype: dict
 
         """
         if not self.cache['ticket_impact']:
@@ -457,7 +530,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets a list of all ticket sources from TDX
 
-        :return: list of sources in dict
+        :return: list of sources in python dict
+
+        :rtype: list
 
         """
         url_string = "sources"
@@ -471,7 +546,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         Supports search for exact name ('1. Phone'), or part of name ('Phone').
 
-        :return: source data in dict
+        :return: source data in python dict
+
+        :rtype: dict
 
         """
         if not self.cache['ticket_source']:
@@ -499,6 +576,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return:                The new ticket status as a dict
 
+        :rtype: dict
+
         """
         url_string = "statuses"
         status = dict({'Name': name, 'Order': order, 'IsActive': active})
@@ -518,6 +597,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param changed_attributes: A dict containing values to substitute for the status's current values.
 
         :return: The edited status information
+
+        :rtype: dict
 
         """
         status = self.search_ticket_status(name)
@@ -561,12 +642,15 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_ticket_task_feed(self, ticket_id: int, task_id: int) -> list:
         """
-        Gets the feed entries from a ticket task.
+        Gets all the feed entries from a ticket task.
 
         :param ticket_id: The ticket ID on which the ticket task exists.
         :param task_id: The ticket task ID.
 
         :return: list of feed entries from the task, if any exist
+
+        :rtype: list
+
         """
         url_string = f'{ticket_id}/tasks/{task_id}/feed'
         return self.make_call(url_string, 'get')
@@ -614,6 +698,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: The modified ticket task as a dict, if the operation was successful
 
+        :rtype: dict
+
         """
         self.validate_ticket_task(changed_attributes)
         if isinstance(task, str) or isinstance(task, int):
@@ -635,6 +721,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param ticket_id: The ticket Id on which the ticket task exists.
         :param task_id: The task ID of the task you want to delete.
 
+        :return: none
+
         """
         url_string = f'{ticket_id}/tasks/{task_id}'
         self.make_call(url_string, 'delete')
@@ -649,6 +737,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param group: If this parameter is True, assign to group instead of individual
 
         :return: The modified ticket task as a dict, if the operation was successful
+
+        :rtype: dict
 
         """
         if group:
@@ -669,6 +759,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param end_date: datetime.datetime object to use as the starting date for a task, defaults to now + 1 day.
 
         :return: The modified ticket task as a dict, if the operation was successful
+
+        :rtype: dict
 
         """
         if not start_date:
@@ -695,6 +787,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: dict of update info
 
+        :rtype: dict
+
         """
         if not notify:
             notify = []
@@ -717,6 +811,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param name: the name of the classification to search for
 
         :return: dict of ticket classification info
+
+        :rtype: dict
 
         """
         if name in TDXTicketIntegration.ticket_classifications:
@@ -872,6 +968,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param silent: Boolean -- if False, notifications are sent to requestor and responsible, default: True
 
         :returns: Created ticket, if successful
+
+        :rtype: tdxlib.tdx_ticket.TDXTicket
 
         """
         if silent:

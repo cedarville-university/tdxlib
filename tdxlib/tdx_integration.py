@@ -167,7 +167,7 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param retries: the number of times to retry a failed request (defaults to 3)
 
-        :return: the API response
+        :return: the API's response as a python dict
 
         """
         self.rate_limit()
@@ -212,7 +212,7 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the POST
 
-        :return: the API response
+        :return: the API's response as a python dict
 
         """
         self.rate_limit()
@@ -252,7 +252,7 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the PUT
 
-        :return: the API response
+        :return: the API's response as a python dict
 
         """
         self.rate_limit()
@@ -319,7 +319,7 @@ class TDXIntegration:
 
     def make_patch(self, request_url, body: list):
         """
-        Makes an HTTP PATH request to the TDX Api.
+        Makes an HTTP PATH request to the TDX API.
 
         The TeamDyanmix API supports limited PATCH functionality. Since TDX data is highly structured, items are
         referenced explicitly by their TDX ID, and not by their order in the object. Likewise, since the fields
@@ -328,7 +328,7 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: a list of PATCH operations as dictionaries, each including the keys "op", "path", and "value"
 
-        :return: the API's response
+        :return: the API's response, as a python dict
 
         """
         self.rate_limit()
@@ -392,59 +392,59 @@ class TDXIntegration:
         url_string = f'/{obj_type}/{key}'
         return self.make_get(url_string)
 
-    def get_location_by_id(self, location_id):
+    def get_location_by_id(self, location_id: int) -> dict:
         """
-        Gets a group by the group ID.
+        Gets a location by the location ID.
 
-        :param location_id: ID number of group to get members of
+        :param location_id: ID number of location to get information about
 
-        :return: list of person data
+        :return: dict of location data
         """
         return self.get_tdx_item_by_id('locations', location_id)
 
-    def get_account_by_id(self, account_id):
+    def get_account_by_id(self, account_id: int) -> dict:
         """
         Gets an account by the account ID.
 
-        :param account_id: ID number of group to get members of
+        :param account_id: ID number of account to get information about
 
-        :return: list of person data
+        :return: dict of account data
         """
         return self.get_tdx_item_by_id('accounts', account_id)
 
-    def get_group_by_id(self, group_id):
+    def get_group_by_id(self, group_id: int) -> dict:
         """
         Gets a group by the group ID.
 
-        :param group_id: ID number of group to get members of
+        :param group_id: ID number of group to get information about
 
-        :return: list of person data
+        :return: dict of group data, including members
         """
         return self.get_tdx_item_by_id('groups', group_id)
 
-    def get_person_by_uid(self, uid):
+    def get_person_by_uid(self, uid: str) -> dict:
         """
-        Gets a a person by UID.
+        Gets a a person by their UID.
 
-        :param uid: uid string of a person
+        :param uid: UID string corresponding to a person
 
         :return: dict of person data
         """
         return self.get_tdx_item_by_id('people', uid)
 
-    def get_group_members_by_id(self, group_id):
+    def get_group_members_by_id(self, group_id: int) -> list:
         """
         Gets a list of group members by the group ID.
 
         :param group_id: ID number of group to get members of
 
-        :return: list of person data
+        :return: list of person data for people in the group
         """
         return self.get_tdx_item_by_id('groups', str(group_id) + '/members')
     
-    def get_person_by_name_email(self, key):
+    def get_person_by_name_email(self, key: str) -> dict:
         """
-        Gets the top match of people with search text, such as:
+        Gets the top match of people with based on a simple text search, such as:
         - Name
         - Email
         - Username
@@ -457,12 +457,12 @@ class TDXIntegration:
         """
         return self.search_people(key, 1)[0]
 
-    def search_people(self, key, max_results):
+    def search_people(self, key: str, max_results: int = 20) -> list:
         """
-        Gets a list of people, based on a search text, which may match Name, Email, Username or ID
+        Gets a list of people, based on a simple text search, which may match Name, Email, Username or ID
 
         :param key: string with search text of person to search with
-        :param max_results: maximum number of matches to return
+        :param max_results: maximum number of matches to return (Default: 20)
 
         :return: list of dicts of person data
         """
@@ -476,22 +476,22 @@ class TDXIntegration:
             self.cache['people'][key] = people
             return people
 
-    def get_all_accounts(self):
+    def get_all_accounts(self) -> list:
         """
-        Gets all accounts
+        Gets a list of all accounts in TDX
 
-        :return: list of Account data in json format
+        :return: list of dicts containing account data
 
         """
         url_string = "/accounts"
         return self.make_get(url_string)
 
-    def get_account_by_name(self, key, additional_params=None):
+    def get_account_by_name(self, key: str, additional_params: dict = None) -> dict:
         """
-        Gets an account with name key.
+        Gets an account with by searching on its name.
         
-        :param key: name of an account to search for
-        :param additional_params: other search items, as a dict, as described in TDX Api Docs
+        :param key: a partial or full name of an account to search for
+        :param additional_params: other search items, as a python dict, as described in TDX Api Docs
         
         :return: dict of account data (not complete, but including the ID)
 
@@ -511,22 +511,22 @@ class TDXIntegration:
                     return account
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No account found for ' + key)
 
-    def get_all_groups(self):
+    def get_all_groups(self) -> list:
         """
-        Gets a list of groups
+        Gets a list of all groups in TDX
 
-        :return: list of group data as dicts
+        :return: list of dicts containing group data
 
         """
         url_string = "/groups/search"
         post_body = {'search': {'NameLike': "", 'IsActive': 'True'}}
         return self.make_post(url_string, post_body)
 
-    def get_group_by_name(self, key, additional_params=None):
+    def get_group_by_name(self, key: str, additional_params=None) -> dict:
         """
-        Gets a group with name key.
+        Gets a group by searching on its name.
 
-        :param key: name of Group to search for
+        :param key: a partial or full name of Group to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
 
         :return: a dict of group data (not complete, but including the ID)
@@ -552,9 +552,9 @@ class TDXIntegration:
                         return group
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
 
-    def get_group_members_by_name(self, key):
+    def get_group_members_by_name(self, key: str) -> list:
         """
-        Gets all the members of a group as person objects.
+        Gets all the members of a group as person objects by searching on the group's name.
 
         :param key: a partial or full name of a group
 
@@ -564,16 +564,16 @@ class TDXIntegration:
         group = self.get_group_by_name(key)
         return self.get_group_members_by_id(group['ID'])
 
-    def get_all_custom_attributes(self, object_type, associated_type=0, app_id=0):
+    def get_all_custom_attributes(self, object_type: int, associated_type: int = 0, app_id: int = 0) -> list:
         """
-        Gets all custom attributes for the component type. 
+        Gets all custom attributes for the component type in TDX.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
 
         :param associated_type: the associated type of object to get attributes for, default: 0
         :param app_id: the application number to get attributes from, default: 0
         :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
 
-        :return: dictionary of custom attributes with options
+        :return: list of dicts containing custom attributes, including choices and choice ID's
 
         """
         url_string = '/attributes/custom?componentId=' + str(object_type) + '&associatedTypeId=' + \
@@ -582,17 +582,17 @@ class TDXIntegration:
 
     # TODO: look into figuring out what type the attribute is based on information from API,
     #  for use in get_custom_attribute_value_by_name
-    def get_custom_attribute_by_name(self, key: str, object_type: int):
+    def get_custom_attribute_by_name(self, key: str, object_type: int) -> dict:
         """
         Gets a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
         NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's) using
         get_custom_attribute_value_by_name, and then if it returns false, directly assign the desired value to the CA.
         Because of this, date-type and other format-specific attributes need to be in a TDX-acceptible format, this
         means that a field designated to hold person objects needs to be set to a UID.
 
-        :param key: the name of the custom attribute to search for
-        :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
+        :param key: a partial or full name of the custom attribute to search for
+        :param object_type: the object type ID to get attributes for
 
         :return: the attribute as a dict, with all choice items included
 
@@ -611,19 +611,18 @@ class TDXIntegration:
             "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))
 
     @staticmethod
-    def get_custom_attribute_value_by_name(attribute, key):
+    def get_custom_attribute_value_by_name(attribute, key) -> dict:
         """
-        Gets the choice item from a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
+        Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
         NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this
         method returns false, directly assign the desired value to the CA. Because of this, date-type and other format-
         specific attributes need to be in a TDX-acceptible format, this means that a field designated to hold person
         objects needs to be set to a UID.
 
-        :param key: the name of the choice to look for
-        :param attribute: the attribute (as retrieved from get_attribute_by_name())
+        :param key: a partial or full name name of the choice to look for
+        :param attribute: a dict of custom attribute data (as retrieved from get_attribute_by_name())
 
-        :return: the the choice object from this attribute whose name matches the key, or False if none matches.
+        :return: the the choice object from this attribute whose name matches 'key', or False if none matches.
 
         """
         for i in attribute['Choices']:
@@ -631,15 +630,21 @@ class TDXIntegration:
                 return i
         return False
 
-    def get_all_locations(self):
+    def get_all_locations(self) -> list:
+        """
+        Gets all locations in TDX.
+
+        :return: a list of dicts containing location information
+
+        """
         url_string = '/locations'
         return self.make_get(url_string)
 
-    def get_location_by_name(self, key, additional_params=None):
+    def get_location_by_name(self, key: str, additional_params: dict = None) -> dict:
         """
-        Gets a location with name key.
+        Gets a location by searching its name.
 
-        :param key: name of location to search for
+        :param key: a partial or full name of the location to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
 
         :return: a dict of location data
@@ -666,12 +671,12 @@ class TDXIntegration:
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
     @staticmethod
-    def get_room_by_name(location, room):
+    def get_room_by_name(location: dict, room: str) -> dict:
         """
-        Gets a room by its name.
+        Gets a room by searching its name in location information, maybe from get_location_by_name().
 
-        :param location: dict of location info from get_location_by_name()
-        :param room: name of a room to search for (must be exact)
+        :param location: dict of location info
+        :param room: partial or full name of a room to search for
 
         :return: a dict with all the the information regarding the room. Use this to retrieve the ID attribute.
 
@@ -684,10 +689,10 @@ class TDXIntegration:
 
     # #### CREATING TDX OBJECTS #### #
 
-    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict = None,
+    def create_account(self, name: str, manager: str, additional_info: dict = None,
                        custom_attributes: dict = None) -> dict:
         """
-        Creates an account in TeamDynamix
+        Creates an account in TeamDynamix.
 
         :param name: Name of account to create.
         :param manager: email address of the TDX Person who will be the manager of the group
@@ -702,7 +707,6 @@ class TDXIntegration:
         editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
                                        'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
         url_string = '/accounts'
-        # Set up data for account
         data = dict()
         data['Name'] = name
         data['ManagerUID'] = self.get_person_by_name_email(manager)['UID']
