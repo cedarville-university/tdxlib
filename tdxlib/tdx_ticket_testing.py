@@ -206,7 +206,7 @@ class TdxTicketTesting(unittest.TestCase):
             reassign = self.testing_vars['person2']
         else:
             reassign = self.testing_vars['person1']
-        changed_ticket = self.tix.reassign_ticket(ticket_id, reassign['FullName'])
+        changed_ticket = self.tix.reassign_ticket(ticket_id, reassign['PrimaryEmail'])
         self.assertEqual(changed_ticket.get_attribute('ResponsibleUid'), reassign['UID'])
 
     def test_reschedule_ticket(self):
@@ -214,7 +214,7 @@ class TdxTicketTesting(unittest.TestCase):
         start = dt.utcnow()
         end = start + td(days=5)
         changed_ticket = self.tix.reschedule_ticket(ticket_id, start, end)
-        self.assertEqual(changed_ticket.get_attribute('StartDate'), tdx_utils.export_tdx_date(start))
+        self.assertEqual(changed_ticket.get_attribute('StartDate').day, start.day)
 
     def test_reschedule_ticket_task(self):
         ticket_id = self.testing_vars['ticket2']['ID']

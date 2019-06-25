@@ -193,7 +193,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if group:
             reassign = {'GroupID': self.get_group_by_name(responsible)['ID']}
         else:
-            reassign = {'ResponsibleUid': self.get_person_by_name_email(responsible)}
+            reassign = {'ResponsibleUid': self.get_person_by_name_email(responsible)['UID']}
         return self.edit_ticket(ticket_id, reassign)
 
     def reschedule_ticket(self, ticket_id, start_date: datetime.datetime = False,
@@ -213,8 +213,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not end_date:
             end_date = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         new_dates = {
-            'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date),
-            'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date)
+            'StartDate': start_date,
+            'EndDate': end_date
         }
         return self.edit_ticket(ticket_id, new_dates)
 
@@ -793,7 +793,6 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                     attrib = self.get_ticket_custom_attribute_by_name(attrib_name)
                     attrib_value = self.get_custom_attribute_value_by_name(attrib, value)
                     # if not a set-choice attribute, we just need to set it directly.
-
                     new_attrib = dict()
                     new_attrib['ID'] = attrib['ID']
                     if not attrib_value:

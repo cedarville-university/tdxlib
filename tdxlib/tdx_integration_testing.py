@@ -5,12 +5,12 @@ from tdxlib import tdx_integration
 
 
 class TdxTesting(unittest.TestCase):
+    timestamp = dt.today().strftime("%d-%B-%Y %H:%M:%S")
 
     # Create TDXIntegration object for testing use. Called before testing methods.
     def setUp(self):
         self.tdx = tdx_integration.TDXIntegration()
         right_now = dt.today()
-        self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
         with open('testing_vars.json', 'r') as f:
             self.testing_vars = json.load(f)
 
@@ -143,21 +143,23 @@ class TdxTesting(unittest.TestCase):
     def test_create_account(self):
         if not self.tdx.sandbox:
             return
-        name = 'Testing Account ' + self.timestamp
+        name = 'Testing Account ' + TdxTesting.timestamp
         additional_info = {'Address1': '123 Main Street'}
         ca = self.testing_vars['account_ca']
         custom_attributes = {ca['Name']:ca['choice']['Name']}
         account = self.tdx.create_account(name, True, self.tdx.username, additional_info,
                                           custom_attributes)
         self.assertEqual(account['Address1'], additional_info['Address1'])
-        self.assertEqual(account['attributes'][0]['ID'], ca['choice']['ID'])
+        self.assertEqual(account['Attributes'][0]['Value'], str(ca['choice']['ID']))
         self.assertEqual(account['Name'], name)
 
     def test_edit_account(self):
         if not self.tdx.sandbox:
             return
-        name = 'Testing Account' + self.timestamp
-        changed_attributes = {'Name': 'Edited Account' + self.timestamp}
+
+        # This will fail if test_create_account fails
+        name = 'Testing Account ' + TdxTesting.timestamp
+        changed_attributes = {'Name': 'Edited Account' + TdxTesting.timestamp}
         edited_account = self.tdx.edit_account(name, changed_attributes)
         self.assertEqual(edited_account['Name'], changed_attributes['Name'])
 

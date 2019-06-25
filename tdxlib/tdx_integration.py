@@ -266,7 +266,7 @@ class TDXIntegration:
                     "Content-Type": "application/json; charset=utf-8",
                 },
                 data=json.dumps(body))
-            if response.status_code not in [200, 202, 204]:
+            if response.status_code not in [200, 201, 202, 204]:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
@@ -291,7 +291,7 @@ class TDXIntegration:
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
 
-        :return: the API's response
+        :return: None
 
         """
         self.rate_limit()
@@ -308,20 +308,14 @@ class TDXIntegration:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
-            val = response.json()
             self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
-            return val
         except requests.exceptions.RequestException:
             print('HTTP DELETE Request failed')
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('DELETE failed: to ' + delete_url + "\nReturned: " + str(e))
-        except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + delete_url + ':\n'
-            if response:
-                message += response.text
-            print(message)
+
 
     def make_patch(self, request_url, body: list):
         """
@@ -717,27 +711,37 @@ class TDXIntegration:
                 if attrib in editable_account_attributes:
                     data[attrib] = additional_info[attrib]
         if custom_attributes:
-                data['Attributes'] = {}
+                data['Attributes'] = list()
                 for attrib, value in custom_attributes.items():
                     tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
                     tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
                     if not tdx_attrib_value:
-                        tdx_attrib_value = value
-                    data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
-        post_body = dict({'account': data})
-        return self.make_post(url_string, post_body)
+                        tdx_attrib_value_final = value
+                    else:
+                        tdx_attrib_value_final = tdx_attrib_value['ID']
+                    data['Attributes'].append({'ID': tdx_attrib['ID'], 'Value': tdx_attrib_value_final})
+        return self.make_post(url_string, data)
 
+    # TODO: make this and other 'Edit' operations have an option to strip out non-editable fields
     def edit_account(self, name: str, changed_attributes: dict) -> dict:
-        editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
+        """
+        Edits an account in TeamDynamix
+
+        :param name: Name of account to edit.
+        :param changed_attributes: dict of names of attributes and corresponding data to set on each attribute.
+
+        :return: a dict with information about the edited account
+
+        """
+        editable_account_attributes = ['Name', 'Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
                                        'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
         url_string = '/accounts'
         for k in changed_attributes.keys():
             if k not in editable_account_attributes:
-                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Account Attribute " + k + "is not editable")
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Account Attribute " + k + " is not editable")
         existing_account = self.get_account_by_name(name)
         existing_account.update(changed_attributes)
-        put_body = {'account': existing_account}
-        return self.make_put(url_string + "/" + existing_account['ID'], put_body)
+        return self.make_put(url_string + "/" + str(existing_account['ID']), existing_account)
 
     # #### #### GROUPS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Group
@@ -797,3 +801,5 @@ class TDXIntegration:
     # TODO: delete_custom_attribute_choice()
 
     # TODO: edit_custom_attribute_choice():
+
+    # TODO: generate_custom_attributes()
