@@ -613,6 +613,7 @@ class TDXIntegration:
         """
         Gets a custom attribute for the component type.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
+
         NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's) using
         get_custom_attribute_value_by_name, and then if it returns false, directly assign the desired value to the CA.
         Because of this, date-type and other format-specific attributes need to be in a TDX-acceptible format, this
@@ -643,6 +644,7 @@ class TDXIntegration:
     def get_custom_attribute_value_by_name(attribute, key) -> dict:
         """
         Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
+
         NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this
         method returns false, directly assign the desired value to the CA. Because of this, date-type and other format-
         specific attributes need to be in a TDX-acceptible format, this means that a field designated to hold person
