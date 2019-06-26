@@ -16,7 +16,9 @@ For a lighter-weight feel, try
 [Sublime Text](https://www.sublimetext.com/3), but for the real lightweight experience, use 
 [vi](https://en.wikipedia.org/wiki/Vi).
 
-### Cloning the repo (Collaborators Only)
+### Cloning the repo 
+
+#### Collaborators
 
 First, go and get the latest tdxlib code.
 
@@ -28,6 +30,10 @@ Checkout the develop branch (which has latest tested code), and create a local b
     git checkout develop
     git branch my-new-feature
     git checkout my-new-feature
+    
+#### Forking
+
+Please follow the [Github Guide on forking](https://guides.github.com/activities/forking/) a repo to contribute code. 
 
 ### Setting up a virtual environment
 
