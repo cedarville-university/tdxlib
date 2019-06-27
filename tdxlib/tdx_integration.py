@@ -296,7 +296,6 @@ class TDXIntegration:
         """
         self.rate_limit()
         delete_url = self.api_url + request_url
-        response = None
         try:
             response = requests.delete(
                 url=delete_url,
@@ -376,7 +375,7 @@ class TDXIntegration:
 
     # #### GETTING TDX OBJECTS #### #
 
-    def get_tdx_item_by_id(self, obj_type, key):
+    def get_tdx_item_by_id(self, obj_type: str, key):
         """
         A generic function to get something from the TDX API using its ID/UID.
 
@@ -388,9 +387,8 @@ class TDXIntegration:
 
         :return: list of person data
 
-        :rtype: list
         """
-        url_string = f'/{obj_type}/{key}'
+        url_string = f'/{obj_type}/{str(key)}'
         return self.make_get(url_string)
 
     def get_location_by_id(self, location_id: int) -> dict:
@@ -640,7 +638,7 @@ class TDXIntegration:
             "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))
 
     @staticmethod
-    def get_custom_attribute_value_by_name(attribute, key) -> dict:
+    def get_custom_attribute_value_by_name(attribute, key):
         """
         Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
         NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this

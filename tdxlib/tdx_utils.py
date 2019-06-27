@@ -1,8 +1,6 @@
 import dateutil.parser
 import datetime
 import json
-import xlrd
-
 
 # Prints out dict as JSON with indents
 def print_nice(myjson):
@@ -33,12 +31,6 @@ def print_names(myjson):
     for i in this_json:
         if 'Name' in i:
             print(i['Name'])
-
-
-# Imports a string from an excel date string, returns a python datetime object
-def import_excel_date(date_string: str) -> datetime:
-    return xlrd.xldate_as_datetime(date_string, 0)
-
 
 # Imports a string from a TDX Datetime attribute, returns a python datetime object
 def import_tdx_date(date_string: str) -> datetime:
