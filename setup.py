@@ -11,6 +11,6 @@ setup(
     license='GNU General Public License v3.0',
     long_description='This module provides options for programmatically affecting TDX objects, including tickets, '
                      'people, accounts, assets, and groups.',
-    install_requires=['python-dateutil','requests', 'xlrd'],
+    install_requires=['python-dateutil','requests'],
     python_requires='>=3.6'
 )
