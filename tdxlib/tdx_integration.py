@@ -611,10 +611,11 @@ class TDXIntegration:
         """
         Gets a custom attribute for the component type.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
-        NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's) using
+
+        *NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's) using
         get_custom_attribute_value_by_name, and then if it returns false, directly assign the desired value to the CA.
         Because of this, date-type and other format-specific attributes need to be in a TDX-acceptible format, this
-        means that a field designated to hold person objects needs to be set to a UID.
+        means that a field designated to hold person objects needs to be set to a UID.*
 
         :param key: a partial or full name of the custom attribute to search for
         :param object_type: the object type ID to get attributes for
@@ -641,10 +642,11 @@ class TDXIntegration:
     def get_custom_attribute_value_by_name(attribute, key):
         """
         Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
-        NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this
+
+        *NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this
         method returns false, directly assign the desired value to the CA. Because of this, date-type and other format-
         specific attributes need to be in a TDX-acceptible format, this means that a field designated to hold person
-        objects needs to be set to a UID.
+        objects needs to be set to a UID.*
 
         :param key: a partial or full name name of the choice to look for
         :param attribute: a dict of custom attribute data (as retrieved from get_attribute_by_name())

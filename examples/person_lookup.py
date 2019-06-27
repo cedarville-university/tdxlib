@@ -8,5 +8,5 @@ person = input("Please enter your id number: ")
 
 result = tix.get_person_by_name_email(person)
 
-for a in result:
-    print(a, result[a], sep='\t')
+for k,v in result.items:
+    print(k + ':', v, sep='\t')
