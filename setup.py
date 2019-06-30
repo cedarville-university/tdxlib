@@ -1,10 +1,10 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='TDXLib',
     description='a python library for interacting with the TeamDynamix Web API',
     version='0.2.0',
-    author='Nat Biggs & Stephen Gaines',
+    author='Nat Biggs, Stephen Gaines, Josiah Lansford',
     author_email='tdxlib@cedarville.edu',
     packages=['tdxlib'],
     url='https://github.com/cedarville-university/tdxlib',
