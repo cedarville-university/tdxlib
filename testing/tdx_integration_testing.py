@@ -2,6 +2,7 @@ import unittest
 import json
 from datetime import datetime as dt
 from tdxlib import tdx_integration
+import os
 
 
 class TdxTesting(unittest.TestCase):
@@ -9,10 +10,15 @@ class TdxTesting(unittest.TestCase):
 
     # Create TDXIntegration object for testing use. Called before testing methods.
     def setUp(self):
+        testing_vars_file = 'testing_vars.json'
         self.tdx = tdx_integration.TDXIntegration()
         right_now = dt.today()
-        with open('testing_vars.json', 'r') as f:
-            self.testing_vars = json.load(f)
+        if os.path.isfile(testing_vars_file):
+            with open(testing_vars_file, 'r') as f:
+                self.testing_vars = json.load(f)
+        else:
+            print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
+                  'A sample file is available in testing/sample_testing_vars. Any *.json files are ignored by git.')
 
     def test_authentication(self):
         self.assertGreater(len(self.tdx.token), 200)
