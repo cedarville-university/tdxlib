@@ -5,17 +5,23 @@ from datetime import datetime as dt
 from datetime import timedelta as td
 from tdxlib import tdx_ticket_integration
 from tdxlib import tdx_utils
+import os
 
 
 class TdxTicketTesting(unittest.TestCase):
 
     # Create TDXIntegration object for testing use. Called before testing methods.
     def setUp(self):
+        testing_vars_file = 'testing_vars.json'
         self.tix = tdx_ticket_integration.TDXTicketIntegration()
         right_now = dt.today()
         self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
-        with open('testing_vars.json', 'r') as f:
-            self.testing_vars = json.load(f)
+        if os.path.isfile(testing_vars_file):
+            with open(testing_vars_file, 'r') as f:
+                self.testing_vars = json.load(f)
+        else:
+            print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
+                  'A sample file is available in testing/sample_testing_vars. *.json files are ignored by git.')
     
     def test_authn(self):
         self.assertGreater(len(self.tix.token), 200)
