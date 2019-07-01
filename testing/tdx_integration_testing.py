@@ -153,8 +153,9 @@ class TdxTesting(unittest.TestCase):
         additional_info = {'Address1': '123 Main Street'}
         ca = self.testing_vars['account_ca']
         custom_attributes = {ca['Name']:ca['choice']['Name']}
-        account = self.tdx.create_account(name, True, self.tdx.username, additional_info,
+        account = self.tdx.create_account(name, self.tdx.username, additional_info,
                                           custom_attributes)
+        self.assertTrue(account)
         self.assertEqual(account['Address1'], additional_info['Address1'])
         self.assertEqual(account['Attributes'][0]['Value'], str(ca['choice']['ID']))
         self.assertEqual(account['Name'], name)
@@ -162,7 +163,6 @@ class TdxTesting(unittest.TestCase):
     def test_edit_account(self):
         if not self.tdx.sandbox:
             return
-
         # This will fail if test_create_account fails
         name = 'Testing Account ' + TdxTesting.timestamp
         changed_attributes = {'Name': 'Edited Account' + TdxTesting.timestamp}

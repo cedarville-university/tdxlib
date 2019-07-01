@@ -273,18 +273,18 @@ class TdxTicketTesting(unittest.TestCase):
             return
         ticket_id = self.testing_vars['ticket1']['ID']
         update = self.tix.update_ticket(ticket_id, comments=str(self.timestamp), new_status='Open')
-        self.assertEqual(update['Body'], self.timestamp)
+        self.assertTrue(self.timestamp in update['Body'])
 
     def test_get_ticket_task_feed(self):
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
         feed = self.tix.get_ticket_task_feed(ticket_id, task_id)
-        self.assertGreater(len(feed), 1)
+        self.assertGreater(len(feed), 0)
 
     def test_get_ticket_feed(self):
         ticket_id = self.testing_vars['ticket2']['ID']
         feed = self.tix.get_ticket_feed(ticket_id)
-        self.assertGreater(len(feed), 1)
+        self.assertGreater(len(feed), 0)
 
 
 if __name__ == "__main__":
