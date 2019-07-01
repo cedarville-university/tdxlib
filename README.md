@@ -155,16 +155,17 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
     This base class that contains the methods necessary to authenticate to Teamdynamix. This class also contains methods to interact with TeamDyanamix objects that are universal across various Apps (Locations, People, Accounts, etc.)
 
-    Currently Implemented:
+    Currently Implemented & Tested:
     * Authentication (only simple auth, no loginadmin or SSO)
     * Locations & Rooms (read-only)
     * People & Groups (read-only) (no group members)
     * Accounts (read-only)
     * Custom attributes for Tickets & Assets (read-only)
     * Import & Export of TDX-Style DateTime objects into python datetime objects
+    * Read-write support for Accounts
 
     Future Plans:
-    * Read-write support for Locations, Rooms, People, Groups, Accounts, and Custom Attributes
+    * Read-write support for Locations, Rooms, People, Groups, and Custom Attributes
     * Support for custom attributes in Projects, CIs
     * Support for manipulating attachments
     * Support for inspecting/manipulating group members
@@ -179,7 +180,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
     The class (inherited from TDXIntegration) that allows interactions with Ticket objects.
 
-    Currently Implemented:
+    Currently Implemented & Tested:
     * Ticket Priorities
     * Ticket Statuses (including creation of custom statuses) (WIP)
     * Ticket Types
@@ -192,12 +193,21 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         * Creation (including templated batch-creation from Google Sheets)
         * Editing (including batch-editing of multiple )
         * Manipulating
+            * Rescheduling
+            * Reassigning
         * Searching (by any attribute)
+        * Updating
+        * Getting Feed Items
+    * Ticket Tasks
+        * Creating
+        * Editing
+        * Deleting
+        * Updating
+        * Getting Feed Items
 
     Future Plans:
-    * Support for Ticket Tasks
-    * More documentation on how to get started with TDXTicketIntegration library
-
+    * Tickets in combination with Assets
+    
     Unlikely to be supported:
     * Blackout Windows
     * Ticket Searches/Reports
@@ -206,5 +216,11 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
     The class (inherited from TDXIntegration) that allows interactions with Asset objects.
 
-    Currently Implemented:
+    Currently Implemented & Tested:
     * (Not much)
+    
+    In Process:
+    * Creating Assets
+    * Editing Assets
+    * Copying Assets attributes from one to another
+    * Searching Assets
