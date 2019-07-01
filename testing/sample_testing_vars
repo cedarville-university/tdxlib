@@ -1,0 +1,111 @@
+{
+  "ticket1": {
+    "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer"
+    "ID":
+  },
+  "ticket2": {
+    "_comment": "A ticket with at least 1 ticket task, and at least 1 feed entry. The ID should be an integer"
+    "ID": 
+    "task": {
+      "_comment": "A ticket task with at least 1 feed entry. The ID should be an integer"
+      "ID": 
+    }
+  },
+  "ticket3": {
+    "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer"
+    "ID": 
+  },
+  "ticket_type": {
+    "_comment": "A valid active ticket type. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "ticket_status": {
+    "_comment": "A valid active ticket type. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "ticket_priority": {
+    "_comment": "A valid active ticket priority. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "ticket_classification": {
+    "_comment": "A valid active ticket classification. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "ticket_urgency": {
+    "_comment": "A valid active ticket urgency. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "ticket_impact": {
+    "_comment": "A valid active ticket impact. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "ticket_source": {
+    "_comment": "A valid active ticket source. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "ID": ,
+    "Name": ""
+  },
+  "location": {
+    "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
+  },
+  "room": {
+    "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location"
+    "ID": ,
+    "Name": "
+    "PartialName": ""
+  },
+  "account": {
+    "_comment": "A valid active account. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Accounts"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
+  },
+  "group": {
+    "_comment": "A valid active group. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Groups"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
+  },
+  "person1": {
+    "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings."
+    "UID": "",
+    "PrimaryEmail": "",
+    "FullName": ""
+  },
+  "person2": {
+    "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings."
+    "UID": "",
+    "PrimaryEmail": "",
+    "FullName": ""
+  },
+  "ticket_ca": {
+    "_comment": "A valid active custom ticket attribute, ID should be an integer, Name should be an exact string match with TDX."
+    "ID": ,
+    "Name": "",
+    "type": "ticket",
+    "choice": {
+      "_comment": "A custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX."
+      "ID": ,
+      "Name": ""
+    }
+  },
+  "account_ca":{
+    "_comment": "A valid active custom account attribute, ID should be an integer, Name should be an exact string match with TDX."
+    "ID": ,
+    "Name": "",
+    "type": "account",
+    "choice": {
+      "_comment": ""A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX."
+      "ID": ,
+      "Name": ""
+    }
+  }
+}

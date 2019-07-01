@@ -1,3 +1,4 @@
+.DS_Store
 *.ini
 *.json
 .idea/
@@ -12,5 +13,5 @@ docs/_build
 dist/
 build/
 MANIFEST
-testing*
+testing_*
 README

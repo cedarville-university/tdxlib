@@ -18,6 +18,10 @@ CONFIGFILE = 'tdxlib.ini'
 JSONFILE = 'json-credentials.json'
 # See: https://github.com/burnash/gspread for more info
 
+# Enable to print out only MAX_LOOPS tickets and exit
+DEBUG = False
+MAX_LOOPS = 2
+
 # Authenticate to Google and open the spreadsheet
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credential = ServiceAccountCredentials.from_json_keyfile_name(JSONFILE, scope)
@@ -33,10 +37,8 @@ tdx = tdxlib.tdx_ticket_integration.TDXTicketIntegration(CONFIGFILE)
 
 # Set up global values for ticket generation
 
-# This is the ID of the form used for these tickets. 
-# If not set (or set to 0), the default form will be used.
-# WARNING: Form IDs can't currently be looked up via API. They are visible in TDAdmin
-form = 0
+# The form used for these tickets.
+form = 'My Form'
 
 # By default, this script will use a template for the name and description of the ticket.
 # These values will use the str.format_map() format to populate values from the Google
@@ -44,12 +46,21 @@ form = 0
 #   per-ticket values within the creation loop below.
 
 # This will be the title of the ticket
-# Text in {} will be replaced with data from named column in sheet
-title_text = 'Test Title Ticket for {Test1}'
+# Text in {Column1} will be replaced with data from the column labeled "Column1" in the spreadsheet.
+title_text = 'Replacing {Group} {Device} {Asset Tag}({Serial Number}) with new {New Type}'
 
 # This will be the body of the ticket
-# Text in {} will be replaced with data from named column in sheet
-body_text = 'Test Body Text for {Test1} or for {Test2}'
+# Text in {Column1} will be replaced with data from the column labeled "Column1" in the spreadsheet.
+body_text = 'Year: {Purchase Year}\n' \
+            'Type: {Group} {Device}\n' \
+            'Asset Tag: {Asset Tag}\n' \
+            'S/N: {Serial Number}\n' \
+            'Replacement Date: {Scheduled Replacement Date} \n\n' \
+            'Computer Name: {Computer Name}\n' \
+            'Division OU: {Division}\n' \
+            'Department OU: {Department}\n' \
+            'Primary Contact: {Replacement Contact}\n\n' \
+            'Comments: {Comments}'
 
 # This is the Ticket Type that will be set for these tickets (can be overridden later)
 ticket_type = "Accounts and Access"
@@ -57,8 +68,11 @@ ticket_type = "Accounts and Access"
 # This is the Account/Department that will be set for these tickets (can be overridden later)
 account = "Admissions"
 
+# This is the requester of the ticket (ask Aaron Crane why this is spelled "requestor")
+requestor = 'some_person@example.edu'
+
 # This is the Primary Responsible that will be set for these tickets (can be overridden later)
-responsible = 'some_poor_person@example.edu'
+responsible = 'some_person@example.edu'
 
 # This prefix should be on all column names that reference custom attributes
 # The prefix will be stripped off before searching for the name of the attribute
@@ -75,10 +89,22 @@ location = 'Administration Building'
 #   be unique among all rooms in the location
 room = '207'
 
+# The due date for the ticket
+due_date = '2020-08-29'
+
+# Days for ticket to be active before due date
+active_days = 5
+
+# Set to False if you want lots of emails to be sent to responsible/requester:
+silent = True
+
 # Loop through each of the lines in the spreadsheet
 created_tickets = list()
+failed_tickets = list()
+counter = 1
+
 for ticket in tickets:
-    # Override ticket-specific variables here
+    # Override ticket-specific variables here.
 
     # responsible = ticket['Responsible']
     # account = ticket['Department']
@@ -88,8 +114,25 @@ for ticket in tickets:
     # body_text = ticket['Description']
     # title_text = ticket['Title']
 
-    ticket_data = tdx.generate_ticket(title_text, ticket_type, account, responsible, ticket, body_text, prefix,
-                                               location=location, room=room, form_id=form)
-    created_ticket = tdx.create_ticket(ticket_data)
-    created_tickets.append(created_ticket)
+    try:
+        ticket_data = tdx.generate_ticket(title_text, ticket_type, account, responsible, ticket, body_text, prefix,
+                                          location=location, room=room, form=form, requestor=requestor, group=False,
+                                          due_date=due_date, active_days=active_days)
+        if DEBUG:
+            tdxlib.tdx_utils.print_nice(ticket_data.export(validate=False))
+        failed_tickets.append(ticket_data)
+        created_ticket = tdx.create_ticket(ticket_data, silent)
+        created_tickets.append(created_ticket)
+        failed_tickets.pop()
+    except Exception as e:
+        print("Ticket # " + str(counter) + " failed: " + str(e))
+    print("Successfully created tickets: " + str(len(created_tickets)) +
+          " of " + str(counter) + " out of " + str(len(tickets)))
+    counter += 1
+    if DEBUG and counter > MAX_LOOPS:
+        break
 print("Created " + str(len(created_tickets)) + " tickets.")
+if DEBUG:
+    print(str(len(failed_tickets)) + " tickets failed. Listed below:")
+    for i in failed_tickets:
+        tdxlib.tdx_utils.print_nice(i.export(validate=False))

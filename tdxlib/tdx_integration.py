@@ -3,6 +3,8 @@ import requests
 import json
 import getpass
 import tdxlib.tdx_api_exceptions
+import datetime
+import time
 
 
 class TDXIntegration:
@@ -145,50 +147,75 @@ class TDXIntegration:
         self.cache = {}
         self.clean_cache()
 
-    def make_get(self, request_url):
+    def rate_limit(self, skew_mitigation_secs=5):
+        if 'remaining' in self.cache['rate_limit']:
+            if not self.cache['rate_limit']['remaining'] > 1:
+                if 'reset_time' in self.cache['rate_limit']:
+                    reset_datetime = datetime.datetime.strptime(self.cache['rate_limit']['reset_time'],
+                                                                '%a, %d %b %Y %H:%M:%S GMT')
+                    now = datetime.datetime.utcnow()
+                    if reset_datetime > now:
+                        difference = reset_datetime - now
+                        sleep_time = difference + datetime.timedelta(0, skew_mitigation_secs)
+                        print("Rate-limited by TeamDynamix. Sleeping " + str(sleep_time.seconds) + " seconds.")
+                        time.sleep(sleep_time.seconds)
+
+    def make_get(self, request_url: str, retries: int = 3):
         """
         Makes a HTTP GET request to the TDX Api.
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
+        :param retries: the number of times to retry a failed request (defaults to 3)
 
-        :return: the API response
+        :return: the API's response as a python dict or list
 
         """
+        self.rate_limit()
         get_url = self.api_url + request_url
         response = None
-        try:
-            response = requests.get(
-                url=get_url,
-                headers={
-                    "Authorization": 'Bearer ' + self.token,
-                    "Content-Type": "application/json; charset=utf-8",
-                }
-            )
-            if response.status_code != 200:
-                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                                response.reason + "\n" + " Returned: " + response.text)
-            val = response.json()
-            return val
-        except requests.exceptions.RequestException:
-            print('HTTP Request failed')
-        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('GET failed: to ' + get_url + "\nReturned: " + str(e))
-        except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + get_url + ':'
-            if response:
-                message += response.text
-            print(message)
+        attempts = 0
+        while attempts < retries:
+            try:
+                response = requests.get(
+                    url=get_url,
+                    headers={
+                        "Authorization": 'Bearer ' + self.token,
+                        "Content-Type": "application/json; charset=utf-8",
+                    }
+                )
+                if response.status_code != 200:
+                    err_string = " Response code: " + str(response.status_code) + \
+                        " " + response.reason + "\n" + " Returned: " + response.text
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(err_string)
+                val = response.json()
+                self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+                self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+                self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
+                self.cache['rate_limit']['last_url'] = request_url
+                return val
+            except requests.exceptions.RequestException:
+                print('HTTP Request failed')
+            except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+                print('GET failed: to ' + get_url + "\nReturned: " + str(e))
+            except json.decoder.JSONDecodeError:
+                message = 'Invalid JSON received from ' + get_url + ':'
+                if response:
+                    message += response.text
+                print(message)
+            finally:
+                attempts += 1
 
-    def make_post(self, request_url, body):
+    def make_post(self, request_url: str, body: dict):
         """
         Makes a HTTP POST request to the TDX Api
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the POST
 
-        :return: the API response
+        :return: the API's response as a python dict or list
 
         """
+        self.rate_limit()
         post_url = self.api_url + request_url
         response = None
         try:
@@ -204,6 +231,9 @@ class TDXIntegration:
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
@@ -215,16 +245,17 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    def make_put(self, request_url, body):
+    def make_put(self, request_url: str, body: dict):
         """
         Makes an HTTP PUT request to the TDX API.
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: dumped JSON data to send with the PUT
 
-        :return: the API response
+        :return: the API's response as a python dict or list
 
         """
+        self.rate_limit()
         put_url = self.api_url + request_url
         response = None
         try:
@@ -235,11 +266,14 @@ class TDXIntegration:
                     "Content-Type": "application/json; charset=utf-8",
                 },
                 data=json.dumps(body))
-            if response.status_code not in [200, 202, 204]:
+            if response.status_code not in [200, 201, 202, 204]:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
@@ -251,17 +285,17 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    def make_delete(self, request_url):
+    def make_delete(self, request_url: str):
         """
         Makes an HTTP DELETE request to the TDX Api.
 
         :param request_url: the path (everything after /TDWebAPI/api/) to call
 
-        :return: the API's response
+        :return: None
 
         """
+        self.rate_limit()
         delete_url = self.api_url + request_url
-        response = None
         try:
             response = requests.delete(
                 url=delete_url,
@@ -273,21 +307,17 @@ class TDXIntegration:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
-            val = response.json()
-            return val
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
         except requests.exceptions.RequestException:
             print('HTTP DELETE Request failed')
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('DELETE failed: to ' + delete_url + "\nReturned: " + str(e))
-        except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + delete_url + ':\n'
-            if response:
-                message += response.text
-            print(message)
 
-    def make_patch(self, request_url, body: list):
+    def make_patch(self, request_url: str, body: list):
         """
-        Makes an HTTP PATH request to the TDX Api.
+        Makes an HTTP PATCH request to the TDX API.
 
         The TeamDyanmix API supports limited PATCH functionality. Since TDX data is highly structured, items are
         referenced explicitly by their TDX ID, and not by their order in the object. Likewise, since the fields
@@ -296,9 +326,10 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebAPI/api/) to call
         :param body: a list of PATCH operations as dictionaries, each including the keys "op", "path", and "value"
 
-        :return: the API's response
+        :return: the API's response, as a python dict or list
 
         """
+        self.rate_limit()
         patch_url = self.api_url + request_url
         response = None
         try:
@@ -316,6 +347,9 @@ class TDXIntegration:
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
         except requests.exceptions.RequestException:
             print('HTTP PATCH Request failed')
@@ -334,12 +368,14 @@ class TDXIntegration:
             'people': {},
             'groups': {},
             'accounts': {},
-            'custom_attributes': {}
+            'custom_attributes': {},
+            'ca_search': {},
+            'rate_limit': {}
         }
 
     # #### GETTING TDX OBJECTS #### #
 
-    def get_tdx_item_by_id(self, obj_type, key):
+    def get_tdx_item_by_id(self, obj_type: str, key):
         """
         A generic function to get something from the TDX API using its ID/UID.
 
@@ -350,63 +386,74 @@ class TDXIntegration:
         :param key: the ID number of an object to get, as a string
 
         :return: list of person data
+
         """
-        url_string = f'/{obj_type}/{key}'
+        url_string = f'/{obj_type}/{str(key)}'
         return self.make_get(url_string)
 
-    def get_location_by_id(self, location_id):
+    def get_location_by_id(self, location_id: int) -> dict:
         """
-        Gets a group by the group ID.
+        Gets a location by the location ID.
 
-        :param location_id: ID number of group to get members of
+        :param location_id: ID number of location to get information about
 
-        :return: list of person data
+        :return: dict of location data
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('locations', location_id)
 
-    def get_account_by_id(self, account_id):
+    def get_account_by_id(self, account_id: int) -> dict:
         """
         Gets an account by the account ID.
 
-        :param account_id: ID number of group to get members of
+        :param account_id: ID number of account to get information about
 
-        :return: list of person data
+        :return: dict of account data
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('accounts', account_id)
 
-    def get_group_by_id(self, group_id):
+    def get_group_by_id(self, group_id: int) -> dict:
         """
         Gets a group by the group ID.
 
-        :param group_id: ID number of group to get members of
+        :param group_id: ID number of group to get information about
 
-        :return: list of person data
+        :return: dict of group data, including members
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('groups', group_id)
 
-    def get_person_by_uid(self, uid):
+    def get_person_by_uid(self, uid: str) -> dict:
         """
-        Gets a a person by UID.
+        Gets a a person by their UID.
 
-        :param uid: uid string of a person
+        :param uid: UID string corresponding to a person
 
         :return: dict of person data
+
+        :rtype: dict
         """
         return self.get_tdx_item_by_id('people', uid)
 
-    def get_group_members_by_id(self, group_id):
+    def get_group_members_by_id(self, group_id: int) -> list:
         """
         Gets a list of group members by the group ID.
 
         :param group_id: ID number of group to get members of
 
-        :return: list of person data
+        :return: list of person data for people in the group
+
+        :rtype: list
         """
-        return self.get_tdx_item_by_id('groups', group_id + '/members')
+        return self.get_tdx_item_by_id('groups', str(group_id) + '/members')
     
-    def search_people(self, key):
+    def get_person_by_name_email(self, key: str) -> dict:
         """
-        Gets the top match of people with search text, such as:
+        Gets the top match of people with based on a simple text search, such as:
         - Name
         - Email
         - Username
@@ -416,35 +463,54 @@ class TDXIntegration:
 
         :return: dict of person data
 
+        :rtype: dict
+
+        """
+        return self.search_people(key, 1)[0]
+
+    def search_people(self, key: str, max_results: int = 20) -> list:
+        """
+        Gets a list of people, based on a simple text search, which may match Name, Email, Username or ID
+
+        :param key: string with search text of person to search with
+        :param max_results: maximum number of matches to return (Default: 20)
+
+        :return: list of dicts of person data
+
+        :rtype: list
         """
         if key in self.cache['people']:
             return self.cache['people'][key]
         else:
-            url_string = "/people/lookup?searchText=" + str(key) + "&maxResults=1"
+            url_string = "/people/lookup?searchText=" + str(key) + "&maxResults=" + str(max_results)
             people = self.make_get(url_string)
             if len(people) == 0:
                 raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No person found for " + key)
-            self.cache['people'][key] = people[0]
-            return people[0]
+            self.cache['people'][key] = people
+            return people
 
-    def get_all_accounts(self):
+    def get_all_accounts(self) -> list:
         """
-        Gets all accounts
+        Gets a list of all accounts in TDX
 
-        :return: list of Account data in json format
+        :return: list of dicts containing account data
+
+        :rtype: list
 
         """
         url_string = "/accounts"
         return self.make_get(url_string)
 
-    def get_account_by_name(self, key, additional_params=None):
+    def get_account_by_name(self, key: str, additional_params: dict = None) -> dict:
         """
-        Gets an account with name key.
+        Gets an account with by searching on its name.
         
-        :param key: name of an account to search for
-        :param additional_params: other search items, as a dict, as described in TDX Api Docs
+        :param key: a partial or full name of an account to search for
+        :param additional_params: other search items, as a python dict, as described in TDX Api Docs
         
         :return: dict of account data (not complete, but including the ID)
+
+        :rtype: dict
 
         """
         if key in self.cache['accounts']:
@@ -462,25 +528,29 @@ class TDXIntegration:
                     return account
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No account found for ' + key)
 
-    def get_all_groups(self):
+    def get_all_groups(self) -> list:
         """
-        Gets a list of groups
+        Gets a list of all groups in TDX
 
-        :return: list of group data as dicts
+        :return: list of dicts containing group data
+
+        :rtype: list
 
         """
         url_string = "/groups/search"
         post_body = {'search': {'NameLike': "", 'IsActive': 'True'}}
         return self.make_post(url_string, post_body)
 
-    def get_group_by_name(self, key, additional_params=None):
+    def get_group_by_name(self, key: str, additional_params=None) -> dict:
         """
-        Gets a group with name key.
+        Gets a group by searching on its name.
 
-        :param key: name of Group to search for
+        :param key: a partial or full name of Group to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
 
         :return: a dict of group data (not complete, but including the ID)
+
+        :rtype: dict
 
         """
         if key in self.cache['groups']:
@@ -503,83 +573,116 @@ class TDXIntegration:
                         return group
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError('No group found for ' + key)
 
-    def get_all_group_members(self, key):
+    def get_group_members_by_name(self, key: str) -> list:
         """
-        Gets all the members of a group as person objects.
+        Gets all the members of a group as person objects by searching on the group's name.
 
-        :param key: a partial name
+        :param key: a partial or full name of a group
 
-        :return: list of groups
+        :return: list of group members
+
+        :rtype: list
 
         """
+        group = self.get_group_by_name(key)
+        return self.get_group_members_by_id(group['ID'])
 
-    def get_all_custom_attributes(self, object_type, associated_type=0, app_id=0):
+    def get_all_custom_attributes(self, object_type: int, associated_type: int = 0, app_id: int = 0) -> list:
         """
-        Gets all custom attributes for the component type. 
+        Gets all custom attributes for the component type in TDX.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
 
         :param associated_type: the associated type of object to get attributes for, default: 0
         :param app_id: the application number to get attributes from, default: 0
         :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
 
-        :return: dictionary of custom attributes with options
+        :return: list of dicts containing custom attributes, including choices and choice ID's
+
+        :rtype: list
 
         """
         url_string = '/attributes/custom?componentId=' + str(object_type) + '&associatedTypeId=' + \
             str(associated_type) + '&appId=' + str(app_id)
         return self.make_get(url_string)
 
-    def get_custom_attribute_by_name(self, key, object_type):
+    # TODO: look into figuring out what type the attribute is based on information from API,
+    #  for use in get_custom_attribute_value_by_name
+    def get_custom_attribute_by_name(self, key: str, object_type: int) -> dict:
         """
         Gets a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
 
-        :param key: the name of the custom attribute to search for
-        :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
+        *NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's) using
+        get_custom_attribute_value_by_name, and then if it returns false, directly assign the desired value to the CA.
+        Because of this, date-type and other format-specific attributes need to be in a TDX-acceptible format, this
+        means that a field designated to hold person objects needs to be set to a UID.*
+
+        :param key: a partial or full name of the custom attribute to search for
+        :param object_type: the object type ID to get attributes for
 
         :return: the attribute as a dict, with all choice items included
 
+        :rtype: dict
+
         """
-        if not self.cache['custom_attributes'][str(object_type)]:
+        search_key = str(key) + "_" + str(object_type)
+        if search_key in self.cache['ca_search']:
+            return self.cache['ca_search'][search_key]
+        if str(object_type) not in self.cache['custom_attributes']:
             # There is no API for searching attributes -- the only way is to get them all.
             self.cache['custom_attributes'][str(object_type)] = self.get_all_custom_attributes(object_type)
         for item in self.cache['custom_attributes'][str(object_type)]:
-            if key.lower() in item['Name'].lower():
-                self.cache['custom_attributes'][str(object_type)][key] = item
+            if str(key).lower() in item['Name'].lower():
+                self.cache['ca_search'][key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            "No custom attribute found for " + key + ' and object type ' + str(object_type))
+            "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))
 
     @staticmethod
     def get_custom_attribute_value_by_name(attribute, key):
         """
-        Gets the choice item from a custom attribute for the component type.
-        See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
+        Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
 
-        :param key: the name of the choice to look for
-        :param attribute: the attribute (as retrieved from get_attribute_by_name())
+        *NOTE: The best way to assign CA's is to test for an existing value (for choice-based CA's), and then if this
+        method returns false, directly assign the desired value to the CA. Because of this, date-type and other format-
+        specific attributes need to be in a TDX-acceptible format, this means that a field designated to hold person
+        objects needs to be set to a UID.*
 
-        :return: the the choice object from this attribute whose name matches the key
+        :param key: a partial or full name name of the choice to look for
+        :param attribute: a dict of custom attribute data (as retrieved from get_attribute_by_name())
+
+        :return: the the choice object from this attribute whose name matches 'key', or False if none matches.
+
+        :rtype: dict
 
         """
         for i in attribute['Choices']:
             if key.lower() in i['Name'].lower():
                 return i
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            "No custom attribute value for " + key + " found in " + attribute['Name'])
+        return False
 
-    def get_all_locations(self):
+    def get_all_locations(self) -> list:
+        """
+        Gets all locations in TDX.
+
+        :return: a list of dicts containing location information
+
+        :rtype: list
+
+        """
         url_string = '/locations'
         return self.make_get(url_string)
 
-    def get_location_by_name(self, key, additional_params=None):
+    def get_location_by_name(self, key: str, additional_params: dict = None) -> dict:
         """
-        Gets a location with name key.
+        Gets a location by searching its name.
 
-        :param key: name of location to search for
+        :param key: a partial or full name of the location to search for
         :param additional_params: other search items, as a dict, as described in TDX Api Docs
 
         :return: a dict of location data
+
+        :rtype: dict
 
         """
         if key in self.cache['locations']:
@@ -591,7 +694,11 @@ class TDXIntegration:
                 search_params.update(additional_params)
             post_body = dict({'search': search_params})
             locations = self.make_post(url_string, post_body)
-            for location in locations:
+            if isinstance(locations, list):
+                list_of_locations = list(locations)
+            else:
+                list_of_locations = locations
+            for location in list_of_locations:
                 if key.lower() in location['Name'].lower():
                     full_location = self.get_location_by_id(location['ID'])
                     self.cache['locations'][key] = full_location
@@ -599,61 +706,87 @@ class TDXIntegration:
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError("No location found for " + key)
 
     @staticmethod
-    def get_room_by_name(location, room):
+    def get_room_by_name(location: dict, room: str) -> dict:
         """
-        Gets a room by its name.
+        Gets a room by searching its name in location information, maybe from get_location_by_name().
 
-        :param location: dict of location info from get_location_by_name()
-        :param room: name of a room to search for (must be exact)
+        :param location: dict of location info
+        :param room: partial or full name of a room to search for
 
         :return: a dict with all the the information regarding the room. Use this to retrieve the ID attribute.
 
+        :rtype: dict
+
         """
         for i in location['Rooms']:
-            if room.lower() in i['Name'].lower():
+            if str(room).lower() in i['Name'].lower():
                 return i
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No room found for " + room + " in location " + location['Name'])
 
     # #### CREATING TDX OBJECTS #### #
 
-    # #### #### ACCOUNTS #### #### #
-    # https://api.teamdynamix.com/TDWebApi/Home/section/Accounts
-
-    def create_account(self, name: str, is_active: bool, manager: str, additional_info: dict,
-                       custom_attributes: dict) -> dict:
+    def create_account(self, name: str, manager: str, additional_info: dict = None,
+                       custom_attributes: dict = None) -> dict:
         """
-        Creates an account in TeamDynamix
+        Creates an account in TeamDynamix.
 
         :param name: Name of account to create.
         :param manager: email address of the TDX Person who will be the manager of the group
         :param additional_info: dict of other attributes to set on account. Retrieved from:
                                 https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
         :param custom_attributes: dict of names of custom attributes and corresponding names of the choices to set
-                                  on each attribute. These names must match the names in TDX exactly.
+                                  on each attribute. These names must match the names in TDX, not IDs.
 
         :return: a dict with information about the created account
+
+        :rtype: dict
 
         """
         editable_account_attributes = ['Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
                                        'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
         url_string = '/accounts'
-        # Set up data for account
         data = dict()
         data['Name'] = name
-        data['ManagerUID'] = self.search_people(manager)['UID']
-        for attrib, value in additional_info:
-            if attrib in editable_account_attributes:
-                data[attrib] = additional_info[attrib]
-        for attrib, value in custom_attributes:
-            tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
-            tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
-            data['Attributes'][tdx_attrib['ID']] = tdx_attrib_value['ID']
-        post_body = dict({'account': data})
-        return self.make_post(url_string, post_body)
+        data['ManagerUID'] = self.get_person_by_name_email(manager)['UID']
+        if additional_info.items():
+            for attrib, value in additional_info.items():
+                if attrib in editable_account_attributes:
+                    data[attrib] = additional_info[attrib]
+        if custom_attributes:
+                data['Attributes'] = list()
+                for attrib, value in custom_attributes.items():
+                    tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
+                    tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
+                    if not tdx_attrib_value:
+                        tdx_attrib_value_final = value
+                    else:
+                        tdx_attrib_value_final = tdx_attrib_value['ID']
+                    data['Attributes'].append({'ID': tdx_attrib['ID'], 'Value': tdx_attrib_value_final})
+        return self.make_post(url_string, data)
 
-    # TODO: def edit_account()
-    #   https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Accounts.Account
+    # TODO: make this and other 'Edit' operations have an option to strip out non-editable fields
+    def edit_account(self, name: str, changed_attributes: dict) -> dict:
+        """
+        Edits an account in TeamDynamix
+
+        :param name: Name of account to edit.
+        :param changed_attributes: dict of names of attributes and corresponding data to set on each attribute.
+
+        :return: a dict with information about the edited account
+
+        :rtype: dict
+
+        """
+        editable_account_attributes = ['Name', 'Address1', 'Address2', 'Address3', 'Address4', 'City', 'StateAbbr',
+                                       'PostalCode', 'Country', 'Phone', 'Fax', 'Url', 'Notes', 'Code', 'IndustryID']
+        url_string = '/accounts'
+        for k in changed_attributes.keys():
+            if k not in editable_account_attributes:
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Account Attribute " + k + " is not editable")
+        existing_account = self.get_account_by_name(name)
+        existing_account.update(changed_attributes)
+        return self.make_put(url_string + "/" + str(existing_account['ID']), existing_account)
 
     # #### #### GROUPS #### #### #
     # https://api.teamdynamix.com/TDWebApi/Home/section/Group
@@ -713,3 +846,5 @@ class TDXIntegration:
     # TODO: delete_custom_attribute_choice()
 
     # TODO: edit_custom_attribute_choice():
+
+    # TODO: generate_custom_attributes()

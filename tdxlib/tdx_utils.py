@@ -1,8 +1,6 @@
 import dateutil.parser
 import datetime
 import json
-import xlrd
-
 
 # Prints out dict as JSON with indents
 def print_nice(myjson):
@@ -34,17 +32,25 @@ def print_names(myjson):
         if 'Name' in i:
             print(i['Name'])
 
-
-# Imports a string from an excel date string, returns a python datetime object
-def import_excel_date(date_string: str) -> datetime:
-    return xlrd.xldate_as_datetime(date_string, 0)
-
-
 # Imports a string from a TDX Datetime attribute, returns a python datetime object
 def import_tdx_date(date_string: str) -> datetime:
     return dateutil.parser.parse(date_string)
 
 
 # Takes a python datetime object, returns a string compatible with a TDX Datetime attribute
-def export_tdx_date(date: datetime) -> str:
-    return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+def export_tdx_date(date: datetime, timezone: str = 'Z') -> str:
+    """
+    Takes a python datetime object, returns a string compatible with a TDX Datetime attribute, including timezone.
+    Note: This will not convert a UCT time to the timezone you specify.
+
+    :param date: Datetime object to output as TDX
+    :param timezone: A string indicating +/- hours:minutes. For EST this param is '-0500' (Default: Z [UTC])
+
+    :return: A string that TDX will accept
+
+    """
+    if date.tzinfo is None or date.tzinfo.utcoffset(date) is None:
+        date_string = date.strftime('%Y-%m-%dT%H:%M:%S' + timezone)
+    else:
+        date_string = date.strftime('%Y-%m-%dT%H:%M:%S%z')
+    return date_string
