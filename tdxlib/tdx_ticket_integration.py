@@ -48,7 +48,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.cache['ticket_source'] = {}
         self.cache['ticket_form'] = {}
 
-    def make_ticket_call(self, url, action, post_body=None):
+    def _make_ticket_call(self, url, action, post_body=None):
         url_string = '/' + str(self.ticket_app_id) + '/tickets'
         if len(url) > 0:
             url_string += '/' + url
@@ -75,7 +75,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: the API's response as a python dict or list
 
         """
-        return self.make_ticket_call(url, action, post_body)
+        return self._make_ticket_call(url, action, post_body)
 
     def get_all_ticket_custom_attributes(self):
         return self.get_all_custom_attributes(TDXTicketIntegration.component_ids['ticket'], app_id=self.ticket_app_id)

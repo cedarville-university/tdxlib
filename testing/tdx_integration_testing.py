@@ -18,7 +18,7 @@ class TdxTesting(unittest.TestCase):
                 self.testing_vars = json.load(f)
         else:
             print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
-                  'A sample file is available in testing/sample_testing_vars. Any *.json files are ignored by git.')
+                  'A sample file is available in testing/sample_ticket_testing_vars. Any *.json files are ignored by git.')
 
     def test_authentication(self):
         self.assertGreater(len(self.tdx.token), 200)

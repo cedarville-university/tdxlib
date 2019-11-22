@@ -633,7 +633,7 @@ class TDXIntegration:
             self.cache['custom_attributes'][str(object_type)] = self.get_all_custom_attributes(object_type)
         for item in self.cache['custom_attributes'][str(object_type)]:
             if str(key).lower() in item['Name'].lower():
-                self.cache['ca_search'][key] = item
+                self.cache['ca_search'][search_key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))

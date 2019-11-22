@@ -3,37 +3,65 @@ import tdxlib.tdx_integration
 
 
 class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
         if self.asset_app_id is None:
-            raise ValueError("Asset App Id is required. Check your config file")
-        self.assetForms = self.get_all_asset_forms()
-        self.custom_attributes = self.get_all_custom_attributes(27, app_id=self.asset_app_id)
-        self.custom_attributes_ci = self.get_all_custom_attributes(63, app_id=self.asset_app_id)
-        self.asset_form_cache = dict()
-        self.asset_status_cache = dict()
-        self.asset_model_cache = dict()
-        self.asset_type_cache = dict()
-        # Overriding parent method to limit re-definition
+            raise ValueError("Asset App Id is required. Check your INI file for 'assetappid = 000'")
+        self.clean_cache()
 
-    def make_asset_call(self, url, action, post_body=None):
-        url_string = '/' + str(self.asset_app_id) + '/assets'
+    def clean_cache(self):
+        super().clean_cache()
+        self.cache['asset_model'] = {}
+        self.cache['asset_product_type'] = {}
+        self.cache['asset_forms'] = self.get_all_asset_forms()
+        self.cache['custom_attributes'] = self.get_all_custom_attributes(
+            tdxlib.tdx_integration.TDXIntegration.component_ids['asset'], app_id=self.asset_app_id)
+        self.cache['custom_attributes'].append(self.get_all_custom_attributes(
+            tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
+
+    def _make_asset_call(self, url, action, post_body=None):
         url_string = '/' + str(self.asset_app_id) + '/assets'
         if len(url) > 0:
             url_string += '/' + url
         if action == 'get':
             return self.make_get(url_string)
+        if action == 'delete':
+            return self.make_delete(url_string)
         if action == 'post' and post_body:
             return self.make_post(url_string, post_body)
+        if action == 'put' and post_body:
+            return self.make_put(url_string, post_body)
+        if action == 'patch' and post_body:
+            return self.make_patch(url_string, post_body)
         raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
     def make_call(self, url, action, post_body=None):
-        return self.make_asset_call(url, action, post_body)
+        """
+        Makes an HTTP call using the Assets API information.
 
-    def get_custom_attribute_by_name(self, key):
-        super(key, 27)
+        :param url: The URL (everything after assets/) to call
+        :param action: The HTTP action (get, put, post, delete, patch) to perform.
+        :param post_body: A python dict of the information to post, put, or patch. Not used for get/delete.
 
-    def get_all_asset_forms(self):
+        :return: the API's response as a python dict or list
+
+        """
+        return self._make_asset_call(url, action, post_body)
+
+    def get_asset_custom_attribute_by_name(self, key: str) -> dict:
+        # Since there are two different types we may have to get, we cache them all
+        search_key = str(key) + "_asset_ci"
+        if search_key in self.cache['ca_search']:
+            return self.cache['ca_search'][search_key]
+        # There is no API for searching attributes -- the only way is to get them all.
+        for item in self.cache['custom_attributes']:
+            if str(key).lower() in item['Name'].lower():
+                self.cache['ca_search'][search_key] = item
+                return item
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+            "No custom asset or CI attribute found for " + str(key))
+
+    def get_all_asset_forms(self) -> list:
         """
         Gets a list asset forms
 
@@ -41,21 +69,25 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call('forms', 'get')
         
-    def get_asset_form_by_name(self, key):
+    def get_asset_form_by_name_id(self, key: str) -> dict:
         """
-        Gets a list asset forms
+        Gets an asset form
 
         :param key: name of AssetForm to search for
 
         :return: list of form data in json format
         """
-        forms = self.get_all_asset_forms()
-        for form in forms:
-            if form['Name'] == key:
-                return form
-        print('no Asset form found for ' + key)
+        if not self.cache['asset_forms']:
+            forms = self.get_all_asset_forms()
+        for asset_form in forms:
+            if str(key).lower() in asset_form['Name'].lower():
+                return asset_form
+            if asset_form['ID'].lower() == str(key):
+                return asset_form
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+            "No asset form found for " + str(key))
 
-    def get_all_asset_statuses(self):
+    def get_all_asset_statuses(self) -> list:
         """
         Gets a list asset statuses
 
@@ -63,23 +95,21 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call('statuses', 'get')
 
-    def get_asset_status_by_name(self, key):
+    def get_asset_status_by_name(self, key: str):
         """
-        Gets a list asset forms
+        Gets a list asset statuses
 
-        :param key: name of Asset Status to search for
+        :param key: name of an asset status to search for
 
-        :return: list of status data
+        :return: dict of status data
         """
-        if key in self.asset_status_cache:
-            return self.asset_status_cache[key]
-        else:
-            statuses = self.get_all_asset_statuses()
-            for status in statuses:
-                if status['Name'] == key:
-                    self.asset_status_cache[key] = status
-                    return status
-            raise RuntimeError('no asset status found for ' + key)
+        if not self.cache['asset_status']:
+            self.cache['asset_status'] = self.get_all_asset_statuses()
+        for status in self.cache['asset_status']:
+            if status['Name'] == key:
+                self.asset_status_cache[key] = status
+                return status
+        raise RuntimeError('no asset status found for ' + key)
 
     def get_all_product_types(self):
         """
