@@ -12,8 +12,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     def clean_cache(self):
         super().clean_cache()
         self.cache['asset_model'] = {}
-        self.cache['asset_product_type'] = {}
-        self.cache['asset_forms'] = self.get_all_asset_forms()
+        self.cache['product_type'] = {}
+        self.cache['asset_form'] = {}
+        self.cache['asset_status'] = {}
         self.cache['custom_attributes'] = self.get_all_custom_attributes(
             tdxlib.tdx_integration.TDXIntegration.component_ids['asset'], app_id=self.asset_app_id)
         self.cache['custom_attributes'].append(self.get_all_custom_attributes(
@@ -77,9 +78,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: list of form data in json format
         """
-        if not self.cache['asset_forms']:
-            forms = self.get_all_asset_forms()
-        for asset_form in forms:
+        if not self.cache['asset_form']:
+            self.cache['asset_form'] = self.get_all_asset_forms()
+        for asset_form in self.cache['asset_form']:
             if str(key).lower() in asset_form['Name'].lower():
                 return asset_form
             if asset_form['ID'].lower() == str(key):
@@ -95,7 +96,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call('statuses', 'get')
 
-    def get_asset_status_by_name(self, key: str):
+    def get_asset_status_by_name_id(self, key: str) -> dict:
         """
         Gets a list asset statuses
 
@@ -106,12 +107,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not self.cache['asset_status']:
             self.cache['asset_status'] = self.get_all_asset_statuses()
         for status in self.cache['asset_status']:
-            if status['Name'] == key:
-                self.asset_status_cache[key] = status
+            if status['Name'].lower() == str(key).lower() or str(status['ID']) == str(key):
                 return status
-        raise RuntimeError('no asset status found for ' + key)
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No asset status found for {str(key)}')
 
-    def get_all_product_types(self):
+    def get_all_product_types(self) -> list:
         """
         Gets a list of product types
 
@@ -119,7 +119,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call("models/types", 'get')
 
-    def get_product_type_by_name(self, key):
+    def get_product_type_by_name_id(self, key: str) -> dict:
         """
         Gets a product type object
 
@@ -127,40 +127,34 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: dict of product type data
         """
-        if key in self.asset_type_cache:
-            return self.asset_type_cache[key]
-        else:
-            types = self.get_all_product_types()
-            for product_type in types:
-                if product_type['Name'] == key:
-                    self.asset_type_cache[key] = product_type
-                    return product_type
-            raise RuntimeError('no asset status found for ' + key)
+        if not self.cache['product_type']:
+            self.cache['product_type'] = self.get_all_asset_statuses()
+        for product_type in self.cache['product_type']:
+            if product_type['Name'].lower() == str(key).lower()or str(product_type['ID']) == str(key):
+                return product_type
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
 
-    def get_all_product_models(self):
+    def get_all_product_models(self) -> list:
         """
         Gets a list asset models
         :return: list of model data
         """
         return self.make_call("models", 'get')
 
-    def get_product_model_by_name(self, key):
+    def get_product_model_by_name_id(self, key: str) -> dict:
         """
         Gets a specific product model
         :param key: name of product model to search for
         :return: dict of model data
         """
-        if key in self.asset_model_cache:
-            return self.asset_model_cache[key]
-        else:
-            models = self.get_all_product_models()
-            for product_model in models:
-                if product_model['Name'] == key:
-                    self.asset_model_cache[key] = product_model
-                    return product_model
-            raise RuntimeError('no asset status found for ' + key)
+        if not self.cache['product_model']:
+            self.cache['product_model'] = self.get_all_asset_statuses()
+        for product_model in self.cache['product_model']:
+            if product_model['Name'].lower() == str(key).lower() or str(product_model['ID']) == str(key):
+                return product_model
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
 
-    def get_asset_by_id(self, asset_id):
+    def get_asset_by_id(self, asset_id: str) -> dict:
         """
         Gets a full list of asset attributes and values
 
@@ -192,26 +186,26 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         # Set default statuses
         statuses = list()
-        statuses.append(self.get_asset_status_by_name("Inventory")['ID'])
-        statuses.append(self.get_asset_status_by_name("In Use")['ID'])
-        statuses.append(self.get_asset_status_by_name("Broken")['ID'])
+        statuses.append(self.get_asset_status_by_name_id("Inventory")['ID'])
+        statuses.append(self.get_asset_status_by_name_id("In Use")['ID'])
+        statuses.append(self.get_asset_status_by_name_id("Broken")['ID'])
 
         # Set conditional statuses
         if retired:
-            statuses.append(self.get_asset_status_by_name("Retired")['ID'])
+            statuses.append(self.get_asset_status_by_name_id("Retired")['ID'])
         if disposed:
-            statuses.append(self.get_asset_status_by_name("Disposed")['ID'])
+            statuses.append(self.get_asset_status_by_name_id("Disposed")['ID'])
 
         # Set up search body
         search_body = dict()
-        search_body['search'] = {'MaxResults': str(max_results), 'StatusIDs': statuses}
-        if type(criteria) is str:
-            search_body['search']['SearchText'] = criteria
-        elif type(criteria) is dict:
-            search_body['search'].update(criteria)
+        search_body = {'MaxResults': str(max_results), 'StatusIDs': statuses}
+        if isinstance(criteria, str):
+            search_body['SearchText'] = criteria
+        elif isinstance(criteria, dict):
+            search_body.update(criteria)
         else:
-            raise TypeError("Can't search assets with" + str(type(criteria)))
-
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with" +
+                                                                  str(type(criteria)) + " as criteria.")
         asset_list = self.make_call('search', 'post', search_body)
         return asset_list
 
@@ -226,7 +220,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if type(tag) is str:
             tag = tag.lstrip('0')
         search_params = {'Tag': str(tag)}
-        return self.search_assets(search_params, max_results=1, disposed=True, retired=True)
+        result = self.search_assets(search_params, disposed=True, retired=True)
+        if len(result) == 1:
+            return result
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+            f"More than one serial number matching {str(tag)} was found.")
 
     def find_asset_by_sn(self, sn):
         """
@@ -238,17 +236,38 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         """
         search_params = {'SerialLike': sn}
-        return self.search_assets(search_params, max_results=1, disposed=True, retired=True)
+        result = self.search_assets(search_params, disposed=True, retired=True)
+        if len(result) == 1:
+            return result
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+            f"More than one serial number matching {str(sn)} was found.")
 
-    def update_assets(self, asset_list, changed_attributes):
+    def get_assets_by_location(self, location, max_results: int = 25):
+        id_list = list()
+        if isinstance(location, list):
+            for this_location in location:
+                id_list.append(this_location['ID'])
+        else:
+            id_list.append(location['ID'])
+        return self.search_assets({'LocationIDs': id_list}, max_results=max_results)
+
+    def get_assets_by_room(self, room: dict, max_results: int = 25):
+        return self.search_assets({'RoomID': room['ID']}, max_results=max_results)
+
+    def update_assets(self, asset, changed_attributes):
         """
         Updates data in a list of assets
 
-        :param asset_list: a list of assets (maybe from search_assets())
+        :param asset_list: a list of assets (maybe from search_assets()) or a single asset
         :param changed_attributes: a dict of attributes in the ticket to be changed
 
         :return: list of updated assets
         """
+        if not isinstance(asset, list):
+            asset_list = list()
+            asset_list.append(asset)
+        else:
+            asset_list = asset
         updated_assets = list()
         post_body = dict()
         post_body['asset'] = changed_attributes
@@ -286,15 +305,17 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         children = self.search_assets(search_params)
         return self.update_assets(children, update_params)
 
-    def copy_asset_attributes(self, source_asset, target_asset, copy_name=False, exclude=None, new_status_name=None):
+    def copy_asset_attributes(self, source_asset, target_asset, copy_name=False, exclude=None, new_status: str = None):
         """
-        Copies asset attributes from one asset to another
+        Copies asset attributes from one asset to another. Does not include attributes like Serial Number, Asset Tag,
+            and other hardware-specific fields.
+
 
         :param source_asset: asset to copy attributes from (doesn't have to be full record)
-        :param target_asset: asset to copy attributes to (doesn't have to full record (OVERWRITES FULL RECORD)
-        :param copy_name: Set to true to copy the name of the asset
+        :param target_asset: asset to copy attributes to (doesn't have to full record) This asset will be OVERWRITTEN!
+        :param copy_name: Set to true to copy the name of the source asset to the target asset
         :param exclude: List of attributes to be excluded, in addition to defaults
-        :param new_status_name: String of name of new status for source asset
+        :param new_status: Name or ID of new status for source asset
 
         :return: list of the target and source asset data
         """
@@ -309,8 +330,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             full_source.pop(protected_attribute, None)
         updated_target = self.update_assets(target_asset, full_source)
         updated_source = None
-        if new_status_name:
-            update_params = {'StatusID': self.get_asset_status_by_name(new_status_name)}
+        if new_status:
+            update_params = {'StatusID': self.get_asset_status_by_name_id(new_status)}
             updated_source = self.update_assets(full_source, update_params)
         return [updated_target, updated_source]
 
@@ -355,7 +376,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         data = dict()
         data['Name'] = asset_name
         data['SerialNumber'] = serial_number
-        data['StatusID'] = self.get_asset_status_by_name(status_name)['ID']
+        data['StatusID'] = self.get_asset_status_by_name_id(status_name)['ID']
         data['LocationID'] = self.get_location_by_name(location_name)['ID']
         data['LocationRoomID'] = self.get_room_by_name(data['LocationID'], room_name)
         data['Tag'] = asset_tag
@@ -372,7 +393,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             for key, value in asset_values.items():
                 if attrib_prefix in key:
                     attrib_name = key.replace(attrib_prefix, "")
-                    attrib = self.get_asset_attribute_by_name(attrib_name)
+                    attrib = self.get_asset_custom_attribute_by_name(attrib_name)
                     value = self.get_custom_attribute_value_by_name(attrib, value)
                     new_attrib = dict()
                     new_attrib['ID'] = attrib['ID']
@@ -389,11 +410,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 data['LocationRoomID'] = self.get_room_by_name(building, room_name)['ID']
 
         if requester:
-            data['RequestingCustomerID'] = self.get_person_by_email(requester)['UID']
+            data['RequestingCustomerID'] = self.get_person_by_name_email(requester)['UID']
         if requesting_dept:
             data['RequestingDepartmentID'] = self.get_account_by_name(requesting_dept)['ID']
         if owner:
-            data['OwningCustomerID'] = self.get_person_by_email(owner)['UID']
+            data['OwningCustomerID'] = self.get_person_by_name_email(owner)['UID']
         if owning_dept:
             data['OwningDepartmentID'] = self.get_account_by_name(owning_dept)['ID']
         if parent:
