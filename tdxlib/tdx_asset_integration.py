@@ -11,7 +11,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def clean_cache(self):
         super().clean_cache()
-        self.cache['asset_model'] = {}
+        self.cache['product_model'] = {}
         self.cache['product_type'] = {}
         self.cache['asset_form'] = {}
         self.cache['asset_status'] = {}
@@ -49,6 +49,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self._make_asset_call(url, action, post_body)
 
+    # TODO: Move this down to a more logical place
     def get_asset_custom_attribute_by_name(self, key: str) -> dict:
         # Since there are two different types we may have to get, we cache them all
         search_key = str(key) + "_asset_ci"
@@ -83,7 +84,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         for asset_form in self.cache['asset_form']:
             if str(key).lower() in asset_form['Name'].lower():
                 return asset_form
-            if asset_form['ID'].lower() == str(key):
+            if str(asset_form['ID']).lower() == str(key):
                 return asset_form
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No asset form found for " + str(key))
@@ -111,6 +112,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return status
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No asset status found for {str(key)}')
 
+    # TODO: def update_asset_status(self, updated_values)-> dict:
+    # TODO: def create_asset_status(self, params)-> dict:
+
     def get_all_product_types(self) -> list:
         """
         Gets a list of product types
@@ -128,11 +132,15 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: dict of product type data
         """
         if not self.cache['product_type']:
-            self.cache['product_type'] = self.get_all_asset_statuses()
+            self.cache['product_type'] = self.get_all_product_types()
         for product_type in self.cache['product_type']:
             if product_type['Name'].lower() == str(key).lower()or str(product_type['ID']) == str(key):
                 return product_type
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
+
+    # TODO: def update_product_type(self, updated_values)-> dict:
+    # TODO: def create_product_type(self, params)-> dict:
+    # TODO: def delete_product_type(self)-> dict:
 
     def get_all_product_models(self) -> list:
         """
@@ -148,11 +156,20 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: dict of model data
         """
         if not self.cache['product_model']:
-            self.cache['product_model'] = self.get_all_asset_statuses()
+            self.cache['product_model'] = self.get_all_product_models()
         for product_model in self.cache['product_model']:
             if product_model['Name'].lower() == str(key).lower() or str(product_model['ID']) == str(key):
                 return product_model
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
+
+    # TODO: def update_product_model(self, updated_values)-> dict:
+    # TODO: def create_product_model(self, params)-> dict:
+    # TODO: def delete_product_model(self, updated_values)-> dict:
+
+    # TODO: def get_all_vendors(self) -> list:
+    # TODO: def update_vendor(self, updated_values)-> dict:
+    # TODO: def create_vendor(self, params)-> dict:
+    # TODO: def delete_vendor(self)-> dict:
 
     def get_asset_by_id(self, asset_id: str) -> dict:
         """
@@ -164,7 +181,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call(str(asset_id), 'get')
 
-    def search_assets(self, criteria, max_results=25, retired=False, disposed=False):
+    def search_assets(self, criteria, max_results=25, retired=False, disposed=False) -> list:
         """
         Gets a ticket, based on criteria
 
@@ -209,40 +226,49 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         asset_list = self.make_call('search', 'post', search_body)
         return asset_list
 
-    def find_asset_by_tag(self, tag):
+    def find_asset_by_tag(self, tag) -> dict:
         """
         Gets an asset based on its asset tag
 
         :param tag: asset tag as a string or int
 
-        :return: the asset with the corresponding tag
+        :return: the single asset with the corresponding tag
         """
         if type(tag) is str:
             tag = tag.lstrip('0')
         search_params = {'Tag': str(tag)}
         result = self.search_assets(search_params, disposed=True, retired=True)
         if len(result) == 1:
-            return result
+            return result[0]
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            f"More than one serial number matching {str(tag)} was found.")
+            f"{str(len(result))} assets with tag {str(tag)} found.")
 
-    def find_asset_by_sn(self, sn):
+    def find_asset_by_sn(self, sn) -> dict:
         """
         Gets an asset based on its serial number
 
         :param sn: serial number as a string or int
 
-        :return: the asset with the corresponding serial number
+        :return: the single asset with the corresponding serial number
 
         """
         search_params = {'SerialLike': sn}
         result = self.search_assets(search_params, disposed=True, retired=True)
         if len(result) == 1:
-            return result
+            return result[0]
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            f"More than one serial number matching {str(sn)} was found.")
+            f"{str(len(result))} assets with SN {str(sn)} found.")
 
-    def get_assets_by_location(self, location, max_results: int = 25):
+    def get_assets_by_location(self, location, max_results: int = 25) -> list:
+        """
+        Gets all asset in a location
+
+        :param location: a single location (from get_location_by_name()) or list of same
+        :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
+
+        :return: a list of assets in the location(s)
+
+        """
         id_list = list()
         if isinstance(location, list):
             for this_location in location:
@@ -251,14 +277,49 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             id_list.append(location['ID'])
         return self.search_assets({'LocationIDs': id_list}, max_results=max_results)
 
-    def get_assets_by_room(self, room: dict, max_results: int = 25):
+    def get_assets_by_room(self, room: dict, max_results: int = 25) -> list:
+        """
+        Gets all assets in a room
+
+        :param room: a single room (from get_room_by_name())
+        :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
+
+        :return: a list of assets in the room
+
+        """
         return self.search_assets({'RoomID': room['ID']}, max_results=max_results)
 
-    def update_assets(self, asset, changed_attributes):
+    def get_assets_by_owner(self, name_email: str, max_results: int = 25) -> list:
+        """
+        Gets all assets assigned to a particular person in TDX
+
+        :param name_email: the name or email of a person in TDX
+        :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
+
+        :return: a list of assets owned by that person
+
+        """
+        person = self.get_person_by_name_email(name_email)
+        return self.search_assets({'OwningCustomerIDs': [person['UID']]}, max_results=max_results)
+
+    def get_assets_by_requesting_department(self, dept_name: str, max_results: int = 25) -> list:
+        """
+        Gets all assets requested by a particular account/department in TDX
+
+        :param dept_name: the name or email of a account/department
+        :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
+
+        :return: a list of assets requested by that department
+
+        """
+        dept = self.get_account_by_name(dept_name)
+        return self.search_assets({'RequestingDepartmentIDs': [dept['ID']]}, max_results=max_results)
+
+    def update_assets(self, asset, changed_attributes: dict) -> list:
         """
         Updates data in a list of assets
 
-        :param asset_list: a list of assets (maybe from search_assets()) or a single asset
+        :param asset: a list of assets  (maybe from search_assets()) or a single asset (only ID required)
         :param changed_attributes: a dict of attributes in the ticket to be changed
 
         :return: list of updated assets
@@ -275,30 +336,43 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             updated_assets.append(self.make_call(str(asset['ID']), 'post', post_body))
         return updated_assets
 
-    def change_asset_owner(self, asset, new_owner_email, new_dept_name=None):
+    def change_asset_owner(self, asset: dict, new_owner: str, new_dept=None) -> list:
         """
         Gets updates data in a list of assets
 
-        :param asset: asset to update (doesn't have to be full record)
-        :param new_owner_email: email of new owner
-        :param new_dept_name: name of new department
+        :param asset: asset to update (doesn't have to be full record), or list of same
+        :param new_owner: email or name of new owner
+        :param new_dept: name of new department
 
-        :return: dict of the updated assets
+        :return: list of the updated assets
         """
-        new_owner_uid = self.get_person_by_name_email(new_owner_email)['UID']
+        new_owner_uid = self.get_person_by_name_email(new_owner)['UID']
         changed_attributes = {'OwningCustomerID': new_owner_uid}
-        if new_dept_name:
-            changed_attributes['OwningDepartmentID'] = self.get_account_by_name(new_dept_name)['ID']
+        if new_dept:
+            changed_attributes['OwningDepartmentID'] = self.get_account_by_name(new_dept)['ID']
         return self.update_assets(asset, changed_attributes)
 
-    def move_child_assets(self, source_asset, target_asset):
+    def change_asset_requesting_dept(self, asset: dict, new_dept: str)-> list:
+        """
+        Gets updates data in a list of assets
+
+        :param asset: asset to update (doesn't have to be full record), or list of same
+        :param new_dept: name of new department
+
+        :return: list of the updated assets
+        """
+        changed_attributes = dict()
+        changed_attributes['RequestingDepartmentID'] = self.get_account_by_name(new_dept)['ID']
+        return self.update_assets(asset, changed_attributes)
+
+    def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
         """
         Moves child assets from one asset to another
 
         :param source_asset: asset to move children from (doesn't have to be full record)
         :param target_asset: asset to move children to
 
-        :return: dict of the updated assets
+        :return: list of the updated assets
         """
         search_params = {'ParentID': source_asset['ID']}
         update_params = {'ParentID': target_asset['ID']}
