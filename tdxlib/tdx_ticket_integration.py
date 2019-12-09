@@ -49,16 +49,17 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.cache['ticket_source'] = {}
         self.cache['ticket_form'] = {}
 
-    def make_ticket_call(self, url, action, post_body=None, files=None):
-        url_string = '/' + str(self.ticket_app_id) + '/tickets'
+    def get_url_string(self):
+        return '/' + str(self.ticket_app_id) + '/tickets'
+
+    def make_ticket_call(self, url, action, post_body=None):
+        url_string = self.get_url_string()
         if len(url) > 0:
             url_string += '/' + url
         if action == 'get':
             return self.make_get(url_string)
         if action == 'delete':
             return self.make_delete(url_string)
-        if action == 'post' and files:
-            return self.make_file_post(url_string, files)
         if action == 'post' and post_body:
             return self.make_post(url_string, post_body)
         if action == 'put' and post_body:
@@ -67,19 +68,18 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             return self.make_patch(url_string, post_body)
         raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
-    def make_call(self, url: str, action: str, post_body=None, files=None):
+    def make_call(self, url: str, action: str, post_body=None):
         """
         Makes an HTTP call using the Tickets API information.
 
         :param url: The URL (everything after tickets/) to call
         :param action: The HTTP action (get, put, post, delete, patch) to perform.
         :param post_body: A python dict of the information to post, put, or patch. Not used for get/delete.
-        :param files: (optional) dict with FileStorage object or string with raw data to upload as attachment. Only used with POST.
 
         :return: the API's response as a python dict or list
 
         """
-        return self.make_ticket_call(url, action, post_body, files)
+        return self.make_ticket_call(url, action, post_body)
 
     def get_all_ticket_custom_attributes(self):
         return self.get_all_custom_attributes(TDXTicketIntegration.component_ids['ticket'], app_id=self.ticket_app_id)
@@ -307,8 +307,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :rtype: dict
         """
         files = {'file': file}
-        url = f"{ticket_id}/attachments"
-        return self.make_call(url, 'post', None, files)            
+        url = self.get_url_string()
+        url += f"/{ticket_id}/attachments"
+        return self.make_file_post(url, files)
 
     # #### GETTING TICKET ATTRIBUTES #### #
 
