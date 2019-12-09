@@ -251,7 +251,7 @@ class TDXIntegration:
         Makes a HTTP POST request to the TDX Api with a Multipart-Encoded File
         
         :param request_url: the path (everything after /TDWebApi/api/) to call
-        :param files: BinaryIO object opened in read mode to upload as attachment.
+        :param file: BinaryIO object opened in read mode to upload as attachment.
         (read documentation at requests.readthedocs.io/en/master/user/quickstart/#post-a-multipart-encoded-file)
 
         :return: the API's response as a python dict
