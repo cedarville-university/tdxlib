@@ -5,6 +5,7 @@ import getpass
 import tdxlib.tdx_api_exceptions
 import datetime
 import time
+from typing import BinaryIO
 
 
 class TDXIntegration:
@@ -244,6 +245,43 @@ class TDXIntegration:
             if response:
                 message += response.text
             print(message)
+
+    def make_file_post(self, request_url: str, file: BinaryIO):
+        """
+        Makes a HTTP POST request to the TDX Api with a Multipart-Encoded File
+        
+        :param request_url: the path (everything after /TDWebApi/api/) to call
+        :param file: BinaryIO object opened in read mode to upload as attachment.
+        (read documentation at requests.readthedocs.io/en/master/user/quickstart/#post-a-multipart-encoded-file)
+
+        :return: the API's response as a python dict
+        """
+        self.rate_limit()
+        post_url = self.api_url + request_url
+        response = None
+        try:
+            response = requests.post(
+                url=post_url,
+                headers={
+                    "Authorization": 'Bearer ' + self.token,
+                },
+                files={'file': file}
+            )
+            val = response.json()
+            self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
+            self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
+            self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
+            return val
+        except requests.exceptions.RequestException:
+            print('HTTP Request failed')
+        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+            print('POST failed: to ' + post_url + "\nReturned: " + str(e))
+        except json.decoder.JSONDecodeError:
+            message = 'Invalid JSON received from ' + post_url + ':\n'
+            if response:
+                message += response.text
+            print(message)
+
 
     def make_put(self, request_url: str, body: dict):
         """

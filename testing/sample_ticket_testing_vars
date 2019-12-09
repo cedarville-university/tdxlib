@@ -59,7 +59,7 @@
   "room": {
     "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location"
     "ID": ,
-    "Name": "
+    "Name": "",
     "PartialName": ""
   },
   "account": {
@@ -103,9 +103,13 @@
     "Name": "",
     "type": "account",
     "choice": {
-      "_comment": ""A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX."
+      "_comment": "A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
       "ID": ,
       "Name": ""
     }
+  },
+  "attachment": {
+    "_comment": "A valid file placed in working directory to upload as a ticket attachment",
+    "Name": ""
   }
 }

@@ -2,6 +2,7 @@ import tdxlib.tdx_ticket
 import datetime
 import tdxlib.tdx_integration
 import tdxlib.tdx_api_exceptions
+from typing import BinaryIO
 
 
 class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
@@ -48,8 +49,11 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.cache['ticket_source'] = {}
         self.cache['ticket_form'] = {}
 
-    def _make_ticket_call(self, url, action, post_body=None):
-        url_string = '/' + str(self.ticket_app_id) + '/tickets'
+    def get_url_string(self):
+        return '/' + str(self.ticket_app_id) + '/tickets'
+
+    def make_ticket_call(self, url, action, post_body=None):
+        url_string = self.get_url_string()
         if len(url) > 0:
             url_string += '/' + url
         if action == 'get':
@@ -272,7 +276,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param notify: a list of strings containing email addresses to notify regarding this ticket. Default: None
         :param private: boolean indicating whether or not the update to the task should be private. Default: True
 
-        :return: python dict containing creatd ticket update information
+        :return: python dict containing created ticket update information
 
         :rtype: dict
 
@@ -290,6 +294,21 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         else:
             data['NewStatusID'] = 0
         return self.make_call(url_string, 'post', data)
+
+    def upload_attachment(self, ticket_id: int, file: BinaryIO):
+        """
+        Uploads an attachment to a ticket.
+
+        :param ticket_id: the ticket ID to upload the attachment
+        :param file: Python file object opened in binary read mode to upload as attachment
+
+        :return: python dict containing created attachment information
+        
+        :rtype: dict
+        """
+        url = self.get_url_string()
+        url += f"/{ticket_id}/attachments"
+        return self.make_file_post(url, file)
 
     # #### GETTING TICKET ATTRIBUTES #### #
 

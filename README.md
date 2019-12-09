@@ -198,6 +198,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         * Searching (by any attribute)
         * Updating
         * Getting Feed Items
+        * Uploading Attachments
     * Ticket Tasks
         * Creating
         * Editing
