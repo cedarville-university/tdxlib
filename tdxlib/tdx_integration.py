@@ -5,6 +5,7 @@ import getpass
 import tdxlib.tdx_api_exceptions
 import datetime
 import time
+from typing import BinaryIO
 
 
 class TDXIntegration:
@@ -245,13 +246,15 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    def make_file_post(self, request_url: str, files: dict):
+    def make_file_post(self, request_url: str, file: BinaryIO):
         """
         Makes a HTTP POST request to the TDX Api with a Multipart-Encoded File
         
         :param request_url: the path (everything after /TDWebApi/api/) to call
-        :param files: dict with BinaryIO object opened in read mode (validated as 'file') to upload as attachment.
+        :param files: BinaryIO object opened in read mode to upload as attachment.
         (read documentation at requests.readthedocs.io/en/master/user/quickstart/#post-a-multipart-encoded-file)
+
+        :return: the API's response as a python dict
         """
         self.rate_limit()
         post_url = self.api_url + request_url
@@ -262,7 +265,7 @@ class TDXIntegration:
                 headers={
                     "Authorization": 'Bearer ' + self.token,
                 },
-                files=files
+                files={'file': file}
             )
             val = response.json()
             self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])

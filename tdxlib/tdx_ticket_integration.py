@@ -306,10 +306,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         
         :rtype: dict
         """
-        files = {'file': file}
         url = self.get_url_string()
         url += f"/{ticket_id}/attachments"
-        return self.make_file_post(url, files)
+        return self.make_file_post(url, file)
 
     # #### GETTING TICKET ATTRIBUTES #### #
 
