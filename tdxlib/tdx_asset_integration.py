@@ -236,10 +236,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         if type(tag) is str:
             tag = tag.lstrip('0')
-        search_params = {'Tag': str(tag)}
+        search_params = {'SearchText': str(tag)}
         result = self.search_assets(search_params, disposed=True, retired=True)
         if len(result) == 1:
             return result[0]
+        else:
+            for asset in result:
+                if asset['Tag'] == tag:
+                    return asset
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with tag {str(tag)} found.")
 
@@ -259,7 +263,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with SN {str(sn)} found.")
 
-    def get_assets_by_location(self, location, max_results: int = 25) -> list:
+    def get_assets_by_location(self, location, max_results: int = 5000) -> list:
         """
         Gets all asset in a location
 
@@ -272,9 +276,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         id_list = list()
         if isinstance(location, list):
             for this_location in location:
-                id_list.append(this_location['ID'])
-        else:
+                if isinstance(this_location, dict):
+                    id_list.append(this_location['ID'])
+                if isinstance(this_location, str):
+                    id_list.append(self.get_location_by_name(this_location)['ID'])
+        elif isinstance(location, dict):
             id_list.append(location['ID'])
+        elif isinstance(location, str):
+            id_list.append(self.get_location_by_name(location)['ID'])
         return self.search_assets({'LocationIDs': id_list}, max_results=max_results)
 
     def get_assets_by_room(self, room: dict, max_results: int = 25) -> list:
@@ -289,70 +298,91 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.search_assets({'RoomID': room['ID']}, max_results=max_results)
 
-    def get_assets_by_owner(self, name_email: str, max_results: int = 25) -> list:
+    def get_assets_by_owner(self, person: str, max_results: int = 25) -> list:
         """
         Gets all assets assigned to a particular person in TDX
 
-        :param name_email: the name or email of a person in TDX
+        :param person: the name or email of a person in TDX, or a dict containing their information
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
 
         :return: a list of assets owned by that person
 
         """
-        person = self.get_person_by_name_email(name_email)
+        if isinstance(person, str):
+            person = self.get_person_by_name_email(person)
+        if not isinstance(person, dict):
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with type" +
+                                                                  str(type(person)) + " as person.")
         return self.search_assets({'OwningCustomerIDs': [person['UID']]}, max_results=max_results)
 
-    def get_assets_by_requesting_department(self, dept_name: str, max_results: int = 25) -> list:
+    def get_assets_by_requesting_department(self, dept, max_results: int = 25) -> list:
         """
         Gets all assets requested by a particular account/department in TDX
 
-        :param dept_name: the name or email of a account/department
+        :param dept: the name or email of a account/department, or a dict containing its information
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
 
         :return: a list of assets requested by that department
 
         """
-        dept = self.get_account_by_name(dept_name)
+        if isinstance(dept, str):
+            dept = self.get_account_by_name(dept)
+        if not isinstance(dept, dict):
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with type" +
+                                                                  str(type(dept)) + " as department.")
         return self.search_assets({'RequestingDepartmentIDs': [dept['ID']]}, max_results=max_results)
 
-    def update_assets(self, asset, changed_attributes: dict) -> list:
+    def update_assets(self, assets, changed_attributes: dict) -> list:
         """
         Updates data in a list of assets
 
-        :param asset: a list of assets  (maybe from search_assets()) or a single asset (only ID required)
+        :param assets: a list of assets (maybe from search_assets()) or a single asset (only ID required)
         :param changed_attributes: a dict of attributes in the ticket to be changed
 
         :return: list of updated assets
         """
-        if not isinstance(asset, list):
+        if not isinstance(assets, list):
             asset_list = list()
-            asset_list.append(asset)
+            asset_list.append(assets)
         else:
-            asset_list = asset
+            asset_list = assets
         updated_assets = list()
-        post_body = dict()
-        post_body['asset'] = changed_attributes
-        for asset in asset_list:
-            updated_assets.append(self.make_call(str(asset['ID']), 'post', post_body))
+        for this_asset in asset_list:
+            this_asset.update(changed_attributes)
+            updated_assets.append(self.make_call(str(this_asset['ID']), 'post', this_asset))
         return updated_assets
 
-    def change_asset_owner(self, asset: dict, new_owner: str, new_dept=None) -> list:
+    def change_asset_owner(self, asset, new_owner, new_dept=None) -> list:
         """
         Gets updates data in a list of assets
 
         :param asset: asset to update (doesn't have to be full record), or list of same
-        :param new_owner: email or name of new owner
-        :param new_dept: name of new department
+        :param new_owner: email or name of new owner, or dict of their information
+        :param new_dept: name of new department, or dict of information
 
         :return: list of the updated assets
         """
-        new_owner_uid = self.get_person_by_name_email(new_owner)['UID']
+        if isinstance(new_owner, str):
+            new_owner_uid = self.get_person_by_name_email(new_owner)['UID']
+        elif isinstance(new_owner, dict):
+            new_owner_uid = new_owner['UID']
+        else:
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+                f"New Owner of type {str(type(new_dept))} not searchable."
+            )
         changed_attributes = {'OwningCustomerID': new_owner_uid}
         if new_dept:
-            changed_attributes['OwningDepartmentID'] = self.get_account_by_name(new_dept)['ID']
+            if isinstance(new_dept, str):
+                changed_attributes['OwningDepartmentID'] = self.get_account_by_name(new_dept)['ID']
+            elif isinstance(new_dept, dict):
+                changed_attributes['OwningDepartmentID'] = new_dept['ID']
+            else:
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+                    f"Department of type {str(type(new_dept))} not searchable."
+                )
         return self.update_assets(asset, changed_attributes)
 
-    def change_asset_requesting_dept(self, asset: dict, new_dept: str)-> list:
+    def change_asset_requesting_dept(self, asset, new_dept)-> list:
         """
         Gets updates data in a list of assets
 
@@ -362,7 +392,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: list of the updated assets
         """
         changed_attributes = dict()
-        changed_attributes['RequestingDepartmentID'] = self.get_account_by_name(new_dept)['ID']
+        if isinstance(new_dept, str):
+            changed_attributes['RequestingDepartmentID'] = self.get_account_by_name(new_dept)['ID']
+        elif isinstance(new_dept, dict):
+            changed_attributes['RequestingDepartmentID'] = new_dept['ID']
+        else:
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+                f"Department of type {str(type(new_dept))} not searchable."
+            )
         return self.update_assets(asset, changed_attributes)
 
     def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
