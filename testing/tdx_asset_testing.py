@@ -27,7 +27,7 @@ class TdxAssetTesting(unittest.TestCase):
             print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
                   'A sample file is available in testing/sample_ticket_testing_vars. ',
                   'Any *.json files are ignored by git.')
-
+    '''
     def test_aaa(self):
         self.assertGreater(len(self.tax.token), 200)
 
@@ -128,13 +128,14 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_requesting_dept(self):
         assets = self.tax.get_assets_by_owner(self.testing_vars['department']['Name'], max_results=100)
         self.assertGreaterEqual(len(assets), self.testing_vars['department']['asset_count'])
-
+    '''
     def test_update_asset_status(self):
-        assets_to_update = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100)
+        assets_to_update = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100, disposed=True)
         new_status = str(self.testing_vars['asset_status1']['ID'])
-        if assets_to_update[0]['StatusID'] == new_status:
+        first_status = str(assets_to_update[0]['StatusID'])
+        if first_status == new_status:
             new_status = str(self.testing_vars['asset_status2']['ID'])
-        updated_assets = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100)
+        updated_assets = self.tax.update_assets(assets_to_update, {'StatusID': new_status})
         self.assertEqual(len(assets_to_update), len(updated_assets))
         for i in range(len(updated_assets)):
             self.assertEqual(str(updated_assets[i]['StatusID']), new_status)

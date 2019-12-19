@@ -298,7 +298,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.search_assets({'RoomID': room['ID']}, max_results=max_results)
 
-    def get_assets_by_owner(self, person: str, max_results: int = 25) -> list:
+    def get_assets_by_owner(self, person: str, max_results: int = 25, retired=False, disposed=False) -> list:
         """
         Gets all assets assigned to a particular person in TDX
 
@@ -313,7 +313,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not isinstance(person, dict):
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with type" +
                                                                   str(type(person)) + " as person.")
-        return self.search_assets({'OwningCustomerIDs': [person['UID']]}, max_results=max_results)
+        return self.search_assets({'OwningCustomerIDs': [person['UID']]},
+                                  max_results=max_results,
+                                  retired=retired,
+                                  disposed=disposed)
 
     def get_assets_by_requesting_department(self, dept, max_results: int = 25) -> list:
         """
@@ -348,6 +351,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             asset_list = assets
         updated_assets = list()
         for this_asset in asset_list:
+            this_asset=self.get_asset_by_id(this_asset['ID'])
             this_asset.update(changed_attributes)
             updated_assets.append(self.make_call(str(this_asset['ID']), 'post', this_asset))
         return updated_assets
@@ -401,6 +405,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 f"Department of type {str(type(new_dept))} not searchable."
             )
         return self.update_assets(asset, changed_attributes)
+
+    # TODO: make "change_asset_custom_attribute_value()"
+    #       this method should take in text of an attribute name and value,
+    #       find the custom attribute ID, and the choice ID for the value,
+    #       and update the asset accordingly.
 
     def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
         """
