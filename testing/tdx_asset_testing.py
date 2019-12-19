@@ -122,11 +122,11 @@ class TdxAssetTesting(unittest.TestCase):
         self.assertGreaterEqual(len(assets), self.testing_vars['room1']['asset_count'])
 
     def test_get_assets_by_owner(self):
-        assets = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100)
+        assets = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['owner']['asset_count'])
 
     def test_get_assets_by_requesting_dept(self):
-        assets = self.tax.get_assets_by_owner(self.testing_vars['department']['Name'], max_results=100)
+        assets = self.tax.get_assets_by_owner(self.testing_vars['department']['Name'], max_results=100, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['department']['asset_count'])
 
     def test_update_asset_status(self):
