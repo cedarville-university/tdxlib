@@ -157,6 +157,61 @@ class TdxAssetTesting(unittest.TestCase):
         updated_asset = self.tax.change_asset_requesting_dept(asset,new_dept)[0]
         self.assertEqual(updated_asset['RequestingDepartmentName'], new_dept['Name'])
 
+    def test_custom_attribute_updating_id(self):
+        asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
+        new_attributes = self.testing_vars['attributes1']
+        for i in asset['Attributes']:
+            if str(i['ID']) == str(new_attributes[0]['ID']) and str(i['Value']) == str(new_attributes[0]['Value']):
+                new_attributes = self.testing_vars['attributes2']
+        attrib_list = []
+        for i in new_attributes:
+            attrib_list.append(self.tax.build_asset_custom_attribute_value(i['ID'],i['Value']))
+        updated_asset = self.tax.change_asset_custom_attribute_value(asset,attrib_list)[0]
+        self.assertGreaterEqual(len(updated_asset['Attributes']),len(new_attributes))
+        validate = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
+        for desired in attrib_list:
+            for existing in validate['Attributes']:
+                if desired['ID'] == existing ['ID']:
+                    self.assertEqual(str(desired['Value']), str(existing['Value']))
+
+    def test_custom_attribute_updating_name(self):
+        asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
+        new_attributes = self.testing_vars['attributes1']
+        for i in asset['Attributes']:
+            if str(i['Name']) == str(new_attributes[0]['Name']) and str(i['Value']) == str(new_attributes[0]['Value']):
+                new_attributes = self.testing_vars['attributes2']
+        attrib_list = []
+        for i in new_attributes:
+            attrib_list.append(self.tax.build_asset_custom_attribute_value(i['Name'], i['Value']))
+        updated_asset = self.tax.change_asset_custom_attribute_value(asset, attrib_list)[0]
+        self.assertGreaterEqual(len(updated_asset['Attributes']),len(new_attributes))
+        validate = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
+        for desired in attrib_list:
+            for existing in validate['Attributes']:
+                if desired['ID'] == existing ['ID']:
+                    self.assertEqual(str(desired['Value']), str(existing['Value']))
+
+    def test_add_custom_attributes(self):
+        asset = self.tax.get_asset_by_id(self.testing_vars['asset2']['ID'])
+        change = {'Name': asset['Name']+'(Cleared)'}
+        cleared_asset = self.tax.update_assets(asset, change, clear_custom_attributes=True)[0]
+        validate = self.tax.get_asset_by_id(self.testing_vars['asset2']['ID'])
+        self.assertEqual(len(validate['Attributes']), 0)
+        self.assertEqual(len(cleared_asset['Attributes']), 0)
+        new_attributes = self.testing_vars['attributes2']
+        attrib_list = []
+        for i in new_attributes:
+            attrib_list.append(self.tax.build_asset_custom_attribute_value(i['ID'], i['Value']))
+        updated_asset = self.tax.change_asset_custom_attribute_value(asset, attrib_list)[0]
+        updated_asset = self.tax.update_assets(updated_asset,{'Name': asset['Name']})[0]
+        self.assertGreaterEqual(len(updated_asset['Attributes']),len(new_attributes))
+        validate = self.tax.get_asset_by_id(self.testing_vars['asset2']['ID'])
+        self.assertEqual(len(validate['Attributes']), len(new_attributes))
+        for desired in attrib_list:
+            for existing in validate['Attributes']:
+                if desired['ID'] == existing ['ID']:
+                    self.assertEqual(str(desired['Value']), str(existing['Value']))
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TdxAssetTesting)

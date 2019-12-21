@@ -645,7 +645,7 @@ class TDXIntegration:
 
     # TODO: look into figuring out what type the attribute is based on information from API,
     #  for use in get_custom_attribute_value_by_name
-    def get_custom_attribute_by_name(self, key: str, object_type: int) -> dict:
+    def get_custom_attribute_by_name_id(self, key: str, object_type: int) -> dict:
         """
         Gets a custom attribute for the component type.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values for component_type.
@@ -670,14 +670,14 @@ class TDXIntegration:
             # There is no API for searching attributes -- the only way is to get them all.
             self.cache['custom_attributes'][str(object_type)] = self.get_all_custom_attributes(object_type)
         for item in self.cache['custom_attributes'][str(object_type)]:
-            if str(key).lower() in item['Name'].lower():
+            if str(key).lower() in item['Name'].lower() or str(key) == str(item['ID']):
                 self.cache['ca_search'][search_key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))
 
     @staticmethod
-    def get_custom_attribute_value_by_name(attribute, key):
+    def get_custom_attribute_choice_by_name_id(attribute, key):
         """
         Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
 
@@ -695,9 +695,10 @@ class TDXIntegration:
 
         """
         for i in attribute['Choices']:
-            if key.lower() in i['Name'].lower():
+            if str(key).lower() == str(i['Name']).lower() or str(key) == str(i['ID']):
                 return i
-        return False
+        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+            f"No custom attribute choice \"{str(key)}\" found in CA {attribute['Name']}")
 
     def get_all_locations(self) -> list:
         """
@@ -794,8 +795,8 @@ class TDXIntegration:
         if custom_attributes:
                 data['Attributes'] = list()
                 for attrib, value in custom_attributes.items():
-                    tdx_attrib = self.get_custom_attribute_by_name(attrib, TDXIntegration.component_ids['account'])
-                    tdx_attrib_value = self.get_custom_attribute_value_by_name(tdx_attrib, value)
+                    tdx_attrib = self.get_custom_attribute_by_name_id(attrib, TDXIntegration.component_ids['account'])
+                    tdx_attrib_value = self.get_custom_attribute_choice_by_name_id(tdx_attrib, value)
                     if not tdx_attrib_value:
                         tdx_attrib_value_final = value
                     else:

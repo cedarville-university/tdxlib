@@ -106,15 +106,15 @@ class TdxTesting(unittest.TestCase):
     def test_get_ca_by_name(self):
         standard = self.testing_vars['ticket_ca']
         type_id = self.tdx.component_ids[standard['type']]
-        test = self.tdx.get_custom_attribute_by_name(standard['Name'], type_id)
+        test = self.tdx.get_custom_attribute_by_name_id(standard['Name'], type_id)
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_ca_value_by_name(self):
         ca_standard = self.testing_vars['ticket_ca']
         standard = ca_standard['choice']
         type_id = self.tdx.component_ids[ca_standard['type']]
-        ca = self.tdx.get_custom_attribute_by_name(ca_standard['Name'], type_id)
-        test = self.tdx.get_custom_attribute_value_by_name(ca, standard['Name'])
+        ca = self.tdx.get_custom_attribute_by_name_id(ca_standard['Name'], type_id)
+        test = self.tdx.get_custom_attribute_choice_by_name_id(ca, standard['Name'])
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_all_locations(self):

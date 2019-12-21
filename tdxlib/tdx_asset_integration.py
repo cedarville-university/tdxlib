@@ -50,14 +50,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         return self._make_asset_call(url, action, post_body)
 
     # TODO: Move this down to a more logical place
-    def get_asset_custom_attribute_by_name(self, key: str) -> dict:
+    def get_asset_custom_attribute_by_name_id(self, key: str) -> dict:
         # Since there are two different types we may have to get, we cache them all
         search_key = str(key) + "_asset_ci"
         if search_key in self.cache['ca_search']:
             return self.cache['ca_search'][search_key]
         # There is no API for searching attributes -- the only way is to get them all.
         for item in self.cache['custom_attributes']:
-            if str(key).lower() in item['Name'].lower():
+            if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
                 self.cache['ca_search'][search_key] = item
                 return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
@@ -181,7 +181,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call(str(asset_id), 'get')
 
-    def search_assets(self, criteria, max_results=25, retired=False, disposed=False) -> list:
+    def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False) -> list:
         """
         Gets a ticket, based on criteria
 
@@ -189,8 +189,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param criteria: a string or dict to search for tickets with. If a string, use as 'SearchString'
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param full_record: get full asset record (Default: False). Takes more time, but returns full asset record
 
-        :return: list of asset info (NOT FULL ASSET RECORDS, must do get asset by id to get full record)
+        :return: list of asset info (by default, NOT FULL ASSET RECORDS, must do get_asset_by_id() to get full record)
 
         Common criteria to put in dict:
         {'SerialLike': [List of Int],
@@ -224,7 +225,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with" +
                                                                   str(type(criteria)) + " as criteria.")
         asset_list = self.make_call('search', 'post', search_body)
-        return asset_list
+        if full_record:
+            full_assets = []
+            for asset in asset_list:
+                full_assets.append(self.get_asset_by_id(asset['ID']))
+            return full_assets
+        else:
+            return asset_list
 
     def find_asset_by_tag(self, tag) -> dict:
         """
@@ -335,12 +342,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                                                   str(type(dept)) + " as department.")
         return self.search_assets({'RequestingDepartmentIDs': [dept['ID']]}, max_results=max_results)
 
-    def update_assets(self, assets, changed_attributes: dict) -> list:
+    def update_assets(self, assets, changed_attributes: dict, clear_custom_attributes=False) -> list:
         """
         Updates data in a list of assets
 
         :param assets: a list of assets (maybe from search_assets()) or a single asset (only ID required)
         :param changed_attributes: a dict of attributes in the ticket to be changed
+        :param clear_custom_attributes: (default: False) A boolean indicating whether or not custom attributes should be cleared
 
         :return: list of updated assets
         """
@@ -352,6 +360,20 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         updated_assets = list()
         for this_asset in asset_list:
             this_asset=self.get_asset_by_id(this_asset['ID'])
+            if 'Attributes' in changed_attributes and not clear_custom_attributes:
+                for new_attrib in changed_attributes['Attributes']:
+                    new_attrib_marker = True
+                    for attrib in this_asset['Attributes']:
+                        if str(new_attrib['ID']) == str(attrib['ID']):
+                            attrib['Value'] = new_attrib['Value']
+                            new_attrib_marker=False
+                            continue
+                    if new_attrib_marker:
+                        this_asset['Attributes'].append(new_attrib)
+            if clear_custom_attributes:
+                changed_attributes['Attributes'] = []
+            else:
+                changed_attributes['Attributes'] = this_asset['Attributes']
             this_asset.update(changed_attributes)
             updated_assets.append(self.make_call(str(this_asset['ID']), 'post', this_asset))
         return updated_assets
@@ -406,10 +428,37 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             )
         return self.update_assets(asset, changed_attributes)
 
-    # TODO: make "change_asset_custom_attribute_value()"
-    #       this method should take in text of an attribute name and value,
-    #       find the custom attribute ID, and the choice ID for the value,
-    #       and update the asset accordingly.
+    def build_asset_custom_attribute_value(self, custom_attribute, value) -> dict:
+        """
+        Changes the value of a specific custom attribute on one or more tickets.
+
+        :param asset: asset to update (doesn't have to be full record), or list of same
+        :param custom_attribute: name of custom attribute (or dict of info)
+        :param value: name of value to set, or value to set to
+        :return: list of updated assets in dict format
+        """
+        if isinstance(custom_attribute, str) or isinstance(custom_attribute, int):
+            ca = self.get_asset_custom_attribute_by_name_id(str(custom_attribute))
+        elif isinstance(custom_attribute, dict):
+            ca = str(custom_attribute)
+        else:
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+                f"Custom Attribute of type {str(type(new_dept))} not searchable."
+            )
+        if len(ca['Choices'])> 0:
+            ca_choice = self.get_custom_attribute_choice_by_name_id(ca, value)
+            value = ca_choice['ID']
+        return {'ID': ca['ID'], 'Value': value}
+
+    def change_asset_custom_attribute_value(self, asset, custom_attributes: list) -> list:
+        """
+        Takes a correctly formatted list of CA's and updates assets with them.
+        :param asset: asset to update (doesn't have to be full record), or list of same
+        :param custom_attributes: List of ID/Value dicts (from build_asset_custom_attribute_value())
+        :return: list of updated assets in dict format
+        """
+        to_change = {'Attributes': custom_attributes}
+        return self.update_assets(asset, to_change)
 
     def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
         """
@@ -513,8 +562,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             for key, value in asset_values.items():
                 if attrib_prefix in key:
                     attrib_name = key.replace(attrib_prefix, "")
-                    attrib = self.get_asset_custom_attribute_by_name(attrib_name)
-                    value = self.get_custom_attribute_value_by_name(attrib, value)
+                    attrib = self.get_asset_custom_attribute_by_name_id(attrib_name)
+                    value = self.get_custom_attribute_choice_by_name_id(attrib, value)
                     new_attrib = dict()
                     new_attrib['ID'] = attrib['ID']
                     new_attrib['Value'] = value['ID']
