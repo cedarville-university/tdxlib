@@ -452,7 +452,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def change_asset_custom_attribute_value(self, asset, custom_attributes: list) -> list:
         """
-        Takes a correctly formatted list of CA's and updates assets with them.
+        Takes a correctly formatted list of CA's (from build_asset_custom_attribute_value, for instance)
+        and updates one or more assets with the new values.
+
         :param asset: asset to update (doesn't have to be full record), or list of same
         :param custom_attributes: List of ID/Value dicts (from build_asset_custom_attribute_value())
         :return: list of updated assets in dict format
