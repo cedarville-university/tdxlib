@@ -155,7 +155,7 @@ class TDXIntegration:
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('Authorization failed.\n' + str(e))
 
-    def check_auth_exp(self) -> bool:
+    def check_auth_exp(self):
         """
         Internal method to check the expiration of the stored access token.
         If it is expired, call auth() to get a new token.
