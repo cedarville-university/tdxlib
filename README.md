@@ -1,3 +1,4 @@
+![Upload Python Package](https://github.com/cedarville-university/tdxlib/workflows/Upload%20Python%20Package/badge.svg)
 # TDXLib (TeamDynamix Python SDK)
 
 TDXLib is a suite of Python libraries originally designed to take input from Google Sheets and create tickets in [TeamDynamix](https://teamdynamix.com) based on the contents of the sheets. The scope of the project has broadened past its humble beginnings, and continues to do so whenever there's a feature we need that it doesn't currently support.
@@ -12,6 +13,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 * Python 3.6+
 * requests
 * python-dateutil
+* pyjwt
 ### Optional:
 * gspread (for Google Sheets integration -- not an official dependency)
 * oauth2client (for Google Sheets integration -- not an official dependency)
