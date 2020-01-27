@@ -25,14 +25,15 @@ class TDXTicket:
         'IsConvertedToTask', 'ConvertedToTaskDate', 'ConvertedToTaskUid', 'ConvertedToTaskFullName', 'TaskProjectID',
         'TaskProjectName', 'TaskPlanID', 'TaskPlanName', 'TaskID', 'TaskTitle', 'TaskStartDate', 'TaskEndDate',
         'TaskPercentComplete', 'LocationName', 'LocationRoomName', 'RefCode', 'ServiceName', 'ServiceCategoryID',
-        'ServiceCategoryName', 'ArticleID', 'ArticleSubject', 'ArticleStatus', 'ArticleCategoryPathNames', 'AppID',
-        'Attachments', 'Tasks', 'Notify'
+        'ServiceCategoryName', 'ArticleID', 'ArticleSubject', 'ArticleStatus', 'ArticleCategoryPathNames',
+        'ArticleAppID', 'ArticleShortcutID', 'AppID', 'Attachments', 'Tasks', 'Notify'
     ]
     valid_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
         'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'ParentID', 'TypeCategoryID', 'SlaID', 'ActualMinutes',
         'DaysOld', 'ReviewingGroupID', 'TaskProjectID', 'TaskPlanID', 'TaskID', 'TaskPercentComplete', 'FormID',
-        'ServiceCategoryID', 'ArticleID', 'AppID', 'ParentClass', 'Classification', 'StatusClass', 'ArticleStatus'
+        'ServiceCategoryID', 'ArticleID', 'AppID', 'ArticleAppID', 'ArticleShortcutID', 'ParentClass', 'Classification',
+        'StatusClass', 'ArticleStatus'
     ]
     valid_decimal_attributes = ['TimeBudget', 'ExpensesBudget', 'PriorityOrder', 'TimeBudgetUsed', 'ExpensesBudgetUsed']
     valid_bool_attributes = [
@@ -50,10 +51,11 @@ class TDXTicket:
         'Description', 'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'TimeBudget',
         'ExpensesBudget', 'LocationID', 'LocationRoomID', 'ServiceID', 'Attributes', 'GoesOffHoldDate', 'StartDate',
         'EndDate', 'ResponsibleUid', 'TypeID', 'AccountID', 'PriorityID', 'RequestorUid', 'Title', 'StatusID', 'FormID',
+        'ArticleShortcutID'
     ]
     editable_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
-        'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'StatusID'
+        'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'StatusID', 'ArticleShortcutID'
     ]
     editable_double_attributes = ['ExpensesBudget', 'TimeBudget']
     editable_date_attributes = ['GoesOffHoldDate', 'StartDate', 'EndDate']
