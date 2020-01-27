@@ -6,6 +6,7 @@ import tdxlib.tdx_api_exceptions
 import datetime
 import time
 from typing import BinaryIO
+import jwt
 
 
 class TDXIntegration:
@@ -124,6 +125,11 @@ class TDXIntegration:
         if self.password == 'Prompt':
             pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
             self.password = getpass.getpass(pass_prompt)
+        self.auth()
+        self.cache = {}
+        self.clean_cache()
+
+    def auth(self):
         try:
             response = requests.post(
                 url=str(self.api_url) + '/auth',
@@ -140,13 +146,24 @@ class TDXIntegration:
                                                                 response.reason + "\n" + " Returned: " + response.text)
             else:
                 self.token = response.text
-                self.password = None
+                # Decode token to identify expiration date
+                decoded = jwt.decode(self.token, verify=False)
+                self.token_exp = decoded['exp']
+
         except requests.exceptions.RequestException:
             print('HTTP Request failed')
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('Authorization failed.\n' + str(e))
-        self.cache = {}
-        self.clean_cache()
+
+    def check_auth_exp(self):
+        """
+        Internal method to check the expiration of the stored access token.
+        If it is expired, call auth() to get a new token.
+        """
+        # If token is expired or will expire in the next minute, get new token
+        if (self.token_exp < time.time() + 60):
+            print(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. Getting new token...")
+            self.auth()
 
     def rate_limit(self, skew_mitigation_secs=5):
         if 'remaining' in self.cache['rate_limit']:
@@ -172,6 +189,7 @@ class TDXIntegration:
 
         """
         self.rate_limit()
+        self.check_auth_exp()
         get_url = self.api_url + request_url
         response = None
         attempts = 0
@@ -217,6 +235,7 @@ class TDXIntegration:
 
         """
         self.rate_limit()
+        self.check_auth_exp()
         post_url = self.api_url + request_url
         response = None
         try:
@@ -257,6 +276,7 @@ class TDXIntegration:
         :return: the API's response as a python dict
         """
         self.rate_limit()
+        self.check_auth_exp()
         post_url = self.api_url + request_url
         response = None
         try:
@@ -294,6 +314,7 @@ class TDXIntegration:
 
         """
         self.rate_limit()
+        self.check_auth_exp()
         put_url = self.api_url + request_url
         response = None
         try:
@@ -333,6 +354,7 @@ class TDXIntegration:
 
         """
         self.rate_limit()
+        self.check_auth_exp()
         delete_url = self.api_url + request_url
         try:
             response = requests.delete(
@@ -368,6 +390,7 @@ class TDXIntegration:
 
         """
         self.rate_limit()
+        self.check_auth_exp()
         patch_url = self.api_url + request_url
         response = None
         try:
