@@ -79,7 +79,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: the API's response as a python dict or list
 
         """
-        return self.make_ticket_call(url, action, post_body)
+        return self._make_ticket_call(url, action, post_body)
 
     def get_all_ticket_custom_attributes(self):
         return self.get_all_custom_attributes(TDXTicketIntegration.component_ids['ticket'], app_id=self.ticket_app_id)
@@ -95,7 +95,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :rtype: dict
 
         """
-        return self.get_custom_attribute_by_name(key, TDXTicketIntegration.component_ids['ticket'])
+        return self.get_custom_attribute_by_name_id(key, TDXTicketIntegration.component_ids['ticket'])
 
     # #### GETTING TICKETS #### #
 
@@ -906,7 +906,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                 if attrib_prefix in key:
                     attrib_name = key.replace(attrib_prefix, "")
                     attrib = self.get_ticket_custom_attribute_by_name(attrib_name)
-                    attrib_value = self.get_custom_attribute_value_by_name(attrib, value)
+                    attrib_value = self.get_custom_attribute_choice_by_name_id(attrib, value)
                     # if not a set-choice attribute, we just need to set it directly.
                     new_attrib = dict()
                     new_attrib['ID'] = attrib['ID']

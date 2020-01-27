@@ -18,10 +18,18 @@ class TdxTesting(unittest.TestCase):
                 self.testing_vars = json.load(f)
         else:
             print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
-                  'A sample file is available in testing/sample_testing_vars. Any *.json files are ignored by git.')
+                  'A sample file is available in testing/sample_ticket_testing_vars. Any *.json files are ignored by git.')
 
     def test_authentication(self):
         self.assertGreater(len(self.tdx.token), 200)
+
+    def test_check_auth_exp(self):
+        # Set token exp to sometime in the past
+        self.tdx.token_exp = 1579203044
+        # Make an API call to check if old token will be refreshed
+        standard = self.testing_vars['person1']
+        test = self.tdx.get_person_by_uid(standard['UID'])
+        self.assertTrue(test)
 
     def test_get_location_by_id(self):
         standard = self.testing_vars['location']
@@ -106,15 +114,15 @@ class TdxTesting(unittest.TestCase):
     def test_get_ca_by_name(self):
         standard = self.testing_vars['ticket_ca']
         type_id = self.tdx.component_ids[standard['type']]
-        test = self.tdx.get_custom_attribute_by_name(standard['Name'], type_id)
+        test = self.tdx.get_custom_attribute_by_name_id(standard['Name'], type_id)
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_ca_value_by_name(self):
         ca_standard = self.testing_vars['ticket_ca']
         standard = ca_standard['choice']
         type_id = self.tdx.component_ids[ca_standard['type']]
-        ca = self.tdx.get_custom_attribute_by_name(ca_standard['Name'], type_id)
-        test = self.tdx.get_custom_attribute_value_by_name(ca, standard['Name'])
+        ca = self.tdx.get_custom_attribute_by_name_id(ca_standard['Name'], type_id)
+        test = self.tdx.get_custom_attribute_choice_by_name_id(ca, standard['Name'])
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_all_locations(self):
