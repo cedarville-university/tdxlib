@@ -34,7 +34,7 @@ class TDXIntegration:
         self.username = None
         self.password = None
         self.token = None
-        self.token_exp
+        self.token_exp = None
         self.config = configparser.ConfigParser()
 
         # Read in configuration
