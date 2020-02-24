@@ -34,6 +34,7 @@ class TDXIntegration:
         self.username = None
         self.password = None
         self.token = None
+        self.token_exp = None
         self.config = configparser.ConfigParser()
 
         # Read in configuration
@@ -287,6 +288,10 @@ class TDXIntegration:
                 },
                 files={'file': file}
             )
+            if response.status_code not in [200, 201]:
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    " Response code: " + str(response.status_code) + " " +
+                    response.reason + "\n" + "Returned: " + response.text)
             val = response.json()
             self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
