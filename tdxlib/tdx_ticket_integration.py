@@ -52,7 +52,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def get_url_string(self):
         return '/' + str(self.ticket_app_id) + '/tickets'
 
-    def make_ticket_call(self, url, action, post_body=None):
+    def _make_ticket_call(self, url, action, post_body=None):
         url_string = self.get_url_string()
         if len(url) > 0:
             url_string += '/' + url
