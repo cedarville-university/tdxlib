@@ -295,12 +295,13 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['NewStatusID'] = 0
         return self.make_call(url_string, 'post', data)
 
-    def upload_attachment(self, ticket_id: int, file: BinaryIO):
+    def upload_attachment(self, ticket_id: int, file: BinaryIO, filename: str = None):
         """
         Uploads an attachment to a ticket.
 
         :param ticket_id: the ticket ID to upload the attachment
         :param file: Python file object opened in binary read mode to upload as attachment
+        :param filename: (optional), explicitly specify filename header. If None, requests will determine from passed-in file object.
 
         :return: python dict containing created attachment information
         
@@ -308,7 +309,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         url = self.get_url_string()
         url += f"/{ticket_id}/attachments"
-        return self.make_file_post(url, file)
+        return self.make_file_post(url, file, filename)
 
     # #### GETTING TICKET ATTRIBUTES #### #
 
