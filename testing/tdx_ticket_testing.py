@@ -284,6 +284,14 @@ class TdxTicketTesting(unittest.TestCase):
             update = self.tix.upload_attachment(ticket_id, file)
         self.assertEqual(filename, update['Name'])
 
+    def test_upload_attachment_filename(self):
+        if not self.tix.sandbox:
+            return
+        ticket_id = self.testing_vars['ticket1']['ID']
+        filename = self.testing_vars['attachment']['Name']
+        update = self.tix.upload_attachment(ticket_id, "foobar data data", filename)
+        self.assertEqual(filename, update['Name'])
+
     def test_get_ticket_task_feed(self):
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']

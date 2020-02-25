@@ -266,13 +266,15 @@ class TDXIntegration:
                 message += response.text
             print(message)
 
-    def make_file_post(self, request_url: str, file: BinaryIO):
+    def make_file_post(self, request_url: str, file: BinaryIO, filename: str = None):
         """
         Makes a HTTP POST request to the TDX Api with a Multipart-Encoded File
         
         :param request_url: the path (everything after /TDWebApi/api/) to call
         :param file: BinaryIO object opened in read mode to upload as attachment.
         (read documentation at requests.readthedocs.io/en/master/user/quickstart/#post-a-multipart-encoded-file)
+        :param filename: (optional), allows to explicitly specify filename header. If None, requests will determine from passed-in file object.
+        This is useful for if you want to upload a file in memory without a filename, which is required for uploading to TeamDynamix.
 
         :return: the API's response as a python dict
         """
@@ -280,13 +282,17 @@ class TDXIntegration:
         self.check_auth_exp()
         post_url = self.api_url + request_url
         response = None
+        if filename:
+            files = {'file': (filename, file)}
+        else:
+            files = {'file': file}
         try:
             response = requests.post(
                 url=post_url,
                 headers={
                     "Authorization": 'Bearer ' + self.token,
                 },
-                files={'file': file}
+                files=files
             )
             if response.status_code not in [200, 201]:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
