@@ -57,9 +57,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             return self.cache['ca_search'][search_key]
         # There is no API for searching attributes -- the only way is to get them all.
         for item in self.cache['custom_attributes']:
-            if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
-                self.cache['ca_search'][search_key] = item
-                return item
+            if type(item) == dict:
+                if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
+                    self.cache['ca_search'][search_key] = item
+                    return item
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom asset or CI attribute found for " + str(key))
 
@@ -162,6 +163,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return product_model
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
 
+    # TODO: def get_all_product_models_of_type(self, key) -> list:
     # TODO: def update_product_model(self, updated_values)-> dict:
     # TODO: def create_product_model(self, params)-> dict:
     # TODO: def delete_product_model(self, updated_values)-> dict:
@@ -352,28 +354,34 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :return: list of updated assets
         """
+        changed_custom_attributes=False
         if not isinstance(assets, list):
             asset_list = list()
             asset_list.append(assets)
         else:
             asset_list = assets
         updated_assets = list()
+        if 'Attributes' in changed_attributes:
+            if isinstance(changed_attributes['Attributes'], list):
+                changed_custom_attributes = changed_attributes['Attributes']
+            else:
+                changed_custom_attributes = [changed_attributes['Attributes']]
+            del changed_attributes['Attributes']
         for this_asset in asset_list:
             this_asset=self.get_asset_by_id(this_asset['ID'])
-            if 'Attributes' in changed_attributes and not clear_custom_attributes:
-                for new_attrib in changed_attributes['Attributes']:
+            if 'Attributes' not in this_asset.keys():
+                this_asset['Attributes'] = []
+            if changed_custom_attributes and not clear_custom_attributes:
+                for new_attrib in changed_custom_attributes:
                     new_attrib_marker = True
                     for attrib in this_asset['Attributes']:
                         if str(new_attrib['ID']) == str(attrib['ID']):
                             attrib['Value'] = new_attrib['Value']
                             new_attrib_marker=False
-                            continue
                     if new_attrib_marker:
                         this_asset['Attributes'].append(new_attrib)
             if clear_custom_attributes:
-                changed_attributes['Attributes'] = []
-            else:
-                changed_attributes['Attributes'] = this_asset['Attributes']
+                this_asset['Attributes'] = []
             this_asset.update(changed_attributes)
             updated_assets.append(self.make_call(str(this_asset['ID']), 'post', this_asset))
         return updated_assets
@@ -443,9 +451,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             ca = str(custom_attribute)
         else:
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
-                f"Custom Attribute of type {str(type(new_dept))} not searchable."
+                f"Custom Attribute of type {str(type(custom_attribute))} not searchable."
             )
-        if len(ca['Choices'])> 0:
+        if len(ca['Choices']) > 0:
             ca_choice = self.get_custom_attribute_choice_by_name_id(ca, value)
             value = ca_choice['ID']
         return {'ID': ca['ID'], 'Value': value}
