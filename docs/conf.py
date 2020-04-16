@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'tdxlib'
-copyright = '2019, Cedarville University IT'
+copyright = '2020, Cedarville University IT'
 author = 'Cedarville University IT'
 
 
