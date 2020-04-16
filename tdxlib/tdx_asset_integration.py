@@ -448,7 +448,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if isinstance(custom_attribute, str) or isinstance(custom_attribute, int):
             ca = self.get_asset_custom_attribute_by_name_id(str(custom_attribute))
         elif isinstance(custom_attribute, dict):
-            ca = str(custom_attribute)
+            ca = custom_attribute
         else:
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
                 f"Custom Attribute of type {str(type(custom_attribute))} not searchable."
