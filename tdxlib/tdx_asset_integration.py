@@ -69,6 +69,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         Gets a list asset forms
 
         :return: list of form data in json format
+
         """
         return self.make_call('forms', 'get')
         
@@ -79,6 +80,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param key: name of AssetForm to search for
 
         :return: list of form data in json format
+
         """
         if not self.cache['asset_form']:
             self.cache['asset_form'] = self.get_all_asset_forms()
@@ -95,6 +97,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         Gets a list asset statuses
 
         :return: list of status data
+
         """
         return self.make_call('statuses', 'get')
 
@@ -105,6 +108,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param key: name of an asset status to search for
 
         :return: dict of status data
+
         """
         if not self.cache['asset_status']:
             self.cache['asset_status'] = self.get_all_asset_statuses()
@@ -121,6 +125,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         Gets a list of product types
 
         :return: list of product type data
+
         """
         return self.make_call("models/types", 'get')
 
@@ -131,6 +136,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param key: name of product type to search for
 
         :return: dict of product type data
+
         """
         if not self.cache['product_type']:
             self.cache['product_type'] = self.get_all_product_types()
@@ -146,7 +152,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     def get_all_product_models(self) -> list:
         """
         Gets a list asset models
+
         :return: list of model data
+
         """
         return self.make_call("models", 'get')
 
@@ -154,7 +162,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets a specific product model
         :param key: name of product model to search for
+
         :return: dict of model data
+
         """
         if not self.cache['product_model']:
             self.cache['product_model'] = self.get_all_product_models()
@@ -180,12 +190,21 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param asset_id: asset ID from TDX
 
         :return: dict of asset data
+
         """
         return self.make_call(str(asset_id), 'get')
 
     def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False) -> list:
         """
         Gets a ticket, based on criteria
+
+        Common criteria to put in dict:
+        {'SerialLike': [List of Int],
+        'SearchText': [String],
+        'StatusIDs': [List of Int],
+        'CustomAttributes': [Dict of CA],
+        'ParentIDs': [List of Int]}
+        (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Assets.AssetSearch)
 
         :param max_results: maximum number of results to return
         :param criteria: a string or dict to search for tickets with. If a string, use as 'SearchString'
@@ -194,14 +213,6 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: get full asset record (Default: False). Takes more time, but returns full asset record
 
         :return: list of asset info (by default, NOT FULL ASSET RECORDS, must do get_asset_by_id() to get full record)
-
-        Common criteria to put in dict:
-        {'SerialLike': [List of Int],
-        'SearchText': [String],
-        'StatusIDs': [List of Int],
-        'CustomAttributes': [Dict of CA],
-        'ParentIDs': [List of Int]}
-        (https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Tickets.TicketSearch)
         
         """
         # Set default statuses
@@ -242,6 +253,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param tag: asset tag as a string or int
 
         :return: the single asset with the corresponding tag
+
         """
         if type(tag) is str:
             tag = tag.lstrip('0')
@@ -353,6 +365,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param clear_custom_attributes: (default: False) A boolean indicating whether or not custom attributes should be cleared
 
         :return: list of updated assets
+
         """
         changed_custom_attributes=False
         if not isinstance(assets, list):
@@ -395,6 +408,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param new_dept: name of new department, or dict of information
 
         :return: list of the updated assets
+
         """
         if isinstance(new_owner, str):
             new_owner_uid = self.get_person_by_name_email(new_owner)['UID']
@@ -424,6 +438,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param new_dept: name of new department
 
         :return: list of the updated assets
+
         """
         changed_attributes = dict()
         if isinstance(new_dept, str):
@@ -443,7 +458,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param asset: asset to update (doesn't have to be full record), or list of same
         :param custom_attribute: name of custom attribute (or dict of info)
         :param value: name of value to set, or value to set to
+
         :return: list of updated assets in dict format
+
         """
         if isinstance(custom_attribute, str) or isinstance(custom_attribute, int):
             ca = self.get_asset_custom_attribute_by_name_id(str(custom_attribute))
@@ -478,6 +495,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param target_asset: asset to move children to
 
         :return: list of the updated assets
+
         """
         search_params = {'ParentID': source_asset['ID']}
         update_params = {'ParentID': target_asset['ID']}
@@ -497,6 +515,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param new_status: Name or ID of new status for source asset
 
         :return: list of the target and source asset data
+
         """
         excluded_attributes = ['SerialNumber', 'Tag', 'ExternalID', 'ModelID', 'SupplierID', 'ManufacturerID',
                                'PurchaseCost', 'ExpectedReplacementDate', 'AcquisitionDate']
@@ -540,6 +559,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param external_id: String with external id for new asset (Default: serial Number)
         :param product_model: String with name of product model
         :param form: Name of the Asset form to use
+
+        :return: dict usable in create_asset()
 
         """
         # set defaults
@@ -621,6 +642,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param asset_json: a dict of asset info (maybe from make_asset_json()) to use in creation
 
         :return: dict of created asset details
+
         """
         url_string = '/' + str(self.asset_app_id) + 'assets'
         post_body = dict()
