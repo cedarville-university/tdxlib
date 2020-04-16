@@ -517,7 +517,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     # TODO: make_basic_asset_json
     def make_basic_asset_json(self, asset_values, asset_name, serial_number, status_name, location_name, room_name,
                               asset_tag, acquisition_date=None, asset_lifespan=None, attrib_prefix=None, requester=None,
-                              requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None):
+                              requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None,
+                              product_model=None, form=None):
         """
         Makes a JSON object for inputting into makeTicket function
 
@@ -537,6 +538,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param owning_dept: String with Account name of owning department
         :param parent: Int with ID or String with serial number of a parent asset. Parent Asset must exist.
         :param external_id: String with external id for new asset (Default: serial Number)
+        :param product_model: String with name of product model
+        :param form: Name of the Asset form to use
 
         """
         # set defaults
@@ -596,6 +599,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['OwningCustomerID'] = self.get_person_by_name_email(owner)['UID']
         if owning_dept:
             data['OwningDepartmentID'] = self.get_account_by_name(owning_dept)['ID']
+        if product_model:
+            data['ProductModelID'] = self.get_product_model_by_name_id(product_model)['ID']
+        if form:
+            data['FormID'] = self.get_asset_form_by_name_id(form)['ID']
         if parent:
             if type(parent) is int:
                 data['ParentID'] = parent
