@@ -75,7 +75,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         
     def get_asset_form_by_name_id(self, key: str) -> dict:
         """
-        Gets an asset form
+        Gets a specific asset form object
 
         :param key: name of AssetForm to search for
 
@@ -103,7 +103,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_asset_status_by_name_id(self, key: str) -> dict:
         """
-        Gets a list asset statuses
+        Gets a specific asset status object
 
         :param key: name of an asset status to search for
 
@@ -122,7 +122,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_all_product_types(self) -> list:
         """
-        Gets a list of product types
+        Gets a list of all product types
 
         :return: list of product type data
 
@@ -131,7 +131,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_product_type_by_name_id(self, key: str) -> dict:
         """
-        Gets a product type object
+        Gets a specific product type object
 
         :param key: name of product type to search for
 
@@ -160,7 +160,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_product_model_by_name_id(self, key: str) -> dict:
         """
-        Gets a specific product model
+        Gets a specific product model object
+
         :param key: name of product model to search for
 
         :return: dict of model data
@@ -185,7 +186,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_asset_by_id(self, asset_id: str) -> dict:
         """
-        Gets a full list of asset attributes and values
+        Gets a specfic asset object, including the full list of attributes.
 
         :param asset_id: asset ID from TDX
 
@@ -196,7 +197,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False) -> list:
         """
-        Gets a ticket, based on criteria
+        Searches for assets, based on criteria
 
         Common criteria to put in dict:
         {'SerialLike': [List of Int],
@@ -210,9 +211,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param criteria: a string or dict to search for tickets with. If a string, use as 'SearchString'
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
-        :param full_record: get full asset record (Default: False). Takes more time, but returns full asset record
+        :param full_record: get full asset record (Default: False). Takes more time, but returns full asset record(s)
 
-        :return: list of asset info (by default, NOT FULL ASSET RECORDS, must do get_asset_by_id() to get full record)
+        :return: list of asset info (by default, NOT FULL ASSET RECORDS, pass full_record=True to get full record)
         
         """
         # Set default statuses
@@ -286,7 +287,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_assets_by_location(self, location, max_results: int = 5000) -> list:
         """
-        Gets all asset in a location
+        Gets all assets in a location
 
         :param location: a single location (from get_location_by_name()) or list of same
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
@@ -309,7 +310,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_assets_by_room(self, room: dict, max_results: int = 25) -> list:
         """
-        Gets all assets in a room
+        Gets all assets in a specific room in a location
 
         :param room: a single room (from get_room_by_name())
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
@@ -321,7 +322,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_assets_by_owner(self, person: str, max_results: int = 25, retired=False, disposed=False) -> list:
         """
-        Gets all assets assigned to a particular person in TDX
+        Gets all assets owned by a particular person in TDX
 
         :param person: the name or email of a person in TDX, or a dict containing their information
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
@@ -401,7 +402,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def change_asset_owner(self, asset, new_owner, new_dept=None) -> list:
         """
-        Gets updates data in a list of assets
+        Updates owner data in a list of assets
 
         :param asset: asset to update (doesn't have to be full record), or list of same
         :param new_owner: email or name of new owner, or dict of their information
@@ -432,7 +433,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def change_asset_requesting_dept(self, asset, new_dept)-> list:
         """
-        Gets updates data in a list of assets
+        Updates Requesting Department data in a list of assets
 
         :param asset: asset to update (doesn't have to be full record), or list of same
         :param new_dept: name of new department
@@ -453,13 +454,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def build_asset_custom_attribute_value(self, custom_attribute, value) -> dict:
         """
-        Changes the value of a specific custom attribute on one or more tickets.
+        Builds a custom attribute for an asset from the name of the attribute and value.
 
         :param asset: asset to update (doesn't have to be full record), or list of same
         :param custom_attribute: name of custom attribute (or dict of info)
         :param value: name of value to set, or value to set to
 
-        :return: list of updated assets in dict format
+        :return: list of updated assets in dict format (for use in change_custom_attribute_value())
 
         """
         if isinstance(custom_attribute, str) or isinstance(custom_attribute, int):
@@ -489,7 +490,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
         """
-        Moves child assets from one asset to another
+        Moves child assets from one parent asset to another
 
         :param source_asset: asset to move children from (doesn't have to be full record)
         :param target_asset: asset to move children to
@@ -506,7 +507,6 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Copies asset attributes from one asset to another. Does not include attributes like Serial Number, Asset Tag,
             and other hardware-specific fields.
-
 
         :param source_asset: asset to copy attributes from (doesn't have to be full record)
         :param target_asset: asset to copy attributes to (doesn't have to full record) This asset will be OVERWRITTEN!
@@ -539,7 +539,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                               requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None,
                               product_model=None, form=None):
         """
-        Makes a JSON object for inputting into makeTicket function
+        Makes a correctly-formatted dict of asset attributes for inputting into create_asset() function
 
         :param asset_values: a dictionary (potentially loaded from google sheet) with asset info and custom attribs
         :param asset_name: a string containing the name for the asset
