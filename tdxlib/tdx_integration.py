@@ -156,7 +156,7 @@ class TDXIntegration:
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             print('Authorization failed.\n' + str(e))
 
-    def check_auth_exp(self):
+    def _check_auth_exp(self):
         """
         Internal method to check the expiration of the stored access token.
         If it is expired, call auth() to get a new token.
@@ -166,7 +166,11 @@ class TDXIntegration:
             print(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. Getting new token...")
             self.auth()
 
-    def rate_limit(self, skew_mitigation_secs=5):
+    def _rate_limit(self, skew_mitigation_secs=5):
+        """
+        Internal method to check the rate-limited headers from TDX.
+        If the rate-limiting is within 1 request of sending a 429, will sleep until the timer resets.
+        """
         if 'remaining' in self.cache['rate_limit']:
             if not self.cache['rate_limit']['remaining'] > 1:
                 if 'reset_time' in self.cache['rate_limit']:
@@ -189,8 +193,8 @@ class TDXIntegration:
         :return: the API's response as a python dict or list
 
         """
-        self.rate_limit()
-        self.check_auth_exp()
+        self._rate_limit()
+        self._check_auth_exp()
         get_url = self.api_url + request_url
         response = None
         attempts = 0
@@ -235,8 +239,8 @@ class TDXIntegration:
         :return: the API's response as a python dict or list
 
         """
-        self.rate_limit()
-        self.check_auth_exp()
+        self._rate_limit()
+        self._check_auth_exp()
         post_url = self.api_url + request_url
         response = None
         try:
@@ -278,8 +282,8 @@ class TDXIntegration:
 
         :return: the API's response as a python dict
         """
-        self.rate_limit()
-        self.check_auth_exp()
+        self._rate_limit()
+        self._check_auth_exp()
         post_url = self.api_url + request_url
         response = None
         if filename:
@@ -324,8 +328,8 @@ class TDXIntegration:
         :return: the API's response as a python dict or list
 
         """
-        self.rate_limit()
-        self.check_auth_exp()
+        self._rate_limit()
+        self._check_auth_exp()
         put_url = self.api_url + request_url
         response = None
         try:
@@ -364,8 +368,8 @@ class TDXIntegration:
         :return: None
 
         """
-        self.rate_limit()
-        self.check_auth_exp()
+        self._rate_limit()
+        self._check_auth_exp()
         delete_url = self.api_url + request_url
         try:
             response = requests.delete(
@@ -400,8 +404,8 @@ class TDXIntegration:
         :return: the API's response, as a python dict or list
 
         """
-        self.rate_limit()
-        self.check_auth_exp()
+        self._rate_limit()
+        self._check_auth_exp()
         patch_url = self.api_url + request_url
         response = None
         try:
