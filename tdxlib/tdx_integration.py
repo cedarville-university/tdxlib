@@ -732,11 +732,14 @@ class TDXIntegration:
         :rtype: dict
 
         """
-        for i in attribute['Choices']:
-            if str(key).lower() == str(i['Name']).lower() or str(key) == str(i['ID']):
-                return i
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            f"No custom attribute choice \"{str(key)}\" found in CA {attribute['Name']}")
+        if len(attribute['Choices']) > 0:
+            for i in attribute['Choices']:
+                if str(key).lower() == str(i['Name']).lower() or str(key) == str(i['ID']):
+                    return i
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+                f"No custom attribute choice \"{str(key)}\" found in CA {attribute['Name']}")
+        else:
+            return str(key)
 
     def get_all_locations(self) -> list:
         """
