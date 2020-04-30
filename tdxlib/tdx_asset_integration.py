@@ -533,24 +533,21 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             updated_source = self.update_assets(full_source, update_params)
         return [updated_target, updated_source]
 
-    # TODO: make_basic_asset_json
-    def make_basic_asset_json(self, asset_values, asset_name, serial_number, status_name, location_name, room_name,
-                              asset_tag, acquisition_date=None, asset_lifespan=None, attrib_prefix=None, requester=None,
-                              requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None,
-                              product_model=None, form=None):
+    def build_asset(self, asset_name, serial_number, status_name, location_name=None, room_name=None,
+                    asset_tag=None, acquisition_date=None, asset_lifespan=None, attrib_prefix=None, requester=None,
+                    requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None,
+                    product_model=None, form=None, asset_custom_attributes=None):
         """
         Makes a correctly-formatted dict of asset attributes for inputting into create_asset() function
 
-        :param asset_values: a dictionary (potentially loaded from google sheet) with asset info and custom attribs
         :param asset_name: a string containing the name for the asset
         :param serial_number: String with serial number of new asset
         :param status_name: String with name of status of new asset
-        :param location_name: String with name of location for new asset
-        :param room_name: String with name of room for new asset
-        :param asset_tag: String with asset tag value for new asset
+        :param location_name: String with name of location for new asset (optional)
+        :param room_name: String with name of room for new asset (optional, requires location_name)
+        :param asset_tag: String with asset tag value for new asset (optional)
         :param acquisition_date: Building name of location (Default: date of execution)
         :param asset_lifespan: Years you expect this device to be in service (Default: 4)
-        :param attrib_prefix: the string that prefixes all the custom attribute column names in the asset_values dict
         :param requester: String with email of requester for new asset (Default: integration username)
         :param requesting_dept: Account Name of requesting department for new asset
         :param owner: String with Email of owner of new asset
@@ -559,6 +556,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param external_id: String with external id for new asset (Default: serial Number)
         :param product_model: String with name of product model
         :param form: Name of the Asset form to use
+        :param asset_custom_attributes: a dictionary of asset custom attribute values
 
         :return: dict usable in create_asset()
 
@@ -566,52 +564,35 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         # set defaults
         if not acquisition_date:
             acquisition_date = datetime.datetime.today()
-        if not asset_lifespan:
-            asset_lifespan = 4
         if not requester:
             requester = self.username
         if not external_id:
             external_id = serial_number
-
-        expected_replacement_date = acquisition_date + datetime.timedelta(months=(asset_lifespan*12))
 
         # Required or defaulted parameters
         data = dict()
         data['Name'] = asset_name
         data['SerialNumber'] = serial_number
         data['StatusID'] = self.get_asset_status_by_name_id(status_name)['ID']
-        data['LocationID'] = self.get_location_by_name(location_name)['ID']
-        data['LocationRoomID'] = self.get_room_by_name(data['LocationID'], room_name)
-        data['Tag'] = asset_tag
         data['AcquisitionDate'] = acquisition_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-        data['ExpectedReplacementDate'] = expected_replacement_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         data['ExternalID'] = external_id
 
         # map per-ticket values into title and body
 
         # set up attribute values
-        if attrib_prefix:
+        if asset_custom_attributes:
             data['Attributes'] = []
-            # attrib_count = 0
-            for key, value in asset_values.items():
-                if attrib_prefix in key:
-                    attrib_name = key.replace(attrib_prefix, "")
-                    attrib = self.get_asset_custom_attribute_by_name_id(attrib_name)
-                    value = self.get_custom_attribute_choice_by_name_id(attrib, value)
-                    new_attrib = dict()
-                    new_attrib['ID'] = attrib['ID']
-                    new_attrib['Value'] = value['ID']
-                    data['Attributes'].append(new_attrib)
-                    # attrib_count += 1
-            # print("DEBUG: loaded " + str(attrib_count) + " attributes:")
-            # print_nice(data['Attributes'])
-
+            for attrib_name, value in asset_custom_attributes.items():
+                new_attrib = self.build_asset_custom_attribute_value(attrib_name, value)
+                data['Attributes'].append(new_attrib)
         if location_name:
             building = self.get_location_by_name(location_name)
             data['LocationID'] = building['ID']
             if room_name:
                 data['LocationRoomID'] = self.get_room_by_name(building, room_name)['ID']
-
+        if asset_lifespan:
+            expected_replacement_date = acquisition_date + datetime.timedelta(days=(int(asset_lifespan*365.25)))
+            data['ExpectedReplacementDate'] = expected_replacement_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         if requester:
             data['RequestingCustomerID'] = self.get_person_by_name_email(requester)['UID']
         if requesting_dept:
@@ -624,6 +605,12 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['ProductModelID'] = self.get_product_model_by_name_id(product_model)['ID']
         if form:
             data['FormID'] = self.get_asset_form_by_name_id(form)['ID']
+        if location_name:
+            data['LocationID'] = self.get_location_by_name(location_name)['ID']
+            if room_name:
+                data['LocationRoomID'] = self.get_room_by_name(data['LocationID'], room_name)
+        if asset_tag:
+            data['Tag'] = asset_tag
         if parent:
             if type(parent) is int:
                 data['ParentID'] = parent
