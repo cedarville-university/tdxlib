@@ -21,3 +21,6 @@ class TdxApiObjectNotFoundError(Exception):
 
 class TdxApiObjectTypeError(Exception):
     pass
+
+class TdxApiDuplicateError(Exception):
+    pass

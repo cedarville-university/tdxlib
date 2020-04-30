@@ -1,5 +1,6 @@
 import datetime
 import tdxlib.tdx_integration
+from tdxlib.tdx_api_exceptions import *
 
 
 class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
@@ -34,7 +35,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             return self.make_put(url_string, post_body)
         if action == 'patch' and post_body:
             return self.make_patch(url_string, post_body)
-        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
+        raise TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
     def make_call(self, url, action, post_body=None):
         """
@@ -51,7 +52,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # TODO: Move this down to a more logical place
     def get_asset_custom_attribute_by_name_id(self, key: str) -> dict:
-        # Since there are two different types we may have to get, we cache them all
+        """
+        Gets a specific Asset Custom Attribute object
+
+        :param key: name or id of the Custom Attribute. This must be the exact name, no partial searching.
+
+        :return: dict of custom attribute data
+
+        """
         search_key = str(key) + "_asset_ci"
         if search_key in self.cache['ca_search']:
             return self.cache['ca_search'][search_key]
@@ -61,14 +69,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
                     self.cache['ca_search'][search_key] = item
                     return item
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise TdxApiObjectNotFoundError(
             "No custom asset or CI attribute found for " + str(key))
 
     def get_all_asset_forms(self) -> list:
         """
         Gets a list asset forms
 
-        :return: list of form data in json format
+        :return: list of form data
 
         """
         return self.make_call('forms', 'get')
@@ -79,7 +87,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param key: name of AssetForm to search for
 
-        :return: list of form data in json format
+        :return: list of form data
 
         """
         if not self.cache['asset_form']:
@@ -89,7 +97,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return asset_form
             if str(asset_form['ID']).lower() == str(key):
                 return asset_form
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise TdxApiObjectNotFoundError(
             "No asset form found for " + str(key))
 
     def get_all_asset_statuses(self) -> list:
@@ -115,7 +123,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         for status in self.cache['asset_status']:
             if status['Name'].lower() == str(key).lower() or str(status['ID']) == str(key):
                 return status
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No asset status found for {str(key)}')
+        raise TdxApiObjectNotFoundError(f'No asset status found for {str(key)}')
 
     # TODO: def update_asset_status(self, updated_values)-> dict:
     # TODO: def create_asset_status(self, params)-> dict:
@@ -141,9 +149,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not self.cache['product_type']:
             self.cache['product_type'] = self.get_all_product_types()
         for product_type in self.cache['product_type']:
-            if product_type['Name'].lower() == str(key).lower()or str(product_type['ID']) == str(key):
+            if str(key).lower() in product_type['Name'].lower() or str(product_type['ID']) == str(key):
                 return product_type
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
+        raise TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
 
     # TODO: def update_product_type(self, updated_values)-> dict:
     # TODO: def create_product_type(self, params)-> dict:
@@ -170,9 +178,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not self.cache['product_model']:
             self.cache['product_model'] = self.get_all_product_models()
         for product_model in self.cache['product_model']:
-            if product_model['Name'].lower() == str(key).lower() or str(product_model['ID']) == str(key):
+            if str(key).lower() in product_model['Name'].lower() or str(product_model['ID']) == str(key):
                 return product_model
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
+        raise TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
 
     # TODO: def get_all_product_models_of_type(self, key) -> list:
     # TODO: def update_product_model(self, updated_values)-> dict:
@@ -236,7 +244,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         elif isinstance(criteria, dict):
             search_body.update(criteria)
         else:
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with" +
+            raise TdxApiObjectTypeError("Can't search assets with" +
                                                                   str(type(criteria)) + " as criteria.")
         asset_list = self.make_call('search', 'post', search_body)
         if full_record:
@@ -266,7 +274,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             for asset in result:
                 if asset['Tag'] == tag:
                     return asset
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with tag {str(tag)} found.")
 
     def find_asset_by_sn(self, sn) -> dict:
@@ -282,7 +290,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         result = self.search_assets(search_params, disposed=True, retired=True)
         if len(result) == 1:
             return result[0]
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+        raise TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with SN {str(sn)} found.")
 
     def get_assets_by_location(self, location, max_results: int = 5000) -> list:
@@ -333,7 +341,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if isinstance(person, str):
             person = self.get_person_by_name_email(person)
         if not isinstance(person, dict):
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with type" +
+            raise TdxApiObjectTypeError("Can't search assets with type" +
                                                                   str(type(person)) + " as person.")
         return self.search_assets({'OwningCustomerIDs': [person['UID']]},
                                   max_results=max_results,
@@ -353,7 +361,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if isinstance(dept, str):
             dept = self.get_account_by_name(dept)
         if not isinstance(dept, dict):
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Can't search assets with type" +
+            raise TdxApiObjectTypeError("Can't search assets with type" +
                                                                   str(type(dept)) + " as department.")
         return self.search_assets({'RequestingDepartmentIDs': [dept['ID']]}, max_results=max_results)
 
@@ -416,7 +424,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         elif isinstance(new_owner, dict):
             new_owner_uid = new_owner['UID']
         else:
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+            raise TdxApiObjectTypeError(
                 f"New Owner of type {str(type(new_dept))} not searchable."
             )
         changed_attributes = {'OwningCustomerID': new_owner_uid}
@@ -426,7 +434,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             elif isinstance(new_dept, dict):
                 changed_attributes['OwningDepartmentID'] = new_dept['ID']
             else:
-                raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+                raise TdxApiObjectTypeError(
                     f"Department of type {str(type(new_dept))} not searchable."
                 )
         return self.update_assets(asset, changed_attributes)
@@ -447,7 +455,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         elif isinstance(new_dept, dict):
             changed_attributes['RequestingDepartmentID'] = new_dept['ID']
         else:
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+            raise TdxApiObjectTypeError(
                 f"Department of type {str(type(new_dept))} not searchable."
             )
         return self.update_assets(asset, changed_attributes)
@@ -468,7 +476,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         elif isinstance(custom_attribute, dict):
             ca = custom_attribute
         else:
-            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
+            raise TdxApiObjectTypeError(
                 f"Custom Attribute of type {str(type(custom_attribute))} not searchable."
             )
         if len(ca['Choices']) > 0:
@@ -622,17 +630,24 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                     data['ParentID'] = parent_asset['ID']
         return data
 
-    def create_asset(self, asset_json):
+    def create_asset(self, asset, check_duplicate=True):
         """
         Creates an asset
 
-        :param asset_json: a dict of asset info (maybe from make_asset_json()) to use in creation
+        :param asset: a dict of asset info (maybe from make_asset_json()) to use in creation
+        :param check_duplicate: boolean of whether or not we should check to see if this is a duplicate asset
 
         :return: dict of created asset details
 
         """
-        url_string = '/' + str(self.asset_app_id) + 'assets'
-        post_body = dict()
-        post_body['asset'] = asset_json
-        created_asset = self.make_post(url_string, post_body)
+        if check_duplicate:
+            duplicate = None
+            serial = asset['SerialNumber']
+            try:
+                duplicate = self.find_asset_by_sn(serial)
+            except TdxApiObjectNotFoundError as e:
+                pass  # Duplicate not found
+            if duplicate:
+                raise TdxApiDuplicateError(f"Asset with Serial Number {serial} already exists")
+        created_asset = self.make_call('', 'post', asset)
         return created_asset

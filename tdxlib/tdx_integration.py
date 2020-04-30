@@ -732,11 +732,14 @@ class TDXIntegration:
         :rtype: dict
 
         """
-        for i in attribute['Choices']:
-            if str(key).lower() == str(i['Name']).lower() or str(key) == str(i['ID']):
-                return i
-        raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
-            f"No custom attribute choice \"{str(key)}\" found in CA {attribute['Name']}")
+        if len(attribute['Choices']) > 0:
+            for i in attribute['Choices']:
+                if str(key).lower() == str(i['Name']).lower() or str(key) == str(i['ID']):
+                    return i
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+                f"No custom attribute choice \"{str(key)}\" found in CA {attribute['Name']}")
+        else:
+            return str(key)
 
     def get_all_locations(self) -> list:
         """
@@ -909,7 +912,43 @@ class TDXIntegration:
 
     # TODO: edit_location()
 
-    # TODO: create_room()
+    def create_room(self, location, name: str,  external_id: str =  None, description: str = None,
+                    floor: str = None, capacity: int = None, attributes: dict = None) -> dict:
+        """
+        Creates a room in a location in TDX.
+
+        :param location:     Dict of location information (or ID), possibly from get_location_by_name()
+        :param name:            Name of new room
+        :param external_id:     External ID of new room as a string (optional)
+        :param description:     Description of new room as a string (optional)
+        :param floor:           Floor for new room as a string (optional)
+        :param capacity:        Capacity of the room, as an integer (optional)
+        :param attributes:      Dict of Custom Attributes (optional)
+
+        :return:                Dict with newly created room information
+
+        """
+        if isinstance(location, dict):
+            location_id = location['ID']
+        elif isinstance(location, str):
+            location_id = location
+        else:
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Location must be dict or str, not " +
+                                                                  str(type(location)))
+        url_string = f'/locations/{location_id}/rooms'
+        room_data = { 'Name': name }
+        if external_id:
+            room_data['ExternalID'] = external_id
+        if description:
+            room_data['Description'] = description
+        if floor:
+            room_data['Floor'] = floor
+        if capacity:
+            room_data['Capacity'] = capacity
+        if attributes:
+            room_data['Attributes'] = attributes
+        data = {'room': room_data }
+        return self.make_post(url_string, data)
 
     # TODO: delete_room()
 

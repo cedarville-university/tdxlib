@@ -177,6 +177,16 @@ class TdxTesting(unittest.TestCase):
         edited_account = self.tdx.edit_account(name, changed_attributes)
         self.assertEqual(edited_account['Name'], changed_attributes['Name'])
 
+    def test_create_room(self):
+        if not self.tdx.sandbox:
+            return
+        location = self.tdx.get_location_by_name(self.testing_vars['location1']['Name'])
+        name = 'Testing Room ' + TdxTesting.timestamp
+        description = 'Testing room Description'
+        new_room = self.tdx.create_room(location, name, description=description)
+        test_room = self.tdx.get_room_by_name(location, name)
+        self.assertEqual(new_room['Name'], test_room['Name'])
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TdxTesting)
