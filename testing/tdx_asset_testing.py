@@ -79,16 +79,44 @@ class TdxAssetTesting(unittest.TestCase):
         product_model = self.tax.get_product_model_by_name_id(self.testing_vars['product_model']['Name'])
         self.assertEqual(int(product_model['ID']), self.testing_vars['product_model']['ID'])
 
-    # TODO: def test_update_product_type(self):
-    # TODO: def test_create_product_type(self):
-    # TODO: def test_delete_product_type(self):
+    def test_update_product_type(self):
+        product_type = self.tax.get_product_type_by_name_id(self.testing_vars['product_type']['Name'])
+        changed_attributes = {'Description': self.timestamp}
+        updated_product_type = self.tax.update_product_type(product_type, changed_attributes)
+        self.assertEqual(updated_product_type['Description'], self.timestamp)
+
+    def test_create_product_type(self):
+        name = 'Temp Product Type ' + self.timestamp
+        new_product_type = self.tax.create_product_type(name)
+        self.assertTrue(new_product_type['ID'])
+        self.assertEqual(name, new_product_type['Name'])
+
     # TODO: def test_update_product_model(self):
-    # TODO: def test_create_product_model(self):
-    # TODO: def test_delete_product_model(self):
-    # TODO: def test_get_all_vendors(self):
+
+    def test_create_product_model(self):
+        name = 'Temp Product Model ' + self.timestamp
+        type = self.tax.get_product_type_by_name_id(self.testing_vars['product_type']['ID'])
+        vendor = self.tax.get_vendor_by_name_id(self.testing_vars['vendor']['Name'])
+        new_product_model = self.tax.create_product_model(name, type, vendor)
+        self.assertTrue(new_product_model['ID'])
+        self.assertEqual(name, new_product_model['Name'])
+
+    def test_get_all_vendors(self):
+        vendors = self.tax.get_all_vendors()
+        self.assertGreaterEqual(len(vendors), 5)
+
+    def test_get_vendor_by_name_id(self):
+        name = self.testing_vars['vendor']['Name']
+        vendor = self.tax.get_vendor_by_name_id(name)
+        self.assertEqual(int(vendor['ID'], self.testing_vars['vendor']['ID']))
+
     # TODO: def test_update_vendor(self):
-    # TODO: def test_create_vendor(self):
-    # TODO: def test_delete_vendor(self):
+
+    def test_create_vendor(self):
+        name = 'Temp Vendor ' + self.timestamp
+        new_vendor = self.tax.create_vendor(name)
+        self.assertTrue(new_vendor['ID'])
+        self.assertEqual(name, new_vendor['Name'])
 
     def test_get_asset_id(self):
         asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
