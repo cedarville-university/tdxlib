@@ -833,6 +833,8 @@ class TDXIntegration:
             for attrib, value in additional_info.items():
                 if attrib in editable_account_attributes:
                     data[attrib] = additional_info[attrib]
+                else:
+                    raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(f'Account attribute {attrib} is not editable')
         if custom_attributes:
                 data['Attributes'] = list()
                 for attrib, value in custom_attributes.items():
@@ -845,7 +847,6 @@ class TDXIntegration:
                     data['Attributes'].append({'ID': tdx_attrib['ID'], 'Value': tdx_attrib_value_final})
         return self.make_post(url_string, data)
 
-    # TODO: make this and other 'Edit' operations have an option to strip out non-editable fields
     def edit_account(self, name: str, changed_attributes: dict) -> dict:
         """
         Edits an account in TeamDynamix

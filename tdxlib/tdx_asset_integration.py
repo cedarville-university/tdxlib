@@ -14,6 +14,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         super().clean_cache()
         self.cache['product_model'] = {}
         self.cache['product_type'] = {}
+        self.cache['vendor'] = {}
         self.cache['asset_form'] = {}
         self.cache['asset_status'] = {}
         self.cache['custom_attributes'] = self.get_all_custom_attributes(
@@ -137,6 +138,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call("models/types", 'get')
 
+    # TODO: Provide option for lower memory use by allowing use of search instead of getting all.
     def get_product_type_by_name_id(self, key: str) -> dict:
         """
         Gets a specific product type object
@@ -153,9 +155,75 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return product_type
         raise TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
 
-    # TODO: def update_product_type(self, updated_values)-> dict:
-    # TODO: def create_product_type(self, params)-> dict:
-    # TODO: def delete_product_type(self)-> dict:
+    def create_product_type(self, name: str, description: str = None, parent=None, order: int = 1,
+                            active: bool = True)-> dict:
+        """
+        Creates a new Product Type with the information provided.
+
+        :param name: The name of the new product type
+        :param description: A description of the type (optional)
+        :param parent: A Type (dict) or Type ID to set as the parent type of this type (creates a subtype)(optional)
+        :param order: Sort order for this type (optional, defaults to 1)
+        :param active: Boolean indicating whether or not the new type should be active (optional, default True)
+
+        :return: dict of created product type
+
+        """
+
+        data = {'Name': name, 'IsActive': active, 'Order': order}
+        if parent:
+            if isinstance(parent, dict) and 'ID' in parent.keys():
+                data['ParentID'] = parent['ID']
+            else:
+                data['ParentID'] = parent
+        if description:
+            data['Description'] = description
+        return self.make_call('models/types', 'post', data)
+
+    def update_product_type(self, type, updated_values: dict)-> dict:
+        """
+        Updates an existing product type
+
+        :param type: Type (dict) or Type ID to edit
+        :param updated_values: dict of values that should be changed
+
+        :return: dict of edited product type
+
+        """
+        if isinstance(type, dict):
+            product_type = type
+        else:
+            product_type = self.get_product_type_by_name_id(type)
+        editable_type_values = ['Name', 'Description', 'ParentID', 'IsActive', 'Order']
+        for i in updated_values.keys():
+            if i not in editable_type_values:
+                raise TdxApiObjectTypeError(f'Account attribute {i} is not editable')
+        product_type.update(updated_values)
+        product_type_id = product_type['ID']
+        return self.make_call(f'models/types/{product_type_id}', 'put', product_type)
+
+    def search_product_types(self, search_string: str = '*', active: bool = True, root_only: bool = False,
+                             parent=None)-> list:
+        """
+        Searches product types by parent, text, or parent.
+
+        :param search_string: String to search by name/description
+        :param active: Boolean, when true, searches only active product types
+        :param root_only: Boolean, when true, limits search to only top-level product types
+        :param parent: Name or ID of parent type. Limits search to children of that parent
+
+        :return: list of product types as dicts
+
+        """
+        if parent:
+            if isinstance(parent, dict) and 'ID' in parent.keys():
+                parent_id = parent['ID']
+            else:
+                parent_id = self.get_product_type_by_name_id(parent)['ID']
+        search_data={'SearchText': search_string, 'IsActive': active, 'IsTopLevel': root_only,
+                     'ParentProductTypeID': parent_id}
+        post_data = {'search': search_data}
+        return self.make_call(f'models/types/search', 'post', post_data)
 
     def get_all_product_models(self) -> list:
         """
@@ -166,6 +234,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call("models", 'get')
 
+    # TODO: Provide option for lower memory use by allowing use of search instead of getting all.
     def get_product_model_by_name_id(self, key: str) -> dict:
         """
         Gets a specific product model object
@@ -182,14 +251,110 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return product_model
         raise TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
 
-    # TODO: def get_all_product_models_of_type(self, key) -> list:
-    # TODO: def update_product_model(self, updated_values)-> dict:
-    # TODO: def create_product_model(self, params)-> dict:
-    # TODO: def delete_product_model(self, updated_values)-> dict:
+    def get_all_product_models_of_type(self, key) -> list:
+        """
+        Get all product models of a specific type
 
-    # TODO: def get_all_vendors(self) -> list:
+        :param key: dict, name, or ID of a product type
+
+        :return: list of product models of that type
+        """
+
+        return self.search_product_types(parent=key)
+
+    def create_product_model(self, name: str, product_type, source: str, description: str = None,
+                             part_number: str = None, active: bool = True, attributes: dict= None) -> dict:
+        """
+        Creates a new Product Model with the information provided.
+
+        :param name: The name of the new product model
+        :param product_type: A Type (dict) or Type ID to set as the product type of this model
+        :param source: The manufacturer or vendor the model is sourced from
+        :param description: A description of the model (optional)
+        :param part_number: Part number for this model (optional)
+        :param active: Boolean indicating whether or not the new model should be active (optional, default True)
+        :param attributes: Dict of custom attributes to set on the new model (no validation yet -- build this by hand)
+
+        :return: dict of created product type
+
+        """
+
+        data = {'Name': name, 'IsActive': active}
+        if isinstance(source, dict) and 'ID' in source.keys():
+            data['ManufacturerID'] = source['ID']
+        else:
+            data['ManufacturerID'] = self.get_vendor_by_name_id(source)['ID']
+        if isinstance(product_type, dict) and 'ID' in product_type.keys():
+            data['ProductTypeID'] = product_type['ID']
+        else:
+            data['ProductTypeID'] = self.get_product_type_by_name_id(product_type)['ID']
+        if attributes:
+            data['Attributes'] = attributes
+        if part_number:
+            data['PartNumber'] = part_number
+        if description:
+            data['Description'] = description
+        return self.make_call('models', 'post', data)
+
+    # TODO: def update_product_model(self, updated_values)-> dict:
+
+    def get_all_vendors(self) -> list:
+        """
+        Gets a list vendors
+
+        :return: list of vendor data
+
+        """
+        return self.make_call("vendors", 'get')
+
+    # TODO: Provide option for lower memory use by allowing use of search instead of getting all.
+    def get_vendor_by_name_id(self, key):
+        """
+        Gets a specific vendor object
+
+        :param key: name or ID of vendor to search for
+
+        :return: dict of vendor data
+
+        """
+        if not self.cache['vendor']:
+            self.cache['vendor'] = self.get_all_vendors()
+        for vendor in self.cache['vendor']:
+            if str(key).lower() in vendor['Name'].lower() or str(vendor['ID']) == str(key):
+                return vendor
+        raise TdxApiObjectNotFoundError(f'No vendor found for {str(key)}')
+
     # TODO: def update_vendor(self, updated_values)-> dict:
-    # TODO: def create_vendor(self, params)-> dict:
+    # TODO: def search_vendor(self, key, etc) -> list:
+
+    def create_vendor(self, name, email: str = None, description: str = None, account_number: str = None,
+                      additional_info: dict = None, active=True) -> dict:
+
+        """
+       Creates a new Vendor with the information provided.
+
+       :param name: The name of the new product model
+       :param email: An email contact for the new vendor (optional)
+       :param description: A description of the model (optional)
+       :param account_number: An account number with the vendor (optional)
+       :param active: Boolean indicating whether or not the new vendor should be active (optional, default True)
+       :param additional_info: Dict of other info for the vendor (including CAs, no validation yet -- build by hand)
+
+       :return: dict of created product type
+
+       """
+
+        data = {'Name': name, 'IsActive': active}
+        if additional_info:
+            data.update(additional_info)
+        if email:
+            data['ContactEmail'] = email
+        if account_number:
+            data['AccountNumber'] = account_number
+        if description:
+            data['Description'] = description
+        return self.make_call('vendors', 'post', data)
+
     # TODO: def delete_vendor(self)-> dict:
 
     def get_asset_by_id(self, asset_id: str) -> dict:
