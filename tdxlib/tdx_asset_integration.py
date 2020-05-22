@@ -136,7 +136,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: list of product type data
 
         """
-        return self.make_call("models/types", 'get')
+        type_list = self.make_call("models/types", 'get')
+        for this_type in type_list:
+            for sub in this_type['Subtypes']:
+                type_list.append(sub)
+        return type_list
 
     # TODO: Provide option for lower memory use by allowing use of search instead of getting all.
     def get_product_type_by_name_id(self, key: str) -> dict:
@@ -410,7 +414,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             search_body.update(criteria)
         else:
             raise TdxApiObjectTypeError("Can't search assets with" +
-                                                                  str(type(criteria)) + " as criteria.")
+                                        str(type(criteria)) + " as criteria.")
         asset_list = self.make_call('search', 'post', search_body)
         if full_record:
             full_assets = []
@@ -707,7 +711,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         return [updated_target, updated_source]
 
     def build_asset(self, asset_name, serial_number, status_name, location_name=None, room_name=None,
-                    asset_tag=None, acquisition_date=None, asset_lifespan=None, attrib_prefix=None, requester=None,
+                    asset_tag=None, acquisition_date=None, asset_lifespan=None, requester=None,
                     requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None,
                     product_model=None, form=None, asset_custom_attributes=None):
         """
