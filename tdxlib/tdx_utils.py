@@ -55,6 +55,7 @@ def export_tdx_date(date: datetime, timezone: str = 'Z') -> str:
         date_string = date.strftime('%Y-%m-%dT%H:%M:%S%z')
     return date_string
 
+
 def is_id(identifier: str):
     int_id = None
     try:

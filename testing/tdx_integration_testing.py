@@ -136,7 +136,7 @@ class TdxTesting(unittest.TestCase):
         self.assertEqual(test['ID'], standard['ID'])
 
     def test_get_location_by_name_partial(self):
-        standard = self.testing_vars['location']
+        standard = self.testing_vars['location2']
         test = self.tdx.get_location_by_name(standard['PartialName'])
         self.assertEqual(test['ID'], standard['ID'])
 
