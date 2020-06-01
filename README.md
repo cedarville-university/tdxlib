@@ -14,9 +14,6 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 * requests
 * python-dateutil
 * pyjwt
-### Optional:
-* gspread (for Google Sheets integration -- not an official dependency)
-* oauth2client (for Google Sheets integration -- not an official dependency)
 
 ## Quick-Start Guide
 
@@ -26,7 +23,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
    _NOTE: although Python comes pre-installed on MacOS and many GNU/Linux systems, it's often version 2.7. For GNU/Linux, install python3 packages if available. For MacOS, check out [homebrew](brew.sh)._
 
-2. **OPTION 1:**
+2. **OPTION 1:** (Stable Release)
    
    Install via [pip](https://pypi.org) using the following command:
    
@@ -36,7 +33,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
    
    _Note: if you installed python3 packages, the Python v3 Pip may be called using ```pip3```_
    
-   **OPTION 2:** 
+   **OPTION 2:** (Latest Code)
    
    1. Clone or download TDXLib from [GitHub](https://github.com/cedarville-university/tdxlib).
    
@@ -131,9 +128,9 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
     
     * If the `password` field is set to `'Prompt'`, then whenever a new integration object is made, it will request a password, and dispose of the password after getting an API token: 
     
-       Enter the TDX Password for user myuser@myuniversity.edu (this password will not be stored):   
+       <pre>Enter the TDX Password for user myuser@myuniversity.edu (this password will not be stored):   </pre>
 
-    * The `ticketAppId` and `assetAppId` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. For example: 
+    * The `ticketAppId` and `assetAppId` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. You can find these ID's in the URLs in the following locations when using a TDX Tickets or Assets app through TDNext in your browser: 
     
       * Tickets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{ticketAppId}/Tickets/...`  
       * Assets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{assetAppId}/Assets/...`
@@ -148,7 +145,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
           >>> accounts = tdx.get_all_accounts()
 
-7. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
+7. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For more detailed tutorials on how to use TDXLib to manipulate Tickets and Asset, as well as for information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
     
 
 ##  TDXLib Implementation status and Future Plans
@@ -167,12 +164,12 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
     * Read-write support for Accounts
 
     Future Plans:
-    * Read-write support for Locations, Rooms, People, Groups, and Custom Attributes
+    * Read-write support for Locations, Rooms, People, Groups, and Custom Attributes (in progress)
     * Support for custom attributes in Projects, CIs
     * Support for manipulating attachments
     * Support for inspecting/manipulating group members
     * Support for inspecting/manipulating roles & user lists
-    * Support for mass-importing users from uploaded excel files
+    * Support for mass-importing users from csv
 
     Unlikely to be supported:
     * Time entries
@@ -182,16 +179,16 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
     The class (inherited from TDXIntegration) that allows interactions with Ticket objects.
 
-    Currently Implemented & Tested:
-    * Ticket Priorities
-    * Ticket Statuses (including creation of custom statuses) (WIP)
-    * Ticket Types
-    * Ticket Urgencies
-    * Ticket Sources
-    * Ticket Impacts
-    * Ticket Classifications (not available directly through API)
-    * Ticket Forms (not available directly through API)
-    * Tickets:
+    #### Currently Implemented & Tested:
+    * **Ticket Priorities**
+    * **Ticket Statuses** (including creation of custom statuses) (WIP)
+    * **Ticket Types**
+    * **Ticket Urgencies**
+    * **Ticket Sources**
+    * **Ticket Impacts**
+    * **Ticket Classifications** (not available directly through API)
+    * **Ticket Forms** (not available directly through API)
+    * **Tickets**
         * Creation (including templated batch-creation from Google Sheets)
         * Editing (including batch-editing of multiple )
         * Manipulating
@@ -201,17 +198,17 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         * Updating
         * Getting Feed Items
         * Uploading Attachments
-    * Ticket Tasks
+    * **Ticket Tasks**
         * Creating
         * Editing
         * Deleting
         * Updating
         * Getting Feed Items
 
-    Future Plans:
+    #### Future Plans:
     * Tickets in combination with Assets
     
-    Unlikely to be supported:
+    #### Unlikely to be supported:
     * Blackout Windows
     * Ticket Searches/Reports
 
@@ -219,11 +216,37 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
     The class (inherited from TDXIntegration) that allows interactions with Asset objects.
 
-    Currently Implemented & Tested:
-    * (Not much)
+    #### Currently Implemented & Tested:
+    * **Assets**
+        * Creating
+        * Editing 
+        * Searching
+            * By Tag, SN, ID, Type, Owner, or any other attribute
+        * Moving child assets fron one Asset to another
+        * Copying attributes from one Asset to another
+    * **Product Types**
+        * Creating
+        * Editing
+        * Searching
+    * **Product Models**
+        * Creating
+        * Editing
+        * Searching
+    * **Vendors**
+        * Creating
+        * Searching
+    * **Asset Forms**
+        * Searching
+    * **Asset Statuses**
+        * Searching
     
-    In Process:
-    * Creating Assets
-    * Editing Assets
-    * Copying Assets attributes from one to another
-    * Searching Assets
+    #### Future Plans:
+    * **Asset Statuses**
+        * Creating
+        * Editing
+    * **Product Models**
+        * Editing
+    * **Vendors**
+        * Editing
+        * Deleting
+    * **Accepting Suggestions...** (Submit an Issue!)

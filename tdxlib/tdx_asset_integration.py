@@ -729,7 +729,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param requesting_dept: Account Name of requesting department for new asset
         :param owner: String with Email of owner of new asset
         :param owning_dept: String with Account name of owning department
-        :param parent: Int with ID or String with serial number of a parent asset. Parent Asset must exist.
+        :param parent: Int with ID or String with serial number of a parent asset. Parent Asset must already exist.
         :param external_id: String with external id for new asset (Default: serial Number)
         :param product_model: String with name of product model
         :param form: Name of the Asset form to use
