@@ -21,7 +21,7 @@
     "Name": ""
   },
   "ticket_status": {
-    "_comment": "A valid active ticket type. The ID should be an integer, and the Name should be an exact string match with TDX"
+    "_comment": "A valid active ticket status. The ID should be an integer, and the Name should be an exact string match with TDX"
     "ID": ,
     "Name": ""
   },
