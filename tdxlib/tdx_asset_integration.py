@@ -549,7 +549,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         Gets all assets requested by a particular account/department in TDX
 
         :param dept: the name or email of a account/department, or a dict containing its information
-        :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)\
+        :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
@@ -592,7 +592,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     def get_assets_by_product_type(self, product_type, max_results: int = 25, full_record: bool = False,
                                    retired: bool = False, disposed: bool = False) -> list:
         """
-        Gets all assets of a certain product model
+        Gets all assets of a certain product type
 
         :param product_type: the name or ID of a product type, or a dict of same
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
@@ -600,7 +600,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
 
-        :return: a list of assets of the specified model
+        :return: a list of assets of the specified type
 
         """
         if isinstance(product_type, str):
