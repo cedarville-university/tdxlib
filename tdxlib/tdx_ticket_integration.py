@@ -165,6 +165,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             search_body.update(criteria)
         else:
             raise TypeError("Can't search tickets with" + str(type(criteria)))
+        ticket_data_list = list()
         ticket_data_list = self.make_call('search', 'post', search_body)
         ticket_list = list()
         for ticket_data in ticket_data_list:

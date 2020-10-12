@@ -937,7 +937,7 @@ class TDXIntegration:
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Location must be dict or str, not " +
                                                                   str(type(location)))
         url_string = f'/locations/{location_id}/rooms'
-        room_data = { 'Name': name }
+        room_data = {'Name': name }
         if external_id:
             room_data['ExternalID'] = external_id
         if description:
@@ -948,8 +948,7 @@ class TDXIntegration:
             room_data['Capacity'] = capacity
         if attributes:
             room_data['Attributes'] = attributes
-        data = {'room': room_data }
-        return self.make_post(url_string, data)
+        return self.make_post(url_string, room_data)
 
     # TODO: delete_room()
 

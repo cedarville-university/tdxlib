@@ -108,7 +108,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_vendor_by_name_id(self):
         name = self.testing_vars['vendor']['Name']
         vendor = self.tax.get_vendor_by_name_id(name)
-        self.assertEqual(int(vendor['ID'], self.testing_vars['vendor']['ID']))
+        self.assertEqual(int(vendor['ID']), self.testing_vars['vendor']['ID'])
 
     # TODO: def test_update_vendor(self):
 
@@ -156,6 +156,14 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_requesting_dept(self):
         assets = self.tax.get_assets_by_owner(self.testing_vars['department']['Name'], max_results=100, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['department']['asset_count'])
+
+    def test_get_assets_by_product_model(self):
+        assets = self.tax.get_assets_by_product_model(self.testing_vars['product_model']['Name'], max_results=100, retired=True, disposed=True)
+        self.assertGreaterEqual(len(assets), self.testing_vars['product_model']['asset_count'])
+
+    def test_get_assets_by_product_type(self):
+        assets = self.tax.get_assets_by_product_type(self.testing_vars['product_type']['Name'], max_results=100, retired=True, disposed=True)
+        self.assertGreaterEqual(len(assets), self.testing_vars['product_type']['asset_count'])
 
     def test_update_asset_status(self):
         assets_to_update = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100, disposed=True)
