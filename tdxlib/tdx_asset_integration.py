@@ -862,9 +862,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if form:
             data['FormID'] = self.get_asset_form_by_name_id(form)['ID']
         if location_name:
-            data['LocationID'] = self.get_location_by_name(location_name)['ID']
+            temp_location = self.get_location_by_name(location_name)
+            data['LocationID'] = temp_location['ID']
             if room_name:
-                data['LocationRoomID'] = self.get_room_by_name(data['LocationID'], room_name)
+                data['LocationRoomID'] = self.get_room_by_name(temp_location, room_name)['ID']
         if asset_tag:
             data['Tag'] = asset_tag
         if parent:
