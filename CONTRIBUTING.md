@@ -122,6 +122,6 @@ In no particular order:
 5. Make sure all documentation at https://tdxlib.readthedocs.io builds ok
 6. Make sure README is up to date
 7. Increment version in setup.py
-8. Run ```pip install wheel twine``` 
-9. Run ```python setup.py bdist_wheel --universal```
+8. Run ```pip install --upgrade build wheel twine``` 
+9. Run ```python -m build```
 10. Run ```twine upload dist/*```
