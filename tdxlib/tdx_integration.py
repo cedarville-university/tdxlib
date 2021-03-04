@@ -148,7 +148,10 @@ class TDXIntegration:
             else:
                 self.token = response.text
                 # Decode token to identify expiration date
-                decoded = jwt.decode(self.token, verify=False)
+                decoded = jwt.decode(self.token,
+                                     algorithms=['HS256'],
+                                     options={'verify_signature':False},
+                                     audience="https://www.teamdynamix.com/")
                 self.token_exp = decoded['exp']
 
         except requests.exceptions.RequestException:
