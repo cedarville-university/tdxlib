@@ -112,7 +112,7 @@ class TDXIntegration:
         # Read settings in
         self.settings = self.config['TDX API Settings']
         self.org_name = self.settings.get('orgname')
-        fullhost = self.settings.get('fullhost',None)
+        fullhost = self.settings.get('fullhost', None)
         self.sandbox = self.settings.getboolean('sandbox')
         self.username = self.settings.get('username')
         self.password = self.settings.get('password')
