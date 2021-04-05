@@ -87,8 +87,9 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         No configuration file found. Please enter the following information:
         
         Please enter your TeamDynamix organization name.
-        This is the teamdynamix.com subdomain that you use to access TeamDynamix.
-        Organization Name (<orgname>.teamdynamix.com): <b>myuniversity</b>
+        This is the teamdynamix.com subdomain that you use to access TeamDynamix. 
+        Alternatively, enter the fully qualified DNS name of your TDX instance:
+        Organization Name/FQDN ({orgname}.teamdynamix.com/{orgname}.university.edu): <b>myuniversity</b>
         
         Use Sandbox? [Y/N]: <b>yes</b>
         
@@ -113,6 +114,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
         [TDX API Settings]
         'orgname': 'myuniversity',
+        'fullhost': 'its.myuniversity.edu',
         'sandbox': True,
         'username': 'myuser@university.edu',
         'password': 'Prompt',

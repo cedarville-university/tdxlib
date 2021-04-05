@@ -56,10 +56,25 @@ class TDXIntegration:
 
             # Initialization wizard
             print("\nNo configuration file found. Please enter the following information: ")
-            print("\n\nPlease enter your TeamDynamix organization name.")
-            print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
-            init_orgname = input("Organization Name (<orgname>.teamdynamix.com): ")
-            self.config.set('TDX API Settings', 'orgname', init_orgname)
+            fqdn_invalid = True
+            fqdn = False
+            while fqdn_invalid:
+                fqdn_choice = input("\nUse a Fully-Qualified DNS Name for your TDX Instance "
+                                    "(if not *.teamdynamix.com)? [Y/N]: ")
+                if fqdn_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                    fqdn = True
+                    fqdn_invalid = False
+                elif fqdn_choice.lower() in ['n', 'no', 'false']:
+                    fqdn_invalid = False
+            if fqdn:
+                print("Enter the fully qualified DNS name of your TDX instance.")
+                init_fullhost = input("FQDN (its.myuniversity.edu): ")
+                self.config.set('TDX API Settings', 'fullhost', init_fullhost)
+            else:
+                print("\n\nPlease enter your TeamDynamix organization name.")
+                print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
+                init_orgname = input("Organization Name/FQDN (<orgname>.teamdynamix.com/<FQDN>): ")
+                self.config.set('TDX API Settings', 'orgname', init_orgname)
             sandbox_invalid = True
             while sandbox_invalid:
                 sandbox_choice = input("\nUse TeamDynamix Sandbox? [Y/N]: ")
@@ -112,6 +127,7 @@ class TDXIntegration:
         # Read settings in
         self.settings = self.config['TDX API Settings']
         self.org_name = self.settings.get('orgname')
+        fullhost = self.settings.get('fullhost', None)
         self.sandbox = self.settings.getboolean('sandbox')
         self.username = self.settings.get('username')
         self.password = self.settings.get('password')
@@ -122,7 +138,10 @@ class TDXIntegration:
             api_end = '/SBTDWebApi/api'
         else:
             api_end = '/TDWebApi/api'
-        self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
+        if fullhost is None:
+            self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
+        else:
+            self.api_url = 'https://' + fullhost + '/' + api_end
         if self.password == 'Prompt':
             pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
             self.password = getpass.getpass(pass_prompt)
@@ -165,7 +184,7 @@ class TDXIntegration:
         If it is expired, call auth() to get a new token.
         """
         # If token is expired or will expire in the next minute, get new token
-        if (self.token_exp < time.time() + 60):
+        if (self.token_exp and self.token_exp < time.time() + 60):
             print(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. Getting new token...")
             self.auth()
 
