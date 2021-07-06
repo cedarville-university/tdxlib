@@ -186,6 +186,7 @@ class TDXIntegration:
                                                                 response.reason + "\n" + " Returned: " + response.text)
             else:
                 self.token = response.text
+                time.sleep(1)
                 # Decode token to identify expiration date
                 decoded = jwt.decode(self.token,
                                      algorithms=['HS256'],
@@ -297,7 +298,10 @@ class TDXIntegration:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
-            val = response.json()
+            if len(response.text) == 0:
+                val = None
+            else:
+                val = response.json()
             self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
