@@ -61,6 +61,21 @@ Then use this info in a filter in ``search_assets()``
     criteria = {'ProductModelIDs': models}
     assets = my_asset_integration_object.search_assets(criteria, max_results=1000)
 
+Searching with Custom Attributes
+________________________________
+
+If you'd like to search for assets that have a specific value for a custom attribute, you'll need to do something similar:
+
+.. code-block:: python
+
+    ca = t.build_asset_custom_attribute_value("My CA Name", "My Value Name")
+    criteria = {'CustomAttributes': [ca]}
+    assets = my_asset_integration_object.search_assets(criteria, max_results=1000)
+
+This will find all assets with the value "My Value Name" for the Custom Attribute "My CA Name".
+
+For more information check out the documentation on the `AssetSearch object in TDX's API docs <https://api.teamdynamix.com/TDWebApi/Home/type/TeamDynamix.Api.Assets.AssetSearch>`_
+
 Custom Attributes
 -----------------
 
