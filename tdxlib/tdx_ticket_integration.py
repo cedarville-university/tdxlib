@@ -66,7 +66,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             return self.make_put(url_string, post_body)
         if action == 'patch' and post_body:
             return self.make_patch(url_string, post_body)
-        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method' + action + 'or no post information')
+        raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method ' + action + ' or no post information')
 
     def make_call(self, url: str, action: str, post_body=None):
         """
@@ -789,8 +789,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not end_date:
             end_date = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         new_dates = {
-            'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date),
-            'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date)
+            'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date, self.timezone),
+            'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date, self.timezone)
         }
         return self.edit_ticket_task(ticket_id, task, new_dates)
 
@@ -822,6 +822,23 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             }
         return self.make_call(url_string, 'post', data)
 
+    def add_asset_to_ticket(self, ticket_id:int, asset_id: int):
+        """
+        Attaches an asset to a ticket.
+
+        :param ticket_id: The Ticket ID to update
+        :param asset_id: The ID of the Asset to associate with the Ticket
+
+        :return: dict of update info
+
+        :rtype: dict
+
+        """
+        url_string = f'{ticket_id}/assets/{asset_id}'
+        # this does nothing, but it can't be blank
+        data = {'AssetID': asset_id}
+        return self.make_call(url_string, 'post', data)
+
     # #### TEMPLATING TICKETS #### #
 
     @classmethod
@@ -843,7 +860,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def generate_ticket(self, title_template, ticket_type, account, responsible, template_values=None,
                         body_template=None, attrib_prefix=None, due_date=None, location=None, room=None,
                         active_days=5, priority="Low", status="New", requestor=None,
-                        classification="Incident", form=None, group=False) -> tdxlib.tdx_ticket.TDXTicket:
+                        classification="Incident", form=None, group=False, asset=None) -> tdxlib.tdx_ticket.TDXTicket:
         """
         Makes a TdxTicket object based on templates.
 
@@ -864,6 +881,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param classification: Classification name for ticket, default "Incident" (optional)
         :param form: Name or ID of a form that you'd like to assign to this ticket
         :param group: Boolean indicating whether or not 'responsible' refers to a group. (Default: False)
+        :param asset: Asset SN or ID to associate with the ticket (Default: None)
 
         :return: TdxTicket object ready to be created via create_ticket()
 
@@ -912,7 +930,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                     # if not a set-choice attribute, we just need to set it directly.
                     new_attrib = dict()
                     new_attrib['ID'] = attrib['ID']
-                    if not attrib_value:
+                    if not attrib_value or type(attrib_value) is str:
                         new_attrib['Value'] = value
                     else:
                         new_attrib['Value'] = attrib_value['ID']
@@ -921,8 +939,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if due_date:
             target_date = tdxlib.tdx_utils.import_tdx_date(due_date)
             start_date = target_date - datetime.timedelta(days=active_days)
-            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start_date)
-            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(target_date)
+            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start_date, self.timezone)
+            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(target_date, self.timezone)
 
         if location:
             building = self.get_location_by_name(location)
@@ -933,6 +951,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['ResponsibleGroupID'] = self.get_group_by_name(responsible)['ID']
         else:
             data['ResponsibleUid'] = self.get_person_by_name_email(responsible)['UID']
+
+        if asset:
+            data['']
 
         new_ticket = tdxlib.tdx_ticket.TDXTicket(self, data)
         new_ticket.validate()
@@ -967,8 +988,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if description:
             data['Description'] = description
         if start and end:
-            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start)
-            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(end)
+            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start, self.timezone)
+            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(end, self.timezone)
         if completion_minutes:
             data['CompleteWithinMinutes'] = completion_minutes
         if group:

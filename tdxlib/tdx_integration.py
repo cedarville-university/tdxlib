@@ -35,6 +35,7 @@ class TDXIntegration:
         self.password = None
         self.token = None
         self.token_exp = None
+        self.timezone = None
         self.config = configparser.ConfigParser()
 
         # Read in configuration
@@ -51,7 +52,8 @@ class TDXIntegration:
                 'password': 'Prompt',
                 'ticketAppId': '',
                 'assetAppId': '',
-                'caching': False
+                'caching': False,
+                'timezone': '-0500'
             }
 
             # Initialization wizard
@@ -120,6 +122,20 @@ class TDXIntegration:
                     caching_invalid = False
                 if caching_invalid:
                     print("Invalid Response.")
+            print("\nWhat timezone would you like to set for this integration (default: '-0500')?")
+            timezone_invalid=True
+            while timezone_invalid:
+                timezone_choice = input("Timezone (default: -0500) [+/-0000]: ")
+                if len(timezone_choice) == 5 and timezone_choice[:1] in ["+", "-"] and timezone_choice[1:].isdigit():
+                    self.config.set('TDX API Settings', 'timezone', timezone_choice)
+                    self.timezone = timezone_choice
+                    timezone_invalid = False
+                if len(timezone_choice) == 0:
+                    self.config.set('TDX API Settings', 'timezone', '-0500')
+                    self.timezone = '-0500'
+                    timezone_invalid = False
+                if timezone_invalid:
+                    print("Invalid Reponse.")
             print('\n\nInitial settings saved to: ' + filename)
             with open(filename, 'w') as configfile:
                 self.config.write(configfile)
@@ -134,6 +150,10 @@ class TDXIntegration:
         self.ticket_app_id = self.settings.get('ticketAppId')
         self.asset_app_id = self.settings.get('assetAppId')
         self.caching = self.settings.getboolean('caching')
+        self.timezone = self.settings.get('timezone')
+        # Default to UTC -- for backwards compatibility
+        if not self.timezone:
+            self.timezone = 'Z'
         if self.sandbox:
             api_end = '/SBTDWebApi/api'
         else:
@@ -166,6 +186,7 @@ class TDXIntegration:
                                                                 response.reason + "\n" + " Returned: " + response.text)
             else:
                 self.token = response.text
+                time.sleep(1)
                 # Decode token to identify expiration date
                 decoded = jwt.decode(self.token,
                                      algorithms=['HS256'],
@@ -277,7 +298,10 @@ class TDXIntegration:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
                     " Response code: " + str(response.status_code) + " " +
                     response.reason + "\n" + "Returned: " + response.text)
-            val = response.json()
+            if len(response.text) == 0:
+                val = None
+            else:
+                val = response.json()
             self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
@@ -736,8 +760,7 @@ class TDXIntegration:
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
             "No custom attribute found for " + str(key) + ' and object type ' + str(object_type))
 
-    @staticmethod
-    def get_custom_attribute_choice_by_name_id(attribute, key):
+    def get_custom_attribute_choice_by_name_id(self, attribute, key):
         """
         Gets the choice item from a custom attribute, maybe from get_custom_attribute_by_name()
 
@@ -760,6 +783,9 @@ class TDXIntegration:
                     return i
             raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
                 f"No custom attribute choice \"{str(key)}\" found in CA {attribute['Name']}")
+        elif attribute['FieldType'] == 'datefield':
+            value = tdxlib.tdx_utils.import_tdx_date(key)
+            return tdxlib.tdx_utils.export_tdx_date(value, self.timezone)
         else:
             return str(key)
 

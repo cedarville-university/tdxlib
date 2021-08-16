@@ -26,14 +26,15 @@ class TDXTicket:
         'TaskProjectName', 'TaskPlanID', 'TaskPlanName', 'TaskID', 'TaskTitle', 'TaskStartDate', 'TaskEndDate',
         'TaskPercentComplete', 'LocationName', 'LocationRoomName', 'RefCode', 'ServiceName', 'ServiceCategoryID',
         'ServiceCategoryName', 'ArticleID', 'ArticleSubject', 'ArticleStatus', 'ArticleCategoryPathNames',
-        'ArticleAppID', 'ArticleShortcutID', 'AppID', 'Attachments', 'Tasks', 'Notify'
+        'ArticleAppID', 'ArticleShortcutID', 'AppID', 'Attachments', 'Tasks', 'Notify', 'ServiceOfferingID',
+        'ServiceOfferingName'
     ]
     valid_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
         'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'ParentID', 'TypeCategoryID', 'SlaID', 'ActualMinutes',
         'DaysOld', 'ReviewingGroupID', 'TaskProjectID', 'TaskPlanID', 'TaskID', 'TaskPercentComplete', 'FormID',
         'ServiceCategoryID', 'ArticleID', 'AppID', 'ArticleAppID', 'ArticleShortcutID', 'ParentClass', 'Classification',
-        'StatusClass', 'ArticleStatus'
+        'StatusClass', 'ArticleStatus', 'ServiceOfferingID'
     ]
     valid_decimal_attributes = ['TimeBudget', 'ExpensesBudget', 'PriorityOrder', 'TimeBudgetUsed', 'ExpensesBudgetUsed']
     valid_bool_attributes = [
@@ -55,7 +56,7 @@ class TDXTicket:
     ]
     editable_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
-        'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'StatusID', 'ArticleShortcutID'
+        'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'StatusID', 'ArticleShortcutID', 'ServiceOfferingID'
     ]
     editable_double_attributes = ['ExpensesBudget', 'TimeBudget']
     editable_date_attributes = ['GoesOffHoldDate', 'StartDate', 'EndDate']

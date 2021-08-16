@@ -121,7 +121,7 @@ In no particular order:
 4. Merge to develop
 5. Make sure all documentation at https://tdxlib.readthedocs.io builds ok
 6. Make sure README is up to date
-7. Increment version in setup.py
+7. Increment version in `tdxlib/__init__.py` and `setup.py`
 8. Run ```pip install --upgrade build wheel twine``` 
 9. Run ```python -m build```
 10. Run ```twine upload dist/*```
