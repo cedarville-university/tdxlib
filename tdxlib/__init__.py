@@ -7,4 +7,4 @@ import tdxlib.tdx_ticket_integration
 import tdxlib.tdx_ticket
 import tdxlib.tdx_utils
 
-__version__ = "0.2.13"
+__version__ = "0.2.14"

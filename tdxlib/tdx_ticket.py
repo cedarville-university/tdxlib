@@ -27,14 +27,14 @@ class TDXTicket:
         'TaskPercentComplete', 'LocationName', 'LocationRoomName', 'RefCode', 'ServiceName', 'ServiceCategoryID',
         'ServiceCategoryName', 'ArticleID', 'ArticleSubject', 'ArticleStatus', 'ArticleCategoryPathNames',
         'ArticleAppID', 'ArticleShortcutID', 'AppID', 'Attachments', 'Tasks', 'Notify', 'ServiceOfferingID',
-        'ServiceOfferingName'
+        'ServiceOfferingName', 'WorkflowID', 'WorkflowConfigurationID', 'WorkflowName'
     ]
     valid_int_attributes = [
         'SourceID', 'ImpactID', 'UrgencyID', 'EstimatedMinutes', 'ResponsibleGroupID', 'LocationID', 'LocationRoomID',
         'ServiceID', 'TypeID', 'AccountID', 'PriorityID', 'ParentID', 'TypeCategoryID', 'SlaID', 'ActualMinutes',
         'DaysOld', 'ReviewingGroupID', 'TaskProjectID', 'TaskPlanID', 'TaskID', 'TaskPercentComplete', 'FormID',
         'ServiceCategoryID', 'ArticleID', 'AppID', 'ArticleAppID', 'ArticleShortcutID', 'ParentClass', 'Classification',
-        'StatusClass', 'ArticleStatus', 'ServiceOfferingID'
+        'StatusClass', 'ArticleStatus', 'ServiceOfferingID', 'WorkflowID', 'WorkflowConfigurationID'
     ]
     valid_decimal_attributes = ['TimeBudget', 'ExpensesBudget', 'PriorityOrder', 'TimeBudgetUsed', 'ExpensesBudgetUsed']
     valid_bool_attributes = [
@@ -108,7 +108,7 @@ class TDXTicket:
             result += f'{key:25}\t{value}\n'
         return result
 
-    def import_data(self, data):
+    def import_data(self, data, strict: bool=False):
         self.ticket_data = {}
         for key, value in data.items():
             if key in TDXTicket.valid_attributes:
@@ -132,10 +132,11 @@ class TDXTicket:
                 else:
                     self.ticket_data[key]: str = value
             else:
-                raise tdxlib.tdx_api_exceptions.TdxApiTicketImportError(
-                    "Attribute {0} with value {1} not allowed in Ticket".format(key, value))
+                if strict:
+                    raise tdxlib.tdx_api_exceptions.TdxApiTicketImportError(
+                        "Attribute {0} with value {1} not allowed in Ticket".format(key, value))
 
-    def validate(self, data=None, editable_only=False):
+    def validate(self, data=None, editable_only=False, strict: bool=False):
         if not data:
             data = self.ticket_data
         # Check for required attributes
@@ -153,7 +154,7 @@ class TDXTicket:
                         "String value required for {0}".format(attrib))
         for attrib, value in data.items():
             # Check all attributes for validity
-            if attrib not in TDXTicket.valid_attributes:
+            if attrib not in TDXTicket.valid_attributes and strict:
                 raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "{0} with value {1} is not a valid ticket attribute".format(attrib, value))
             # Check editable attributes for correct type
