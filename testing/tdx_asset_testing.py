@@ -248,6 +248,26 @@ class TdxAssetTesting(unittest.TestCase):
                 if desired['ID'] == existing ['ID']:
                     self.assertEqual(str(desired['Value']), str(existing['Value']))
 
+    def test_add_asset_user(self):
+        pass
+
+    def test_get_asset_users(self):
+        pass
+
+    def test_delete_asset_users(self):
+        pass
+
+    def test_change_asset_location(self):
+        pass
+
+    def test_clear_asset_custom_attributes(self):
+        pass
+
+    def test_get_asset_custom_attribute_value_by_name(self):
+        pass
+
+    def test_copy_asset_attributes(self):
+        pass
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TdxAssetTesting)

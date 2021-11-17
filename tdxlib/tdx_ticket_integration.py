@@ -109,7 +109,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :rtype: dict
         """
-        return tdxlib.tdx_ticket.TDXTicket(self, self.make_call(str(ticket_id), 'get'))
+        ticket_data = self.make_call(str(ticket_id), 'get')
+        if ticket_data:
+            return tdxlib.tdx_ticket.TDXTicket(self, ticket_data)
 
     def search_tickets(self, criteria: dict, max_results: int = 25, closed: bool = False, cancelled: bool = False,
                        other_status: bool = False) -> list:

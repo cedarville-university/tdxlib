@@ -1,4 +1,6 @@
+import copy
 import datetime
+import tdx_utils
 import tdxlib.tdx_integration
 from tdxlib.tdx_api_exceptions import *
 
@@ -383,6 +385,35 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call(str(asset_id), 'get')
 
+    def get_asset_users(self, asset_id: str) -> list:
+        """
+        Gets users of an asset
+
+        :param asset_id: the ID of the asset to get users
+
+        :return: list of this asset's users, each represented by a dict
+
+        """
+        return self.make_call(f'{asset_id}/users', 'get')
+
+    def delete_asset_users(self, asset_id: str, users: list):
+        """
+        Deletes specified users of an asset
+
+        :param asset_id: the ID of the asset to delete users from
+        :param users: a list of the users (maybe from get_asset_users()) to delete
+
+        :return: list of this asset's users, each represented by a dict
+
+        """
+        results = list()
+        for user in users:
+            if isinstance(user, str):
+                id_to_delete = user
+            else:
+                id_to_delete = user['Value']
+            results.append(self.make_call(f'{asset_id}/users/{id_to_delete}', 'delete'))
+
     def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False) -> list:
         """
         Searches for assets, based on criteria
@@ -620,40 +651,55 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param assets: a list of assets (maybe from search_assets()) or a single asset (only ID required)
         :param changed_attributes: a dict of attributes in the ticket to be changed
-        :param clear_custom_attributes: (default: False) Indicates whether or not custom attributes should be cleared
+        :param clear_custom_attributes: (default: False) Indicates whether or not custom attributes not specified
+                                        in the changed_attributes argument should be cleared
 
         :return: list of updated assets
 
         """
         changed_custom_attributes = False
+        # Get everything into a list
         if not isinstance(assets, list):
             asset_list = list()
             asset_list.append(assets)
         else:
             asset_list = assets
         updated_assets = list()
+        # Separate CA changes into their own object: 'changed_custom_attributes'.'
+        # need to make a full copy of this dict so we can reuse it
+        changed_attributes_copy = copy.deepcopy(changed_attributes)
         if 'Attributes' in changed_attributes:
             if isinstance(changed_attributes['Attributes'], list):
                 changed_custom_attributes = changed_attributes['Attributes']
             else:
                 changed_custom_attributes = [changed_attributes['Attributes']]
-            del changed_attributes['Attributes']
+            # Remove attributes field of "changed_attributes" so it doesn't mess up the existing asset(s) CA's
+            # need to set it to an empty list first so it doesn't delete the object that was passed in
+            del changed_attributes_copy['Attributes']
         for this_asset in asset_list:
+            # Need to get the full record so that we can see existing CA's
             this_asset = self.get_asset_by_id(this_asset['ID'])
-            if 'Attributes' not in this_asset.keys():
+            # not totally sure the first part is necessary. I think it always comes through as an empty list if no CA's
+            if 'Attributes' not in this_asset.keys() or clear_custom_attributes:
                 this_asset['Attributes'] = []
-            if changed_custom_attributes and not clear_custom_attributes:
+            # we take this branch if we have attributes to update, and we're not clobbering existing CA's
+            if changed_custom_attributes:
+                # Loop through each of the CAs to be changed
                 for new_attrib in changed_custom_attributes:
+                    # Drop a marker so we know if
                     new_attrib_marker = True
+                    # Loop through the existing CA's, to look for stuff to update
                     for attrib in this_asset['Attributes']:
+                        # if we find a match, we update it in the existing asset record
                         if str(new_attrib['ID']) == str(attrib['ID']):
                             attrib['Value'] = new_attrib['Value']
                             new_attrib_marker = False
+                    # if we go through all the asset's  CA's, an haven't updated something, we just put it in.
                     if new_attrib_marker:
                         this_asset['Attributes'].append(new_attrib)
-            if clear_custom_attributes:
-                this_asset['Attributes'] = []
-            this_asset.update(changed_attributes)
+            # incorporate the non-custom changed attributes to the existing asset record
+            this_asset.update(changed_attributes_copy)
+            # Call a post with the existing asset record to update the values
             updated_assets.append(self.make_call(str(this_asset['ID']), 'post', this_asset))
         return updated_assets
 
@@ -685,6 +731,39 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             else:
                 raise TdxApiObjectTypeError(
                     f"Department of type {str(type(new_dept))} not searchable."
+                )
+        return self.update_assets(asset, changed_attributes)
+
+    def change_asset_location(self, asset, new_location, new_room=None):
+        """
+        Updates Location data in a list of assets
+
+        :param asset: asset to update (doesn't have to be full record), or list of same
+        :param new_location: name of new location, or dict of location data
+        :param new_room: name of new room, or dict of room data
+
+        :return: list of the updated assets
+
+        """
+        changed_attributes = dict()
+        if isinstance(new_location, str):
+            location = self.get_location_by_name(new_location)
+            changed_attributes['LocationID'] = location['ID']
+        elif isinstance(new_location, dict):
+            location = new_location
+            changed_attributes['LocationID'] = new_location['ID']
+        else:
+            raise TdxApiObjectTypeError(
+                f"Department of type {str(type(new_location))} not searchable."
+            )
+        if new_room:
+            if isinstance(new_room, str):
+                changed_attributes['LocationRoomID'] = self.get_room_by_name(location, new_room)
+            elif isinstance(new_location, dict):
+                changed_attributes['LocationRoomID'] = new_room['ID']
+            else:
+                raise TdxApiObjectTypeError(
+                    f"Department of type {str(type(new_location))} not searchable."
                 )
         return self.update_assets(asset, changed_attributes)
 
@@ -730,6 +809,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if len(ca['Choices']) > 0:
             ca_choice = self.get_custom_attribute_choice_by_name_id(ca, value)
             value = ca_choice['ID']
+        if isinstance(value, datetime.datetime):
+            value = tdx_utils.export_tdx_date(value)
         return {'ID': ca['ID'], 'Value': value}
 
     def change_asset_custom_attribute_value(self, asset, custom_attributes: list) -> list:
@@ -743,6 +824,50 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         to_change = {'Attributes': custom_attributes}
         return self.update_assets(asset, to_change)
+
+    def clear_asset_custom_attributes(self, asset: dict, attributes_to_clear: list):
+        """
+        Takes a list of CA names and removes those custom attributes from the provided asset
+
+        :param asset: asset to update (doesn't have to be full record)
+        :param attributes_to_clear: List of names of custom attributes to remove
+        :return: list of updated assets in dict format
+        """
+        if not isinstance(attributes_to_clear, list):
+            attributes_to_clear = [attributes_to_clear]
+        full_asset = self.get_asset_by_id(asset['ID'])
+        to_change = {'Attributes': []}
+        for ca in full_asset['Attributes']:
+            if ca['Name'] not in attributes_to_clear:
+                to_change['Attributes'].append(ca)
+        return self.update_assets(full_asset, to_change, clear_custom_attributes=True)
+
+    def get_asset_custom_attribute_value_by_name(self, asset, key: str, id: bool=False) -> str:
+        """
+        Returns the current value of a specific CA in the specified asset
+
+        :param asset: asset to get CA value for, in dict or ID form
+        :param key: Name or ID of CA to find in the asset
+        :param id: (Default: False) Return the ID of the value, instead of ValueText (only for choice-based CA's)
+
+        :return: list of updated assets in dict format
+        """
+        if isinstance(asset, str):
+            this_asset = self.get_asset_by_id(asset)
+        elif isinstance(asset, dict):
+            this_asset = asset
+        else:
+            raise TdxApiObjectTypeError(
+                f"Asset of type {str(type(asset))} not searchable."
+            )
+        ca_id = self.get_asset_custom_attribute_by_name_id(key)['ID']
+        for ca in this_asset['Attributes']:
+            if str(ca['ID']) == ca_id:
+                if ca['Choices'] and id:
+                    return ca['Value']
+                else:
+                    return ca['ValueText']
+
 
     def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
         """
@@ -759,7 +884,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         children = self.search_assets(search_params)
         return self.update_assets(children, update_params)
 
-    def copy_asset_attributes(self, source_asset, target_asset, copy_name=False, exclude=None, new_status: str = None):
+    def copy_asset_attributes(self, source_asset, target_asset, copy_name=False, exclude=None, new_status: str = None,
+                              new_name: str = None, is_full_source=False):
         """
         Copies asset attributes from one asset to another. Does not include attributes like Serial Number, Asset Tag,
             and other hardware-specific fields.
@@ -769,23 +895,33 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param copy_name: Set to true to copy the name of the source asset to the target asset
         :param exclude: List of attributes to be excluded, in addition to defaults
         :param new_status: Name or ID of new status for source asset
+        :param new_name: New name for source asset (usually used with copy_name=True). Default: False
+        :param is_full_source: Boolean indicating whether source_asset is a full asset record or not. Default: False
 
         :return: list of the target and source asset data
 
         """
-        excluded_attributes = ['SerialNumber', 'Tag', 'ExternalID', 'ModelID', 'SupplierID', 'ManufacturerID',
-                               'PurchaseCost', 'ExpectedReplacementDate', 'AcquisitionDate']
+        excluded_attributes = ['ID', 'SerialNumber', 'Tag', 'ExternalID', 'ModelID', 'SupplierID', 'ManufacturerID',
+                               'PurchaseCost', 'ExpectedReplacementDate', 'AcquisitionDate', 'MAC Address',
+                               'WiFi MAC Address', 'Year Purchased', 'Warranty Expiration Date', 'Order Number',
+                               'cu.Responsible Group', 'OwningCustomerID', 'OwningDepartmentID']
         if exclude:
             excluded_attributes.append(exclude)
         if not copy_name:
             excluded_attributes.append('Name')
-        full_source = dict(self.get_asset_by_id(source_asset['ID']))
+        if is_full_source:
+            full_source = source_asset
+        else:
+            full_source = dict(self.get_asset_by_id(source_asset['ID']))
         for protected_attribute in excluded_attributes:
             full_source.pop(protected_attribute, None)
         updated_target = self.update_assets(target_asset, full_source)
         updated_source = None
-        if new_status:
-            update_params = {'StatusID': self.get_asset_status_by_name_id(new_status)}
+        if new_status or new_name or isinstance(new_name, str):
+            if new_status:
+                update_params = {'StatusID': self.get_asset_status_by_name_id(new_status)}
+            if new_name or isinstance(new_name, str):
+                update_params = {'Name': new_name}
             updated_source = self.update_assets(full_source, update_params)
         return [updated_target, updated_source]
 
