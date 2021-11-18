@@ -6,7 +6,7 @@ with open("README.md", 'r', encoding='utf-8"') as fh:
 setup(
     name='TDXLib',
     description='a python library for interacting with the TeamDynamix Web API',
-    version='0.2.14',
+    version='0.3.0',
     author='Nat Biggs, Stephen Gaines, Josiah Lansford',
     author_email='tdxlib@cedarville.edu',
     packages=['tdxlib'],

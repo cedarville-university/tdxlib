@@ -12,8 +12,8 @@ class TdxTicketTesting(unittest.TestCase):
 
     # Create TDXIntegration object for testing use. Called before testing methods.
     def setUp(self):
-        testing_vars_file = 'testing_vars.json'
-        self.tix = tdx_ticket_integration.TDXTicketIntegration()
+        testing_vars_file = '../testing_vars.json'
+        self.tix = tdx_ticket_integration.TDXTicketIntegration('../tdxlib.ini')
         right_now = dt.today()
         self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
         if os.path.isfile(testing_vars_file):
@@ -282,7 +282,7 @@ class TdxTicketTesting(unittest.TestCase):
         filename = self.testing_vars['attachment']['Name']
         with open (filename, "rb") as file:
             update = self.tix.upload_attachment(ticket_id, file)
-        self.assertEqual(filename, update['Name'])
+        self.assertEqual(filename.split('/')[-1], update['Name'])
 
     def test_upload_attachment_filename(self):
         if not self.tix.sandbox:
