@@ -2,6 +2,7 @@ import dateutil.parser
 import datetime
 import json
 
+
 # Prints out dict as JSON with indents
 def print_nice(myjson):
     print(json.dumps(myjson, indent=4))
@@ -22,6 +23,7 @@ def print_simple(my_json, attributes=None):
             if i in j:
                 print(i,':\t', j[i])
 
+
 # Print only ['Name'] attribute of list of objects
 def print_names(myjson):
     if isinstance(myjson,list):
@@ -31,6 +33,7 @@ def print_names(myjson):
     for i in this_json:
         if 'Name' in i:
             print(i['Name'])
+
 
 # Imports a string from a TDX Datetime attribute, returns a python datetime object
 def import_tdx_date(date_string: str) -> datetime:
