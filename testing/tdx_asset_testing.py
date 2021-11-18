@@ -393,6 +393,18 @@ class TdxAssetTesting(unittest.TestCase):
         self.assertTrue(validate2['Attributes'][0]['Name'] == self.testing_vars['attributes1'][0]['Name'])
         self.assertTrue(validate1['StatusName'] == self.testing_vars['asset_status2']['Name'])
 
+    def test_move_child_assets(self):
+        if not self.timestamp:
+            self.setUp()
+        child_asset_id = self.testing_vars['child_asset']['ID']
+        parent_asset_id = self.testing_vars['parent_asset']['ID']
+        other_asset_id = self.testing_vars['asset1']['ID']
+        self.tax.move_child_assets(parent_asset_id, other_asset_id)
+        validate = self.tax.get_asset_by_id(child_asset_id)
+        self.assertTrue(str(validate['ParentID']) == str(other_asset_id))
+        self.tax.move_child_assets(other_asset_id, parent_asset_id)
+        validate2 = self.tax.get_asset_by_id(child_asset_id)
+        self.assertTrue(str(validate2['ParentID']) == str(parent_asset_id))
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TdxAssetTesting)

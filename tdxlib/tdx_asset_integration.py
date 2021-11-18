@@ -1,6 +1,6 @@
 import copy
 import datetime
-import tdx_utils
+import tdxlib.tdx_utils
 import tdxlib.tdx_integration
 from tdxlib.tdx_api_exceptions import *
 
@@ -826,7 +826,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             ca_choice = self.get_custom_attribute_choice_by_name_id(ca, value)
             value = ca_choice['ID']
         if isinstance(value, datetime.datetime):
-            value = tdx_utils.export_tdx_date(value)
+            value = tdxlib.tdx_utils.export_tdx_date(value)
         return {'ID': ca['ID'], 'Value': value}
 
     def change_asset_custom_attribute_value(self, asset, custom_attributes: list) -> list:
@@ -858,7 +858,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 to_change['Attributes'].append(ca)
         return self.update_assets(full_asset, to_change, clear_custom_attributes=True)[0]
 
-    def get_asset_custom_attribute_value_by_name(self, asset, key: str, id: bool=False) -> str:
+    def get_asset_custom_attribute_value_by_name(self, asset, key: str, id_only: bool=False) -> str:
         """
         Returns the current value of a specific CA in the specified asset
 
@@ -879,23 +879,31 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         ca_id = self.get_asset_custom_attribute_by_name_id(key)['ID']
         for ca in this_asset['Attributes']:
             if str(ca['ID']) == str(ca_id):
-                if ca['Choices'] and id:
+                if ca['Choices'] and id_only:
                     return ca['Value']
                 else:
                     return ca['ValueText']
 
-    def move_child_assets(self, source_asset: dict, target_asset: dict) -> list:
+    def move_child_assets(self, source_asset, target_asset) -> list:
         """
         Moves child assets from one parent asset to another
 
-        :param source_asset: asset to move children from (doesn't have to be full record)
-        :param target_asset: asset to move children to
+        :param source_asset: asset (or asset ID) to move children from (doesn't have to be full record)
+        :param target_asset: asset (or asset ID) to move children to
 
         :return: list of the updated assets
 
         """
-        search_params = {'ParentID': source_asset['ID']}
-        update_params = {'ParentID': target_asset['ID']}
+        if isinstance(source_asset, str) or isinstance(source_asset, int):
+            search_string = str(source_asset)
+        else:
+            search_string = source_asset['ID']
+        if isinstance(target_asset, str) or isinstance(target_asset, int):
+            target_string = str(target_asset)
+        else:
+            target_string = target_asset['ID']
+        search_params = {'ParentIDs': [search_string]}
+        update_params = {'ParentID': target_string}
         children = self.search_assets(search_params)
         return self.update_assets(children, update_params)
 
@@ -916,10 +924,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: list of the target and source asset data
 
         """
-        excluded_attributes = ['ID', 'SerialNumber', 'Tag', 'ExternalID', 'ModelID', 'SupplierID', 'ManufacturerID',
-                               'PurchaseCost', 'ExpectedReplacementDate', 'AcquisitionDate', 'MAC Address',
-                               'WiFi MAC Address', 'Year Purchased', 'Warranty Expiration Date', 'Order Number',
-                               'cu.Responsible Group', 'OwningCustomerID', 'OwningDepartmentID']
+        excluded_attributes = ['ID', 'SerialNumber', 'Tag', 'ExternalID', 'ProductModelID', 'SupplierID',
+                               'ManufacturerID', 'PurchaseCost', 'ExpectedReplacementDate', 'AcquisitionDate']
         if exclude:
             excluded_attributes.append(exclude)
         if not copy_name:
@@ -929,6 +935,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         else:
             full_source = self.get_asset_by_id(source_asset['ID'])
         source_id = full_source['ID']
+        real_attribs = list()
+        for ca in full_source['Attributes']:
+            if ca['Name'] not in excluded_attributes:
+                real_attribs.append(ca)
+        full_source['Attributes'] = real_attribs
         for protected_attribute in excluded_attributes:
             full_source.pop(protected_attribute, None)
         updated_target = self.update_assets(target_asset, full_source)
