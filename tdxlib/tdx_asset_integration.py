@@ -953,7 +953,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         excluded_attributes = ['ID', 'SerialNumber', 'Tag', 'ExternalID', 'ProductModelID', 'SupplierID',
                                'ManufacturerID', 'PurchaseCost', 'ExpectedReplacementDate', 'AcquisitionDate']
         if exclude:
-            excluded_attributes.append(exclude)
+            excluded_attributes = excluded_attributes + exclude
         if not copy_name:
             excluded_attributes.append('Name')
         if is_full_source:
