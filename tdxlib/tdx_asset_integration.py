@@ -427,7 +427,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 id_to_delete = user['Value']
             results.append(self.make_call(f'{asset_id}/users/{id_to_delete}', 'delete'))
 
-    def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False) -> list:
+    def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False,
+                      all_statuses: bool = False) -> list:
         """
         Searches for assets, based on criteria
 
@@ -442,35 +443,47 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param max_results: maximum number of results to return
         :param criteria: a string or dict to search for tickets with. If a string, use as 'SearchString'
         :param retired: include retired assets in search if true
+               (overridden if "StatusIDs" in criteria or all_statuses is set)
         :param disposed: include disposed assets in search if true
+               (overridden if "StatusIDs" in criteria or all_statuses is set)
         :param full_record: get full asset record (Default: False). Takes more time, but returns full asset record(s)
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
+               (overridden if "StatusIDs" in criteria)
 
-        :return: list of asset info (by default, NOT FULL ASSET RECORDS, pass full_record=True to get full record)
+        :return: list of asset info, or None if no assets found matching criteria.
+                (by default, NOT FULL ASSET RECORDS, pass full_record=True to get full record)
+
         
         """
         # Set default statuses
-        statuses = list()
-        statuses.append(self.get_asset_status_by_name_id("Inventory")['ID'])
-        statuses.append(self.get_asset_status_by_name_id("In Use")['ID'])
-        statuses.append(self.get_asset_status_by_name_id("Broken")['ID'])
-
-        # Set conditional statuses
-        if retired:
-            statuses.append(self.get_asset_status_by_name_id("Retired")['ID'])
-        if disposed:
-            statuses.append(self.get_asset_status_by_name_id("Disposed")['ID'])
+        default_statuses = list()
+        if all_statuses:
+            for status in self.get_all_asset_statuses():
+                default_statuses.append(status['ID'])
+        else:
+            default_statuses.append(self.get_asset_status_by_name_id("Inventory")['ID'])
+            default_statuses.append(self.get_asset_status_by_name_id("In Use")['ID'])
+            default_statuses.append(self.get_asset_status_by_name_id("Broken")['ID'])
+            # Set conditional statuses
+            if retired:
+                default_statuses.append(self.get_asset_status_by_name_id("Retired")['ID'])
+            if disposed:
+                default_statuses.append(self.get_asset_status_by_name_id("Disposed")['ID'])
 
         # Set up search body
-        search_body = {'MaxResults': str(max_results), 'StatusIDs': statuses}
+        search_body = {'MaxResults': str(max_results)}
         if isinstance(criteria, str):
             search_body['SearchText'] = criteria
+            search_body['StatusIDs'] =  default_statuses
         elif isinstance(criteria, dict):
             search_body.update(criteria)
+            if 'StatusIDs' not in search_body:
+                search_body['StatusIDs'] = default_statuses
         else:
             raise TdxApiObjectTypeError("Can't search assets with" +
                                         str(type(criteria)) + " as criteria.")
         asset_list = self.make_call('search', 'post', search_body)
-        if full_record:
+        if full_record and asset_list:
             full_assets = []
             for asset in asset_list:
                 full_assets.append(self.get_asset_by_id(asset['ID']))
@@ -478,12 +491,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         else:
             return asset_list
 
-    def find_asset_by_tag(self, tag, full_record: bool = False) -> dict:
+    def find_asset_by_tag(self, tag, full_record: bool = False, all_statuses: bool = True) -> dict:
         """
         Gets an asset based on its asset tag
 
         :param tag: asset tag as a string or int
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
+        :param all_statuses: gets assets, regardless of what their status is (default: True)
 
 
         :return: the single asset with the corresponding tag
@@ -492,7 +506,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if type(tag) is str:
             tag = tag.lstrip('0')
         search_params = {'SearchText': str(tag)}
-        result = self.search_assets(search_params, disposed=True, retired=True, full_record=full_record)
+        result = self.search_assets(search_params, disposed=True, retired=True,
+                                    full_record=full_record, all_statuses=all_statuses)
         if result and len(result) == 1:
             return result[0]
         else:
@@ -502,25 +517,27 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         raise TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with tag {str(tag)} found.")
 
-    def find_asset_by_sn(self, sn, full_record: bool = False) -> dict:
+    def find_asset_by_sn(self, sn, full_record: bool = False, all_statuses: bool = True) -> dict:
         """
         Gets an asset based on its serial number
 
         :param sn: serial number as a string or int
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
+        :param all_statuses: gets assets, regardless of what their status is (default: True)
 
         :return: the single asset with the corresponding serial number
 
         """
         search_params = {'SerialLike': sn}
-        result = self.search_assets(search_params, disposed=True, retired=True, full_record=full_record)
+        result = self.search_assets(search_params, disposed=True, retired=True,
+                                    full_record=full_record, all_statuses=all_statuses)
         if len(result) == 1:
             return result[0]
         raise TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with SN {str(sn)} found.")
 
     def get_assets_by_location(self, location, max_results: int = 5000, full_record: bool = False,
-                               retired: bool = False, disposed: bool = False) -> list:
+                               retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
         """
         Gets all assets in a location
 
@@ -529,6 +546,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
 
         :return: a list of assets in the location(s)
 
@@ -545,10 +563,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         elif isinstance(location, str):
             id_list.append(self.get_location_by_name(location)['ID'])
         return self.search_assets({'LocationIDs': id_list}, max_results=max_results, full_record=full_record,
-                                  disposed=disposed, retired=retired)
+                                  disposed=disposed, retired=retired, all_statuses=all_statuses)
 
     def get_assets_by_room(self, room: dict, max_results: int = 25, full_record: bool = False,
-                           retired: bool = False, disposed: bool = False) -> list:
+                           retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
         """
         Gets all assets in a specific room in a location
 
@@ -557,15 +575,16 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
 
         :return: a list of assets in the room
 
         """
         return self.search_assets({'RoomID': room['ID']}, max_results=max_results, full_record=full_record,
-                                  disposed=disposed, retired=retired)
+                                  disposed=disposed, retired=retired, all_statuses=all_statuses)
 
     def get_assets_by_owner(self, person: str, max_results: int = 25, full_record: bool = False,
-                            retired: bool = False, disposed: bool = False) -> list:
+                            retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
         """
         Gets all assets owned by a particular person in TDX
 
@@ -574,6 +593,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
 
         :return: a list of assets owned by that person
 
@@ -585,10 +605,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                         str(type(person)) + " as person.")
         return self.search_assets({'OwningCustomerIDs': [person['UID']]},
                                   max_results=max_results, full_record=full_record,
-                                  disposed=disposed, retired=retired)
+                                  disposed=disposed, retired=retired, all_statuses=all_statuses)
 
     def get_assets_by_requesting_department(self, dept, max_results: int = 25, full_record: bool = False,
-                                            retired: bool = False, disposed: bool = False) -> list:
+                                            retired: bool = False, disposed: bool = False,
+                                            all_statuses: bool = False) -> list:
         """
         Gets all assets requested by a particular account/department in TDX
 
@@ -597,6 +618,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
 
         :return: a list of assets requested by that department
 
@@ -608,10 +630,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                         str(type(dept)) + " as department.")
         return self.search_assets({'RequestingDepartmentIDs': [dept['ID']]},
                                   max_results=max_results, full_record=full_record,
-                                  disposed=disposed, retired=retired)
+                                  disposed=disposed, retired=retired, all_statuses=all_statuses)
 
     def get_assets_by_product_model(self, model, max_results: int = 25, full_record: bool = False,
-                                    retired: bool = False, disposed: bool = False) -> list:
+                                    retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
         """
         Gets all assets of a certain product model
 
@@ -620,6 +642,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
+
 
         :return: a list of assets of the specified model
 
@@ -631,10 +655,10 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                         str(type(model)) + " as model.")
         return self.search_assets({'ProductModelIDs': [model['ID']]},
                                   max_results=max_results, full_record=full_record,
-                                  disposed=disposed, retired=retired)
+                                  disposed=disposed, retired=retired, all_statuses=all_statuses)
 
     def get_assets_by_product_type(self, product_type, max_results: int = 25, full_record: bool = False,
-                                   retired: bool = False, disposed: bool = False) -> list:
+                                   retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
         """
         Gets all assets of a certain product type
 
@@ -643,6 +667,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
         :param disposed: include disposed assets in search if true
+        :param all_statuses: gets assets, regardless of what their status is (default: False)
+
 
         :return: a list of assets of the specified type
 
@@ -656,7 +682,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         model_ids = [x['ID'] for x in models]
         return self.search_assets({'ProductModelIDs': model_ids},
                                   max_results=max_results, full_record=full_record,
-                                  disposed=disposed, retired=retired)
+                                  disposed=disposed, retired=retired, all_statuses=all_statuses)
 
     def update_assets(self, assets, changed_attributes: dict, clear_custom_attributes=False) -> list:
         """
@@ -904,7 +930,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             target_string = target_asset['ID']
         search_params = {'ParentIDs': [search_string]}
         update_params = {'ParentID': target_string}
-        children = self.search_assets(search_params)
+        children = self.search_assets(search_params, all_statuses=True)
         return self.update_assets(children, update_params)
 
     def copy_asset_attributes(self, source_asset, target_asset, copy_name=False, exclude=None, new_status: str = None,
@@ -1042,7 +1068,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             else:
                 parent_asset = self.find_asset_by_sn(parent)
                 if not parent_asset:
-                    parent_asset = self.search_assets(parent, max_results=1)
+                    parent_asset = self.search_assets(parent, max_results=1, all_statuses=True)
                 if parent_asset:
                     data['ParentID'] = parent_asset['ID']
         return data
