@@ -450,7 +450,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param all_statuses: gets assets, regardless of what their status is (default: False)
                (overridden if "StatusIDs" in criteria)
 
-        :return: list of asset info (by default, NOT FULL ASSET RECORDS, pass full_record=True to get full record)
+        :return: list of asset info, or None if no assets found matching criteria.
+                (by default, NOT FULL ASSET RECORDS, pass full_record=True to get full record)
+
         
         """
         # Set default statuses
