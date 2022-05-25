@@ -112,7 +112,7 @@ class TDXTicket:
         self.ticket_data = {}
         for key, value in data.items():
             if key in TDXTicket.valid_attributes:
-                if value is False or value is '':
+                if value is False or value == '':
                     continue
                 if key in TDXTicket.valid_bool_attributes:
                     self.ticket_data[key]: bool = value
@@ -121,8 +121,8 @@ class TDXTicket:
                 elif key in TDXTicket.valid_decimal_attributes:
                     self.ticket_data[key]: float = value
                 elif key in TDXTicket.valid_date_attributes \
-                        and value is not 0 \
-                        and value is not '0001-01-01T05:00:00Z'\
+                        and value != 0 \
+                        and value != '0001-01-01T05:00:00Z'\
                         and value is not None:
                     self.ticket_data[key]: datetime = tdxlib.tdx_utils.import_tdx_date(value)
                 elif key in TDXTicket.valid_dict_attributes:

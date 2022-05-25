@@ -7,6 +7,7 @@ import datetime
 import time
 from typing import BinaryIO
 import jwt
+import logging
 
 
 class TDXIntegration:
@@ -36,6 +37,8 @@ class TDXIntegration:
         self.token = None
         self.token_exp = None
         self.timezone = None
+        self.log_level = None
+        self.logger = logging.getLogger('tdx_integration')
         self.config = configparser.ConfigParser()
 
         # Read in configuration
@@ -53,7 +56,8 @@ class TDXIntegration:
                 'ticketAppId': '',
                 'assetAppId': '',
                 'caching': False,
-                'timezone': '-0500'
+                'timezone': '-0500',
+                'logLevel': 'ERROR'
             }
 
             # Initialization wizard
@@ -136,6 +140,19 @@ class TDXIntegration:
                     timezone_invalid = False
                 if timezone_invalid:
                     print("Invalid Reponse.")
+            logging_invalid = False
+            while logging_invalid:
+                logging_choice = input("Log Level (default: ERROR) [CRITICAL, ERROR, WARNING, INFO, DEBUG]: ")
+                if logging_choice in ["WARNING", "ERROR", "INFO", "DEBUG", "CRITICAL"]:
+                    self.config.set('TDX API Settings', 'logLevel', logging_choice)
+                    self.log_level = logging_choice
+                    logging_invalid = False
+                if len(logging_choice) == 0:
+                    self.config.set('TDX API Settings', 'logLevel', 'ERROR')
+                    self.log_level = 'ERROR'
+                    logging_invalid = False
+                if timezone_invalid:
+                    print("Invalid Reponse.")
             print('\n\nInitial settings saved to: ' + filename)
             with open(filename, 'w') as configfile:
                 self.config.write(configfile)
@@ -165,6 +182,9 @@ class TDXIntegration:
         if self.password == 'Prompt':
             pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
             self.password = getpass.getpass(pass_prompt)
+        if self.log_level:
+            self.logger = logging.getLogger('tdx_integration')
+            self.logger.setLevel(logging.getLevelName(self.log_level))
         self.auth()
         self.cache = {}
         self.clean_cache()
@@ -194,10 +214,10 @@ class TDXIntegration:
                                      audience="https://www.teamdynamix.com/")
                 self.token_exp = decoded['exp']
 
-        except requests.exceptions.RequestException:
-            print('HTTP Request failed')
+        except requests.exceptions.RequestException as e:
+            self.logger.warning(f"Auth request Failed. Exception: {str(e)}")
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('Authorization failed.\n' + str(e))
+            self.logger.error(str(e))
 
     def _check_auth_exp(self):
         """
@@ -205,8 +225,9 @@ class TDXIntegration:
         If it is expired, call auth() to get a new token.
         """
         # If token is expired or will expire in the next minute, get new token
-        if (self.token_exp and self.token_exp < time.time() + 60):
-            print(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. Getting new token...")
+        if self.token_exp and self.token_exp < time.time() + 60:
+            self.logger.info(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. "
+                             f"Getting new token...")
             self.auth()
 
     def _rate_limit(self, skew_mitigation_secs=5):
@@ -223,7 +244,8 @@ class TDXIntegration:
                     if reset_datetime > now:
                         difference = reset_datetime - now
                         sleep_time = difference + datetime.timedelta(0, skew_mitigation_secs)
-                        print("Rate-limited by TeamDynamix. Sleeping " + str(sleep_time.seconds) + " seconds.")
+                        self.logger.info("Rate-limited by TeamDynamix. Sleeping "
+                                         + str(sleep_time.seconds) + " seconds.")
                         time.sleep(sleep_time.seconds)
 
     def make_get(self, request_url: str, retries: int = 3):
@@ -260,15 +282,15 @@ class TDXIntegration:
                 self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
                 self.cache['rate_limit']['last_url'] = request_url
                 return val
-            except requests.exceptions.RequestException:
-                print('HTTP Request failed')
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"GET to {request_url} failed. Exception: {str(e)}")
             except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-                print('GET failed: to ' + get_url + "\nReturned: " + str(e))
+                self.logger.error(f"GET to {request_url} returned non-success code. {str(e)}")
             except json.decoder.JSONDecodeError:
                 message = 'Invalid JSON received from ' + get_url + ':'
                 if response:
                     message += response.text
-                print(message)
+                self.logger.error(f"{message}")
             finally:
                 attempts += 1
 
@@ -306,15 +328,15 @@ class TDXIntegration:
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
-        except requests.exceptions.RequestException:
-            print('HTTP Request failed')
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"POST to {request_url} failed. Exception: {str(e)}")
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('POST failed: to ' + post_url + "\nReturned: " + str(e))
+            self.logger.error(f"POST to {request_url} returned non-success code. {str(e)}")
         except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + post_url + ':\n'
+            message = 'Invalid JSON received POST to ' + post_url + ':\n'
             if response:
                 message += response.text
-            print(message)
+            self.logger.error(f"{message}")
 
     def make_file_post(self, request_url: str, file: BinaryIO, filename: str = None):
         """
@@ -353,15 +375,15 @@ class TDXIntegration:
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
-        except requests.exceptions.RequestException:
-            print('HTTP Request failed')
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"POST File to {request_url} failed. Exception: {str(e)}")
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('POST failed: to ' + post_url + "\nReturned: " + str(e))
+            self.logger.error(f"POST File to {request_url} returned non-success code. {str(e)}")
         except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + post_url + ':\n'
+            message = 'Invalid JSON received from POSTing File to ' + request_url + ':\n'
             if response:
                 message += response.text
-            print(message)
+            self.logger.error(f"{message}")
 
 
     def make_put(self, request_url: str, body: dict):
@@ -395,15 +417,15 @@ class TDXIntegration:
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
-        except requests.exceptions.RequestException:
-            print('HTTP Request failed')
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"PUT to {request_url} failed. Exception: {str(e)}")
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('PUT failed: to ' + put_url + "\nReturned: " + str(e))
+            self.logger.error(f"PUT to {request_url} returned non-success code. {str(e)}")
         except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + put_url + ':\n'
+            message = 'Invalid JSON received from ' + request_url + ':\n'
             if response:
                 message += response.text
-            print(message)
+            self.logger.error(f"{message}")
 
     def make_delete(self, request_url: str):
         """
@@ -431,10 +453,10 @@ class TDXIntegration:
             self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
-        except requests.exceptions.RequestException:
-            print('HTTP DELETE Request failed')
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"DELETE to {request_url} failed. Exception: {str(e)}")
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('DELETE failed: to ' + delete_url + "\nReturned: " + str(e))
+            self.logger.error(f"DELETE to {request_url} returned non-success code. {str(e)}")
 
     def make_patch(self, request_url: str, body: list):
         """
@@ -473,15 +495,15 @@ class TDXIntegration:
             self.cache['rate_limit']['reset_time'] = str(response.headers['X-RateLimit-Reset'])
             self.cache['rate_limit']['limit'] = int(response.headers['X-RateLimit-Limit'])
             return val
-        except requests.exceptions.RequestException:
-            print('HTTP PATCH Request failed')
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"PATCH to {request_url} failed. Exception: {str(e)}")
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            print('PATCH failed: to ' + patch_url + "\nReturned: " + str(e))
+            self.logger.error(f"PATCH to {request_url} returned non-success code. {str(e)}")
         except json.decoder.JSONDecodeError:
-            message = 'Invalid JSON received from ' + patch_url + ':\n'
+            message = 'Invalid JSON received from PATCH to ' + request_url + ':\n'
             if response:
                 message += response.text
-            print(message)
+            self.logger.error(f"{message}")
 
     def clean_cache(self):
         self.cache = {
