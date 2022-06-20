@@ -178,7 +178,7 @@ class TDXIntegration:
         if fullhost is None:
             self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
         else:
-            self.api_url = 'https://' + fullhost + '/' + api_end
+            self.api_url = 'https://' + fullhost + api_end
         if self.password == 'Prompt':
             pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
             self.password = getpass.getpass(pass_prompt)
