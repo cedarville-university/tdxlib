@@ -27,8 +27,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         'Requested': 6
     }
 
-    def __init__(self, filename=None):
-        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
+    def __init__(self, filename=None, config=None):
+        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename, config)
         if self.ticket_app_id is None:
             raise ValueError("Ticket App Id is required. Check your config file for 'ticketappid = 000'")
         self.clean_cache()
