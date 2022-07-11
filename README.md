@@ -65,7 +65,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
        import tdxlib
     
-5. To interact with the TDX API, you'll need to create an api integration object, through which all of the TDXLib commands are run. TDXLib currently supports two types of integrations:
+6. To interact with the TDX API, you'll need to create an api integration object, through which all of the TDXLib commands are run. TDXLib currently supports two types of integrations:
 
    * **TDX Ticket Integration (Tickets, Ticket Tasks, etc.)**
    
@@ -75,7 +75,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
          
          my_tdx_asset_integration = tdxlib.tdx_asset_integration.TDXAssetIntegration()
 
-6. In order to store settings, TDXLib uses a INI-style configuration file. 
+7. In order to store settings, TDXLib uses a INI-style configuration file. 
    If there is no file set up in your working directory, TDXLib will walk you through the generation of one the first time you instantiate an integration object:
   
       <pre>
@@ -120,7 +120,8 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
         'password': 'Prompt',
         'ticketAppId': '123',
         'assetAppId': '456',
-        'caching': True
+        'caching': True,
+        'log_level': 'ERROR'
      
     * The `orgname` field is whatever subdomain your organization uses to access TeamDynamix. For example, `https://myuniversity.teamdynamix.com`.
 
@@ -147,7 +148,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
           >>> accounts = tdx.get_all_accounts()
 
-7. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For more detailed tutorials on how to use TDXLib to manipulate Tickets and Asset, as well as for information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
+9. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For more detailed tutorials on how to use TDXLib to manipulate Tickets and Asset, as well as for information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
     
 
 ##  TDXLib Implementation status and Future Plans
