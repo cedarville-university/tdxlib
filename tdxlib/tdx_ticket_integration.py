@@ -906,11 +906,12 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param responsible: group or email address to set as responsible for ticket (REQUIRED)
         :param template_values: a dictionary with substitutions for title/body, using the {placeholders} as keys
         :param body_template: a string with {placeholders} that correspond to keys in template_values parameter
-        :param attrib_prefix: the string that prefixes all the custom attribute column names in the template_values dict
+        :param attrib_prefix: [DEPRECATED]
+                            the string that prefixes all the custom attribute column names in the template_values dict
         :param due_date: due date for ticket, default None
         :param location: Building name of location (optional)
-        :param room: Room name of location (optional)
-        :param active_days: number of days before due date to assign start date, default 5
+        :param room: Room name of location (optional) Will not set room if location not included.
+        :param active_days: number of days before due date to assign start date, default is 5
         :param priority: name of priority of ticket, default "Low"
         :param status: name of status for new ticket, default "New"
         :param requestor: name or email for requester of the ticket, defaults to username of integration (optional)
@@ -981,7 +982,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if location:
             building = self.get_location_by_name(location)
             data['LocationID'] = building['ID']
-            data['LocationRoomID'] = self.get_room_by_name(building, room)['ID']
+            if room:
+                data['LocationRoomID'] = self.get_room_by_name(building, room)['ID']
 
         if responsible_is_group:
             data['ResponsibleGroupID'] = self.get_group_by_name(responsible)['ID']
