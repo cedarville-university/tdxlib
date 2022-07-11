@@ -8,4 +8,4 @@ import tdxlib.tdx_ticket
 import tdxlib.tdx_utils
 
 
-__version__ = "0.3.4"
+__version__ = "0.4.0"
