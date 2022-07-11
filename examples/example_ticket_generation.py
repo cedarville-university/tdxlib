@@ -116,7 +116,7 @@ for ticket in tickets:
 
     try:
         ticket_data = tdx.generate_ticket(title_text, ticket_type, account, responsible, ticket, body_text, prefix,
-                                          location=location, room=room, form=form, requestor=requestor, group=False,
+                                          location=location, room=room, form=form, requestor=requestor, responsible_is_group=False,
                                           due_date=due_date, active_days=active_days)
         if DEBUG:
             tdxlib.tdx_utils.print_nice(ticket_data.export(validate=False))
