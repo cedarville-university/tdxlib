@@ -29,7 +29,7 @@ class TDXIntegration:
         'vendor': 28
     }
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, config=None):
         self.settings = None
         self.api_url = None
         self.username = None
@@ -45,8 +45,16 @@ class TDXIntegration:
         if filename is not None:
             self.config.read(filename)
         else:
-            filename = 'tdxlib.ini'
-            self.config.read(filename)
+            if not config:
+                filename = 'tdxlib.ini'
+                self.config.read(filename)
+            else:
+                self.config.read_dict(config)
+                if 'TDX API Settings' not in self.config:
+                    raise ValueError(
+                        "Missing config section: 'TDX API Settings'")
+
+
         if 'TDX API Settings' not in self.config:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
