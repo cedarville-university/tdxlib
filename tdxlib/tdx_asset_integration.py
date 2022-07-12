@@ -2,17 +2,18 @@ import copy
 import datetime
 import tdxlib.tdx_utils
 import tdxlib.tdx_integration
+from typing import Union
 from tdxlib.tdx_api_exceptions import *
 
 
 class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
-    def __init__(self, filename=None):
+    def __init__(self, filename: str = None):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
         if self.asset_app_id is None:
             raise ValueError("Asset App Id is required. Check your INI file for 'assetappid = 000'")
         self.clean_cache()
 
-    def clean_cache(self):
+    def clean_cache(self) -> None:
         super().clean_cache()
         self.cache['product_model'] = {}
         self.cache['product_type'] = {}
@@ -24,7 +25,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.cache['custom_attributes'].append(self.get_all_custom_attributes(
             tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
 
-    def _make_asset_call(self, url, action, post_body=None):
+    def _make_asset_call(self, url: str, action: str, post_body: Union[dict, list] = None) -> Union[list, dict]:
         url_string = '/' + str(self.asset_app_id) + '/assets'
         if len(url) > 0:
             url_string += '/' + url
@@ -40,7 +41,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             return self.make_patch(url_string, post_body)
         raise TdxApiHTTPRequestError('No method' + action + 'or no post information')
 
-    def make_call(self, url, action, post_body=None):
+    def make_call(self, url: str, action: str, post_body: dict = None) -> Union[list, dict]:
         """
         Makes an HTTP call using the Assets API information.
 
@@ -162,7 +163,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         raise TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
 
     def create_product_type(self, name: str, description: str = None, parent=None, order: int = 1,
-                            active: bool = True)-> dict:
+                            active: bool = True) -> dict:
         """
         Creates a new Product Type with the information provided.
 
@@ -186,7 +187,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['Description'] = description
         return self.make_call('models/types', 'post', data)
 
-    def update_product_type(self, product_type, updated_values: dict)-> dict:
+    def update_product_type(self, product_type: Union[str, dict], updated_values: dict) -> dict:
         """
         Updates an existing product type
 
@@ -209,7 +210,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         return self.make_call(f'models/types/{product_type_id}', 'put', product_type)
 
     def search_product_types(self, search_string: str = '*', active: bool = True, root_only: bool = False,
-                             parent=None)-> list:
+                             parent=None) -> list:
         """
         Searches product types by parent, text, or parent.
 
@@ -242,7 +243,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         return self.make_call("models", 'get')
 
     # TODO: Provide option for lower memory use by allowing use of search instead of getting all.
-    def get_product_model_by_name_id(self, key: str) -> dict:
+    def get_product_model_by_name_id(self, key: Union[str, int]) -> dict:
         """
         Gets a specific product model object
 
@@ -258,7 +259,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return product_model
         raise TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
 
-    def get_all_product_models_of_type(self, product_type) -> list:
+    def get_all_product_models_of_type(self, product_type: Union[str, dict]) -> list:
         """
         Get all product models of a specific type
 
@@ -279,8 +280,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 result.append(model)
         return result
 
-    def create_product_model(self, name: str, product_type, source: str, description: str = None,
-                             part_number: str = None, active: bool = True, attributes: dict= None) -> dict:
+    def create_product_model(self, name: str, product_type: Union[str, dict], source: str, description: str = None,
+                             part_number: str = None, active: bool = True, attributes: dict = None) -> dict:
         """
         Creates a new Product Model with the information provided.
 
@@ -325,7 +326,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         return self.make_call("vendors", 'get')
 
     # TODO: Provide option for lower memory use by allowing use of search instead of getting all.
-    def get_vendor_by_name_id(self, key):
+    def get_vendor_by_name_id(self, key: str) -> dict:
         """
         Gets a specific vendor object
 
@@ -344,7 +345,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     # TODO: def update_vendor(self, updated_values)-> dict:
     # TODO: def search_vendor(self, key, etc) -> list:
 
-    def create_vendor(self, name, email: str = None, description: str = None, account_number: str = None,
+    def create_vendor(self, name: str, email: str = None, description: str = None, account_number: str = None,
                       additional_info: dict = None, active=True) -> dict:
 
         """
@@ -354,7 +355,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
        :param email: An email contact for the new vendor (optional)
        :param description: A description of the model (optional)
        :param account_number: An account number with the vendor (optional)
-       :param active: Boolean indicating whether or not the new vendor should be active (optional, default True)
+       :param active: Boolean indicating whether the new vendor should be active (optional, default True)
        :param additional_info: Dict of other info for the vendor (including CAs, no validation yet -- build by hand)
 
        :return: dict of created product type
@@ -374,7 +375,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # TODO: def delete_vendor(self)-> dict:
 
-    def get_asset_by_id(self, asset_id: str) -> dict:
+    def get_asset_by_id(self, asset_id: Union[str, int]) -> dict:
         """
         Gets a specfic asset object, including the full list of attributes.
 
@@ -385,7 +386,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call(str(asset_id), 'get')
 
-    def add_asset_user(self, asset_id: str, user_uid: str):
+    def add_asset_user(self, asset_id: str, user_uid: str) -> dict:
         """
         Adds a users to an asset
 
@@ -407,7 +408,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call(f'{asset_id}/users', 'get')
 
-    def delete_asset_users(self, asset_id: str, users: list):
+    def delete_asset_users(self, asset_id: str, users: list[Union[str, dict]]):
         """
         Deletes specified users of an asset
 
@@ -423,12 +424,16 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         for user in users:
             if isinstance(user, str):
                 id_to_delete = user
-            else:
+            elif isinstance(user, dict):
                 id_to_delete = user['Value']
+            else:
+                raise TdxApiObjectTypeError(
+                    f"Users of type {str(type(user))} not parseable."
+                )
             results.append(self.make_call(f'{asset_id}/users/{id_to_delete}', 'delete'))
 
-    def search_assets(self, criteria, max_results=25, retired=False, disposed=False, full_record=False,
-                      all_statuses: bool = False) -> list:
+    def search_assets(self, criteria: Union[str, dict], max_results=25, retired=False, disposed=False,
+                      full_record=False, all_statuses: bool = False) -> list:
         """
         Searches for assets, based on criteria
 
@@ -474,7 +479,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         search_body = {'MaxResults': str(max_results)}
         if isinstance(criteria, str):
             search_body['SearchText'] = criteria
-            search_body['StatusIDs'] =  default_statuses
+            search_body['StatusIDs'] = default_statuses
         elif isinstance(criteria, dict):
             search_body.update(criteria)
             if 'StatusIDs' not in search_body:
@@ -491,11 +496,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         else:
             return asset_list
 
-    def find_asset_by_tag(self, tag, full_record: bool = False, all_statuses: bool = True) -> dict:
+    def find_asset_by_tag(self, tag: str, full_record: bool = False, all_statuses: bool = True) -> dict:
         """
         Gets an asset based on its asset tag
 
-        :param tag: asset tag as a string or int
+        :param tag: asset tag as a string
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param all_statuses: gets assets, regardless of what their status is (default: True)
 
@@ -503,8 +508,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: the single asset with the corresponding tag
 
         """
-        if type(tag) is str:
-            tag = tag.lstrip('0')
+        tag = tag.lstrip('0')
         search_params = {'SearchText': str(tag)}
         result = self.search_assets(search_params, disposed=True, retired=True,
                                     full_record=full_record, all_statuses=all_statuses)
@@ -517,11 +521,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         raise TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with tag {str(tag)} found.")
 
-    def find_asset_by_sn(self, sn, full_record: bool = False, all_statuses: bool = True) -> dict:
+    def find_asset_by_sn(self, sn: str, full_record: bool = False, all_statuses: bool = True) -> dict:
         """
         Gets an asset based on its serial number
 
-        :param sn: serial number as a string or int
+        :param sn: serial number as a string
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param all_statuses: gets assets, regardless of what their status is (default: True)
 
@@ -536,8 +540,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         raise TdxApiObjectNotFoundError(
             f"{str(len(result))} assets with SN {str(sn)} found.")
 
-    def get_assets_by_location(self, location, max_results: int = 5000, full_record: bool = False,
-                               retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
+    def get_assets_by_location(self, location: Union[str, dict, list], max_results: int = 5000,
+                               full_record: bool = False, retired: bool = False, disposed: bool = False,
+                               all_statuses: bool = False) -> list:
         """
         Gets all assets in a location
 
@@ -607,8 +612,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                   max_results=max_results, full_record=full_record,
                                   disposed=disposed, retired=retired, all_statuses=all_statuses)
 
-    def get_assets_by_requesting_department(self, dept, max_results: int = 25, full_record: bool = False,
-                                            retired: bool = False, disposed: bool = False,
+    def get_assets_by_requesting_department(self, dept: Union[dict, str], max_results: int = 25,
+                                            full_record: bool = False, retired: bool = False, disposed: bool = False,
                                             all_statuses: bool = False) -> list:
         """
         Gets all assets requested by a particular account/department in TDX
@@ -632,8 +637,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                   max_results=max_results, full_record=full_record,
                                   disposed=disposed, retired=retired, all_statuses=all_statuses)
 
-    def get_assets_by_product_model(self, model, max_results: int = 25, full_record: bool = False,
-                                    retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
+    def get_assets_by_product_model(self, model: Union[dict, str, int], max_results: int = 25,
+                                    full_record: bool = False, retired: bool = False, disposed: bool = False,
+                                    all_statuses: bool = False) -> list:
         """
         Gets all assets of a certain product model
 
@@ -648,7 +654,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: a list of assets of the specified model
 
         """
-        if isinstance(model, str):
+        if isinstance(model, str) or isinstance(model, int):
             model = self.get_product_model_by_name_id(model)
         if not isinstance(model, dict):
             raise TdxApiObjectTypeError("Can't search assets with type" +
@@ -657,8 +663,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                   max_results=max_results, full_record=full_record,
                                   disposed=disposed, retired=retired, all_statuses=all_statuses)
 
-    def get_assets_by_product_type(self, product_type, max_results: int = 25, full_record: bool = False,
-                                   retired: bool = False, disposed: bool = False, all_statuses: bool = False) -> list:
+    def get_assets_by_product_type(self, product_type: Union[dict, str, int], max_results: int = 25,
+                                   full_record: bool = False, retired: bool = False, disposed: bool = False,
+                                   all_statuses: bool = False) -> list:
         """
         Gets all assets of a certain product type
 
@@ -684,7 +691,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                                   max_results=max_results, full_record=full_record,
                                   disposed=disposed, retired=retired, all_statuses=all_statuses)
 
-    def update_assets(self, assets, changed_attributes: dict, clear_custom_attributes=False) -> list:
+    def update_assets(self, assets: Union[dict, str, int, list], changed_attributes: dict,
+                      clear_custom_attributes: bool = False) -> list:
         """
         Updates data in a list of assets
 
@@ -745,7 +753,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             updated_assets.append(self.make_call(str(full_asset['ID']), 'post', full_asset))
         return updated_assets
 
-    def change_asset_owner(self, asset, new_owner, new_dept=None) -> list:
+    def change_asset_owner(self, asset: Union[dict, str, int, list], new_owner, new_dept=None) -> list:
         """
         Updates owner data in a list of assets
 
@@ -776,7 +784,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 )
         return self.update_assets(asset, changed_attributes)
 
-    def change_asset_location(self, asset, new_location, new_room=None):
+    def change_asset_location(self, asset: Union[dict, str, int, list], new_location, new_room=None):
         """
         Updates Location data in a list of assets
 
@@ -809,7 +817,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 )
         return self.update_assets(asset, changed_attributes)
 
-    def change_asset_requesting_dept(self, asset, new_dept)-> list:
+    def change_asset_requesting_dept(self, asset: Union[dict, str, int, list], new_dept) -> list:
         """
         Updates Requesting Department data in a list of assets
 
@@ -830,7 +838,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             )
         return self.update_assets(asset, changed_attributes)
 
-    def build_asset_custom_attribute_value(self, custom_attribute, value) -> dict:
+    def build_asset_custom_attribute_value(self, custom_attribute: Union[dict, str, int],
+                                           value: Union[datetime.datetime, str, int]) -> dict:
         """
         Builds a custom attribute for an asset from the name of the attribute and value.
 
@@ -853,9 +862,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             value = ca_choice['ID']
         if isinstance(value, datetime.datetime):
             value = tdxlib.tdx_utils.export_tdx_date(value)
+        if isinstance(value, int):
+            value = str(value)
         return {'ID': ca['ID'], 'Value': value}
 
-    def change_asset_custom_attribute_value(self, asset, custom_attributes: list) -> list:
+    def change_asset_custom_attribute_value(self, asset: Union[dict, str, int, list], custom_attributes: list) -> list:
         """
         Takes a correctly formatted list of CA's (from build_asset_custom_attribute_value, for instance)
         and updates one or more assets with the new values.
@@ -867,7 +878,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         to_change = {'Attributes': custom_attributes}
         return self.update_assets(asset, to_change)
 
-    def clear_asset_custom_attributes(self, asset: dict, attributes_to_clear: list):
+    def clear_asset_custom_attributes(self, asset: Union[dict, str, int],
+                                      attributes_to_clear: Union[str, list]) -> dict:
         """
         Takes a list of CA names and removes those custom attributes from the provided asset
 
@@ -877,24 +889,32 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         if not isinstance(attributes_to_clear, list):
             attributes_to_clear = [attributes_to_clear]
-        full_asset = self.get_asset_by_id(asset['ID'])
+        if isinstance(asset, int) or isinstance(asset, str):
+            full_asset = self.get_asset_by_id(asset)
+        elif isinstance(asset, dict):
+            full_asset = self.get_asset_by_id(asset['ID'])
+        else:
+            raise TdxApiObjectTypeError(
+                f"Asset of type {str(type(asset))} not searchable."
+            )
         to_change = {'Attributes': []}
         for ca in full_asset['Attributes']:
             if ca['Name'] not in attributes_to_clear:
                 to_change['Attributes'].append(ca)
         return self.update_assets(full_asset, to_change, clear_custom_attributes=True)[0]
 
-    def get_asset_custom_attribute_value_by_name(self, asset, key: str, id_only: bool=False) -> str:
+    def get_asset_custom_attribute_value_by_name(self, asset: Union[dict, str, int], key: str, id_only: bool = False) \
+            -> str:
         """
         Returns the current value of a specific CA in the specified asset
 
         :param asset: asset to get CA value for, in dict or ID form
         :param key: Name or ID of CA to find in the asset
-        :param id: (Default: False) Return the ID of the value, instead of ValueText (only for choice-based CA's)
+        :param id_only: (Default: False) Return the ID of the value, instead of ValueText (only for choice-based CA's)
 
         :return: a string representation of the value or ID
         """
-        if isinstance(asset, str):
+        if isinstance(asset, str) or isinstance(asset, int):
             this_asset = self.get_asset_by_id(asset)
         elif isinstance(asset, dict):
             this_asset = asset
@@ -910,7 +930,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 else:
                     return ca['ValueText']
 
-    def move_child_assets(self, source_asset, target_asset) -> list:
+    def move_child_assets(self, source_asset: Union[dict, str, int], target_asset: Union[dict, str, int]) -> list:
         """
         Moves child assets from one parent asset to another
 
@@ -933,8 +953,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         children = self.search_assets(search_params, all_statuses=True)
         return self.update_assets(children, update_params)
 
-    def copy_asset_attributes(self, source_asset, target_asset, copy_name=False, exclude=None, new_status: str = None,
-                              new_name: str = None, is_full_source=False):
+    def copy_asset_attributes(self, source_asset: dict, target_asset: dict, copy_name: bool = False,
+                              exclude: list = None, new_status: str = None, new_name: str = None,
+                              is_full_source: bool = False):
         """
         Copies asset attributes from one asset to another. Does not include attributes like Serial Number, Asset Tag,
             and other hardware-specific fields.
@@ -979,10 +1000,12 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             updated_source = self.update_assets(source_id, update_params)
         return [updated_target, updated_source]
 
-    def build_asset(self, asset_name, serial_number, status_name, location_name=None, room_name=None,
-                    asset_tag=None, acquisition_date=None, asset_lifespan=None, requester=None,
-                    requesting_dept=None, owner=None, owning_dept=None, parent=None, external_id=None,
-                    product_model=None, form=None, asset_custom_attributes=None):
+    def build_asset(self, asset_name: str, serial_number: str, status_name: str, location_name: str = None,
+                    room_name: str = None, asset_tag: str = None, acquisition_date: datetime.datetime = None,
+                    asset_lifespan_years: int = None, requester: str = None, requesting_dept: str = None,
+                    owner: str = None, owning_dept: str = None, parent: Union[int, str] = None, external_id: str = None,
+                    product_model: str = None, form: str = None, asset_custom_attributes: Union[list, dict] = None,
+                    supplier: str = None, replacement_date: datetime.datetime = None) -> dict:
         """
         Makes a correctly-formatted dict of asset attributes for inputting into create_asset() function
 
@@ -992,8 +1015,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param location_name: String with name of location for new asset (optional)
         :param room_name: String with name of room for new asset (optional, requires location_name)
         :param asset_tag: String with asset tag value for new asset (optional)
-        :param acquisition_date: Building name of location (Default: date of execution)
-        :param asset_lifespan: Years you expect this device to be in service (Default: 4)
+        :param acquisition_date: Datetime for Acquisition date (Default: date of execution)
+        :param asset_lifespan_years: Number of years you expect this device to be in service (Default: None)
         :param requester: String with email of requester for new asset (Default: integration username)
         :param requesting_dept: Account Name of requesting department for new asset
         :param owner: String with Email of owner of new asset
@@ -1003,8 +1026,12 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param product_model: String with name of product model
         :param form: Name of the Asset form to use
         :param asset_custom_attributes: a dictionary of asset custom attribute values (or list from asset['Attributes'])
+        :param supplier: name of a TDX vendor to set as supplier (Default: manufacturer from product model)
+        :param replacement_date: datetime object for expected replacement of asset (Default: set by asset_lifespan)
 
         :return: dict usable in create_asset()
+
+        :rtype: dict
 
         """
         # set defaults
@@ -1040,8 +1067,12 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             data['LocationID'] = building['ID']
             if room_name:
                 data['LocationRoomID'] = self.get_room_by_name(building, room_name)['ID']
-        if asset_lifespan:
-            expected_replacement_date = acquisition_date + datetime.timedelta(days=(int(asset_lifespan*365.25)))
+        if replacement_date:
+            expected_replacement_date = replacement_date
+            data['ExpectedReplacementDate'] = expected_replacement_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        elif asset_lifespan_years:
+            expected_replacement_date = acquisition_date + \
+                                        datetime.timedelta(days=(int(asset_lifespan_years * 365.25)))
             data['ExpectedReplacementDate'] = expected_replacement_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         if requester:
             data['RequestingCustomerID'] = self.get_person_by_name_email(requester)['UID']
@@ -1071,9 +1102,11 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                     parent_asset = self.search_assets(parent, max_results=1, all_statuses=True)
                 if parent_asset:
                     data['ParentID'] = parent_asset['ID']
+        if supplier:
+            data['SupplierID'] = self.get_vendor_by_name_id(supplier)['ID']
         return data
 
-    def create_asset(self, asset, check_duplicate=True):
+    def create_asset(self, asset: dict, check_duplicate: bool = True) -> dict:
         """
         Creates an asset
 

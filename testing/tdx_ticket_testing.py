@@ -9,9 +9,10 @@ import os
 
 
 class TdxTicketTesting(unittest.TestCase):
-
     # Create TDXIntegration object for testing use. Called before testing methods.
     def setUp(self):
+        # Only run tests that don't require admin
+        self.is_admin = False
         testing_vars_file = '../testing_vars.json'
         self.tix = tdx_ticket_integration.TDXTicketIntegration('../tdxlib.ini')
         right_now = dt.today()
@@ -24,17 +25,25 @@ class TdxTicketTesting(unittest.TestCase):
                   'A sample file is available in testing/sample_ticket_testing_vars. Any *.json files are ignored by git.')
     
     def test_authn(self):
+        if not self.timestamp:
+            self.setUp()
         self.assertGreater(len(self.tix.token), 200)
 
     def test_get_ticket_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         self.assertTrue(self.tix.get_ticket_by_id(self.testing_vars['ticket1']['ID']))  # TDX Test Ticket #5814276
 
     def test_search_tickets(self):
+        if not self.timestamp:
+            self.setUp()
         self.assertTrue(self.tix.search_tickets('test'))
 
     # #### CHANGING TICKETS #### #
 
     def test_edit_tickets(self):
+        if not self.timestamp:
+            self.setUp()
         # Protect production from deleting tasks
         if not self.tix.sandbox:
             return
@@ -53,82 +62,122 @@ class TdxTicketTesting(unittest.TestCase):
     # #### GETTING TICKET ATTRIBUTES #### #
 
     def test_get_all_ticket_types(self):
+        if not self.timestamp:
+            self.setUp()
         types = self.tix.get_all_ticket_types()
         self.assertGreaterEqual(len(types), 40)
 
     def test_get_ticket_type_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_type']['ID'] # IT Internal
         self.assertTrue(self.tix.get_ticket_type_by_name_id(key))
 
     def test_get_ticket_type_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_type']['Name']
         self.assertTrue(self.tix.get_ticket_type_by_name_id(key))
 
     def test_get_all_ticket_statuses(self):
+        if not self.timestamp:
+            self.setUp()
         statuses = self.tix.get_all_ticket_statuses()
         self.assertGreaterEqual(len(statuses), 5)
 
     def test_get_ticket_status_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_status']['ID'] # Open
         self.assertTrue(self.tix.get_ticket_status_by_id(key))
 
     def test_get_ticket_status_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_status']['Name']
         self.assertTrue(self.tix.search_ticket_status(key))
 
     def test_get_all_ticket_priorities(self):
+        if not self.timestamp:
+            self.setUp()
         priorities = self.tix.get_all_ticket_priorities()
         self.assertGreaterEqual(len(priorities), 4)
 
     def test_get_ticket_priority_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_priority']['ID']  # Low
         self.assertTrue(self.tix.get_ticket_priority_by_name_id(key))
 
     def test_get_ticket_priority_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         name = self.testing_vars['ticket_priority']['Name']
         self.assertTrue(self.tix.get_ticket_priority_by_name_id(name))
 
     def test_get_ticket_classification_id_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         name = self.testing_vars['ticket_classification']['Name']
         self.assertTrue(self.tix.get_ticket_classification_id_by_name(name))
 
     def test_get_all_ticket_urgencies(self):
+        if not self.timestamp:
+            self.setUp()
         urgencies = self.tix.get_all_ticket_urgencies()
         self.assertGreaterEqual(len(urgencies), 3)
 
     def test_get_ticket_urgency_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         key =  self.testing_vars['ticket_urgency']['ID']
         self.assertTrue(self.tix.get_ticket_urgency_by_name_id(key))
 
     def test_get_ticket_urgency_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_urgency']['Name']
         self.assertTrue(self.tix.get_ticket_urgency_by_name_id(key))
 
     def test_get_all_ticket_impacts(self):
+        if not self.timestamp:
+            self.setUp()
         impacts = self.tix.get_all_ticket_impacts()
         self.assertGreaterEqual(len(impacts), 5)
 
     def test_get_ticket_impact_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_impact']['ID']
         self.assertTrue(self.tix.get_ticket_impact_by_name_id(key))
 
     def test_get_ticket_impact_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_impact']['Name']
         self.assertTrue(self.tix.get_ticket_impact_by_name_id(key))
 
     def test_get_all_ticket_sources(self):
+        if not self.timestamp:
+            self.setUp()
         sources = self.tix.get_all_ticket_sources()
         self.assertGreaterEqual(len(sources), 7)
 
     def test_get_ticket_source_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_source']['ID']
         self.assertTrue(self.tix.get_ticket_source_by_name_id(key))
 
     def test_get_ticket_source_by_name(self):
+        if not self.timestamp:
+            self.setUp()
         key = self.testing_vars['ticket_source']['Name']
         self.assertTrue(self.tix.get_ticket_source_by_name_id(key))
 
     def test_create_ticket(self):
+        if not self.timestamp:
+            self.setUp()
         # Protect production from testing tickets
         if not self.tix.sandbox:
             return
@@ -144,15 +193,21 @@ class TdxTicketTesting(unittest.TestCase):
     # #### TICKET TASKS #### #
 
     def test_get_all_tasks_by_ticket_id(self):
+        if not self.timestamp:
+            self.setUp()
         ticket_id = self.testing_vars['ticket2']['ID']
         self.assertTrue(self.tix.get_all_tasks_by_ticket_id(ticket_id))
 
     def test_get_ticket_task_by_id(self):
+        if not self.timestamp:
+            self.setUp()
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
         self.assertTrue(self.tix.get_ticket_task_by_id(ticket_id, task_id))
 
     def test_create_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         # Protect production from testing tasks
         if not self.tix.sandbox:
             return
@@ -165,6 +220,8 @@ class TdxTicketTesting(unittest.TestCase):
             self.assertGreater(created_task['ID'], 10000)
 
     def test_edit_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         # Protect production from deleting tasks
         if not self.tix.sandbox:
             return
@@ -179,6 +236,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(edited_task['Description'], changed_attributes['Description'])
 
     def test_delete_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         # Create the task
@@ -195,6 +254,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertFalse(all(i['ID'] == created_task['ID'] for i in task_list))
 
     def test_reassign_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
@@ -208,6 +269,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(changed_task['ResponsibleUid'], reassign['ResponsibleUid'])
 
     def test_reassign_ticket(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
@@ -220,6 +283,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(changed_ticket.get_attribute('ResponsibleUid'), reassign['UID'])
 
     def test_reschedule_ticket(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket1']['ID']
@@ -229,6 +294,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(changed_ticket.get_attribute('StartDate').day, start.day)
 
     def test_reschedule_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
@@ -239,6 +306,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(changed_ticket_task['StartDate'][0:8], tdx_utils.export_tdx_date(start)[0:8])
 
     def test_generate_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         task = self.tix.generate_ticket_task("Testing Task", description="this is a test",start=dt.utcnow(),
@@ -246,6 +315,10 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertTrue(task)
 
     def test_create_custom_ticket_status(self):
+        if not self.timestamp:
+            self.setUp()
+        if not self.is_admin:
+            return
         if not self.tix.sandbox:
             return
         status = self.tix.create_custom_ticket_status('Never Gonna Happen', 1, 'Cancelled')
@@ -253,6 +326,10 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertTrue(get_status)
 
     def test_edit_custom_ticket_status(self):
+        if not self.timestamp:
+            self.setUp()
+        if not self.is_admin:
+            return
         if not self.tix.sandbox:
             return
         self.test_create_custom_ticket_status()
@@ -261,6 +338,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(to_change['Name'],changed['Name'])
 
     def test_update_ticket_task(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
@@ -269,6 +348,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertTrue(update)
 
     def test_update_ticket(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket1']['ID']
@@ -276,6 +357,8 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertTrue(self.timestamp in update['Body'])
 
     def test_upload_attachment(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket1']['ID']
@@ -285,24 +368,31 @@ class TdxTicketTesting(unittest.TestCase):
         self.assertEqual(filename.split('/')[-1], update['Name'])
 
     def test_upload_attachment_filename(self):
+        if not self.timestamp:
+            self.setUp()
         if not self.tix.sandbox:
             return
-        ticket_id = self.testing_vars['ticket1']['ID']
-        filename = self.testing_vars['attachment']['Name']
-        update = self.tix.upload_attachment(ticket_id, "foobar data data", filename)
+        ticket_id = self.testing_vars['ticket2']['ID']
+        filepath = self.testing_vars['attachment']['Name']
+        filename = filepath.split('/')[-1]
+        with open (filepath, "rb") as file:
+            update = self.tix.upload_attachment(ticket_id, file, filename)
         self.assertEqual(filename, update['Name'])
 
     def test_get_ticket_task_feed(self):
+        if not self.timestamp:
+            self.setUp()
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
         feed = self.tix.get_ticket_task_feed(ticket_id, task_id)
         self.assertGreater(len(feed), 0)
 
     def test_get_ticket_feed(self):
+        if not self.timestamp:
+            self.setUp()
         ticket_id = self.testing_vars['ticket2']['ID']
         feed = self.tix.get_ticket_feed(ticket_id)
         self.assertGreater(len(feed), 0)
-
 
 
 if __name__ == "__main__":

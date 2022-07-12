@@ -1,3 +1,4 @@
+import time
 import unittest
 import json
 from datetime import datetime as dt
@@ -7,9 +8,11 @@ import os
 
 class TdxTesting(unittest.TestCase):
     timestamp = dt.today().strftime("%d-%B-%Y %H:%M:%S")
-
     # Create TDXIntegration object for testing use. Called before testing methods.
+
     def setUp(self):
+        # Will only run non-admin tests
+        self.is_admin = False
         testing_vars_file = '../testing_vars.json'
         self.tdx = tdx_integration.TDXIntegration('../tdxlib.ini')
         right_now = dt.today()
@@ -23,6 +26,7 @@ class TdxTesting(unittest.TestCase):
     def test_authentication(self):
         if not self.tdx:
             self.setUp()
+        self.assertIsNotNone(self.tdx.token)
         self.assertGreater(len(self.tdx.token), 200)
 
     def test_check_auth_exp(self):
@@ -238,6 +242,7 @@ class TdxTesting(unittest.TestCase):
         name = 'Testing Room ' + TdxTesting.timestamp
         description = 'Testing room Description'
         new_room = self.tdx.create_room(location, name, description=description)
+        time.sleep(2)
         test_room = self.tdx.get_room_by_name(location, name)
         self.assertEqual(new_room['Name'], test_room['Name'])
 
