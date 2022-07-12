@@ -7,9 +7,11 @@ import os
 
 class TdxTesting(unittest.TestCase):
     timestamp = dt.today().strftime("%d-%B-%Y %H:%M:%S")
-
     # Create TDXIntegration object for testing use. Called before testing methods.
+
     def setUp(self):
+        # Will only run non-admin tests
+        self.is_admin = False
         testing_vars_file = '../testing_vars.json'
         self.tdx = tdx_integration.TDXIntegration('../tdxlib.ini')
         right_now = dt.today()
