@@ -1,6 +1,8 @@
 .DS_Store
 *.ini
 *.json
+*.log
+.vcsode
 .idea/
 __pycache__/
 venv/

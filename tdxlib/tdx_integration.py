@@ -29,7 +29,7 @@ class TDXIntegration:
         'vendor': 28
     }
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, config=None):
         self.settings = None
         self.api_url = None
         self.username = None
@@ -45,8 +45,16 @@ class TDXIntegration:
         if filename is not None:
             self.config.read(filename)
         else:
-            filename = 'tdxlib.ini'
-            self.config.read(filename)
+            if not config:
+                filename = 'tdxlib.ini'
+                self.config.read(filename)
+            else:
+                self.config.read_dict(config)
+                if 'TDX API Settings' not in self.config:
+                    raise ValueError(
+                        "Missing config section: 'TDX API Settings'")
+
+
         if 'TDX API Settings' not in self.config:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
@@ -178,18 +186,18 @@ class TDXIntegration:
         if fullhost is None:
             self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
         else:
-            self.api_url = 'https://' + fullhost + '/' + api_end
+            self.api_url = 'https://' + fullhost + api_end
         if self.password == 'Prompt':
             pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
             self.password = getpass.getpass(pass_prompt)
         if self.log_level:
             self.logger = logging.getLogger('tdx_integration')
             self.logger.setLevel(logging.getLevelName(self.log_level))
-        self.auth()
-        self.cache = {}
+        if not (self.auth()):
+            self.logger.error(f"Login Failed. Username or password in {filename} likely incorrect.")
         self.clean_cache()
 
-    def auth(self):
+    def auth(self) -> bool:
         try:
             response = requests.post(
                 url=str(self.api_url) + '/auth',
@@ -203,7 +211,7 @@ class TDXIntegration:
             )
             if response.status_code != 200:
                 raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                                response.reason + "\n" + " Returned: " + response.text)
+                                                                response.reason + " " + " Returned: " + response.text)
             else:
                 self.token = response.text
                 time.sleep(1)
@@ -213,22 +221,30 @@ class TDXIntegration:
                                      options={'verify_signature':False},
                                      audience="https://www.teamdynamix.com/")
                 self.token_exp = decoded['exp']
+                return True
 
         except requests.exceptions.RequestException as e:
             self.logger.warning(f"Auth request Failed. Exception: {str(e)}")
+            return False
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             self.logger.error(str(e))
+            return False
 
-    def _check_auth_exp(self):
+    def _check_auth_exp(self) -> bool:
         """
         Internal method to check the expiration of the stored access token.
         If it is expired, call auth() to get a new token.
         """
         # If token is expired or will expire in the next minute, get new token
-        if self.token_exp and self.token_exp < time.time() + 60:
-            self.logger.info(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. "
-                             f"Getting new token...")
-            self.auth()
+        if self.token_exp:
+            if self.token_exp < time.time() + 60:
+                self.logger.info(f"Token expires at {str(datetime.datetime.utcfromtimestamp(self.token_exp))}. "
+                                 f"Getting new token...")
+                return self.auth()
+            else:
+                return True
+        else:
+            return self.auth()
 
     def _rate_limit(self, skew_mitigation_secs=5):
         """
@@ -259,12 +275,14 @@ class TDXIntegration:
 
         """
         self._rate_limit()
-        self._check_auth_exp()
         get_url = self.api_url + request_url
         response = None
         attempts = 0
         while attempts < retries:
             try:
+                if not (self._check_auth_exp()):
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                        f"Login Failed. Username or password in config likely incorrect.")
                 response = requests.get(
                     url=get_url,
                     headers={
@@ -274,7 +292,7 @@ class TDXIntegration:
                 )
                 if response.status_code != 200:
                     err_string = " Response code: " + str(response.status_code) + \
-                        " " + response.reason + "\n" + " Returned: " + response.text
+                        " " + response.reason + " " + " Returned: " + response.text
                     raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(err_string)
                 val = response.json()
                 self.cache['rate_limit']['remaining'] = int(response.headers['X-RateLimit-Remaining'])
@@ -305,10 +323,12 @@ class TDXIntegration:
 
         """
         self._rate_limit()
-        self._check_auth_exp()
         post_url = self.api_url + request_url
         response = None
         try:
+            if not (self._check_auth_exp()):
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    f"Login Failed. Username or password in config likely incorrect.")
             response = requests.post(
                 url=post_url,
                 headers={
@@ -351,7 +371,6 @@ class TDXIntegration:
         :return: the API's response as a python dict
         """
         self._rate_limit()
-        self._check_auth_exp()
         post_url = self.api_url + request_url
         response = None
         if filename:
@@ -359,6 +378,9 @@ class TDXIntegration:
         else:
             files = {'file': file}
         try:
+            if not (self._check_auth_exp()):
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    f"Login Failed. Username or password in config likely incorrect.")
             response = requests.post(
                 url=post_url,
                 headers={
@@ -397,10 +419,12 @@ class TDXIntegration:
 
         """
         self._rate_limit()
-        self._check_auth_exp()
         put_url = self.api_url + request_url
         response = None
         try:
+            if not (self._check_auth_exp()):
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    f"Login Failed. Username or password in config likely incorrect.")
             response = requests.put(
                 url=put_url,
                 headers={
@@ -437,9 +461,12 @@ class TDXIntegration:
 
         """
         self._rate_limit()
-        self._check_auth_exp()
+
         delete_url = self.api_url + request_url
         try:
+            if not (self._check_auth_exp()):
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    f"Login Failed. Username or password in config likely incorrect.")
             response = requests.delete(
                 url=delete_url,
                 headers={
@@ -473,10 +500,12 @@ class TDXIntegration:
 
         """
         self._rate_limit()
-        self._check_auth_exp()
         patch_url = self.api_url + request_url
         response = None
         try:
+            if not (self._check_auth_exp()):
+                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(
+                    f"Login Failed. Username or password in config likely incorrect.")
             response = requests.patch(
                 url=patch_url,
                 headers={

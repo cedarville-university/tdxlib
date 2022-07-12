@@ -1,3 +1,4 @@
+import time
 import unittest
 import json
 from datetime import datetime as dt
@@ -25,6 +26,7 @@ class TdxTesting(unittest.TestCase):
     def test_authentication(self):
         if not self.tdx:
             self.setUp()
+        self.assertIsNotNone(self.tdx.token)
         self.assertGreater(len(self.tdx.token), 200)
 
     def test_check_auth_exp(self):
@@ -240,6 +242,7 @@ class TdxTesting(unittest.TestCase):
         name = 'Testing Room ' + TdxTesting.timestamp
         description = 'Testing room Description'
         new_room = self.tdx.create_room(location, name, description=description)
+        time.sleep(2)
         test_room = self.tdx.get_room_by_name(location, name)
         self.assertEqual(new_room['Name'], test_room['Name'])
 
