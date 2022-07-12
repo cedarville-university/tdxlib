@@ -373,9 +373,10 @@ class TdxTicketTesting(unittest.TestCase):
         if not self.tix.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
-        filename = self.testing_vars['attachment']['Name']
-        with open (filename, "rb") as file:
-            update = self.tix.upload_attachment(ticket_id, file, "Test File")
+        filepath = self.testing_vars['attachment']['Name']
+        filename = filepath.split('/')[-1]
+        with open (filepath, "rb") as file:
+            update = self.tix.upload_attachment(ticket_id, file, filename)
         self.assertEqual(filename, update['Name'])
 
     def test_get_ticket_task_feed(self):
