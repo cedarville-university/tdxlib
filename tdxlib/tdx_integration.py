@@ -38,6 +38,7 @@ class TDXIntegration:
         self.token_exp = None
         self.timezone = None
         self.log_level = None
+        self.cache = dict()
         self.logger = logging.getLogger('tdx_integration')
         self.config = configparser.ConfigParser()
 
@@ -53,7 +54,6 @@ class TDXIntegration:
                 if 'TDX API Settings' not in self.config:
                     raise ValueError(
                         "Missing config section: 'TDX API Settings'")
-
 
         if 'TDX API Settings' not in self.config:
             self.config['TDX API Settings'] = {
@@ -135,7 +135,7 @@ class TDXIntegration:
                 if caching_invalid:
                     print("Invalid Response.")
             print("\nWhat timezone would you like to set for this integration (default: '-0500')?")
-            timezone_invalid=True
+            timezone_invalid = True
             while timezone_invalid:
                 timezone_choice = input("Timezone (default: -0500) [+/-0000]: ")
                 if len(timezone_choice) == 5 and timezone_choice[:1] in ["+", "-"] and timezone_choice[1:].isdigit():
@@ -218,7 +218,7 @@ class TDXIntegration:
                 # Decode token to identify expiration date
                 decoded = jwt.decode(self.token,
                                      algorithms=['HS256'],
-                                     options={'verify_signature':False},
+                                     options={'verify_signature': False},
                                      audience="https://www.teamdynamix.com/")
                 self.token_exp = decoded['exp']
                 return True
@@ -365,8 +365,10 @@ class TDXIntegration:
         :param request_url: the path (everything after /TDWebApi/api/) to call
         :param file: BinaryIO object opened in read mode to upload as attachment.
         (read documentation at requests.readthedocs.io/en/master/user/quickstart/#post-a-multipart-encoded-file)
-        :param filename: (optional), allows to explicitly specify filename header. If None, requests will determine from passed-in file object.
-        This is useful for if you want to upload a file in memory without a filename, which is required for uploading to TeamDynamix.
+        :param filename: (optional), allows to explicitly specify filename header. If None, requests will determine
+        from passed-in file object.
+        This is useful for if you want to upload a file in memory without a filename, which is required
+        for uploading to TeamDynamix.
 
         :return: the API's response as a python dict
         """
@@ -406,7 +408,6 @@ class TDXIntegration:
             if response:
                 message += response.text
             self.logger.error(f"{message}")
-
 
     def make_put(self, request_url: str, body: dict):
         """
@@ -485,7 +486,7 @@ class TDXIntegration:
         except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
             self.logger.error(f"DELETE to {request_url} returned non-success code. {str(e)}")
 
-    def make_patch(self, request_url: str, body: list):
+    def make_patch(self, request_url: str, body: dict):
         """
         Makes an HTTP PATCH request to the TDX API.
 
@@ -935,15 +936,15 @@ class TDXIntegration:
                 else:
                     raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(f'Account attribute {attrib} is not editable')
         if custom_attributes:
-                data['Attributes'] = list()
-                for attrib, value in custom_attributes.items():
-                    tdx_attrib = self.get_custom_attribute_by_name_id(attrib, TDXIntegration.component_ids['account'])
-                    tdx_attrib_value = self.get_custom_attribute_choice_by_name_id(tdx_attrib, value)
-                    if not tdx_attrib_value:
-                        tdx_attrib_value_final = value
-                    else:
-                        tdx_attrib_value_final = tdx_attrib_value['ID']
-                    data['Attributes'].append({'ID': tdx_attrib['ID'], 'Value': tdx_attrib_value_final})
+            data['Attributes'] = list()
+            for attrib, value in custom_attributes.items():
+                tdx_attrib = self.get_custom_attribute_by_name_id(attrib, TDXIntegration.component_ids['account'])
+                tdx_attrib_value = self.get_custom_attribute_choice_by_name_id(tdx_attrib, value)
+                if not tdx_attrib_value:
+                    tdx_attrib_value_final = value
+                else:
+                    tdx_attrib_value_final = tdx_attrib_value['ID']
+                data['Attributes'].append({'ID': tdx_attrib['ID'], 'Value': tdx_attrib_value_final})
         return self.make_post(url_string, data)
 
     def edit_account(self, name: str, changed_attributes: dict) -> dict:
@@ -1012,7 +1013,7 @@ class TDXIntegration:
 
     # TODO: edit_location()
 
-    def create_room(self, location, name: str,  external_id: str =  None, description: str = None,
+    def create_room(self, location, name: str,  external_id: str = None, description: str = None,
                     floor: str = None, capacity: int = None, attributes: dict = None) -> dict:
         """
         Creates a room in a location in TDX.
@@ -1036,7 +1037,7 @@ class TDXIntegration:
             raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError("Location must be dict or str, not " +
                                                                   str(type(location)))
         url_string = f'/locations/{location_id}/rooms'
-        room_data = {'Name': name }
+        room_data = {'Name': name}
         if external_id:
             room_data['ExternalID'] = external_id
         if description:

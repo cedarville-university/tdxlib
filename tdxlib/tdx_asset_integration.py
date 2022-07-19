@@ -408,7 +408,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         return self.make_call(f'{asset_id}/users', 'get')
 
-    def delete_asset_users(self, asset_id: str, users: list[Union[str, dict]]):
+    def delete_asset_users(self, asset_id: str, users: list):
         """
         Deletes specified users of an asset
 

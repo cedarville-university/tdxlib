@@ -108,7 +108,7 @@ class TDXTicket:
             result += f'{key:25}\t{value}\n'
         return result
 
-    def import_data(self, data, strict: bool=False):
+    def import_data(self, data, strict: bool = False):
         self.ticket_data = {}
         for key, value in data.items():
             if key in TDXTicket.valid_attributes:
@@ -136,7 +136,7 @@ class TDXTicket:
                     raise tdxlib.tdx_api_exceptions.TdxApiTicketImportError(
                         "Attribute {0} with value {1} not allowed in Ticket".format(key, value))
 
-    def validate(self, data=None, editable_only=False, strict: bool=False):
+    def validate(self, data=None, editable_only=False, strict: bool = False):
         if not data:
             data = self.ticket_data
         # Check for required attributes
@@ -173,7 +173,7 @@ class TDXTicket:
             if attrib in TDXTicket.editable_date_attributes:
                 if not isinstance(data[attrib], datetime.datetime):
                     try:
-                       tdxlib.tdx_utils.import_tdx_date(data[attrib])
+                        tdxlib.tdx_utils.import_tdx_date(data[attrib])
                     except TypeError:
                         raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                             "Value {1} for {0} cannot be converted to a datetime object".format(attrib, value))
@@ -187,7 +187,7 @@ class TDXTicket:
         # This function exports ticket data as a dict containing a dict called
         #   "ticket" with the attributes of a ticket. This is helpful for creating the JSON
         #   for creating/updating tickets in the TDX API
-        # The validate parameter indicates whether or not we should validate
+        # The validate parameter indicates whether we should validate
         #   the ticket attributes for the type and presence of required attributes
         exported_ticket_data = dict()
         # We need to strip out non-existent values that TDX won't be able to handle
@@ -195,7 +195,7 @@ class TDXTicket:
             if value is not None and value != '' and value is not False and value != 0:
                 if key in TDXTicket.valid_date_attributes:
                     if isinstance(value, datetime.datetime) and not value.year == 1:
-                            exported_ticket_data[key] = tdxlib.tdx_utils.export_tdx_date(value)
+                        exported_ticket_data[key] = tdxlib.tdx_utils.export_tdx_date(value)
                 else:
                     exported_ticket_data[key] = value
         if validate:

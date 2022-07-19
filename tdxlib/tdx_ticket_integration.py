@@ -1,5 +1,3 @@
-import tdx_api_exceptions
-import tdx_ticket
 import tdxlib.tdx_ticket
 import datetime
 import tdxlib.tdx_integration
@@ -55,7 +53,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def get_url_string(self):
         return '/' + str(self.ticket_app_id) + '/tickets'
 
-    def _make_ticket_call(self, url: str, action: str, post_body: dict = None) -> dict:
+    def _make_ticket_call(self, url: str, action: str, post_body: dict = None):
         url_string = self.get_url_string()
         if len(url) > 0:
             url_string += '/' + url
@@ -118,7 +116,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         elif isinstance(custom_attribute, dict):
             ca = custom_attribute
         else:
-            raise tdx_api_exceptions.TdxApiObjectTypeError(
+            raise tdxlib.tdx_api_exceptions.TdxApiObjectTypeError(
                 f"Custom Attribute of type {str(type(custom_attribute))} not searchable."
             )
         if len(ca['Choices']) > 0:
@@ -198,7 +196,6 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             search_body.update(criteria)
         else:
             raise TypeError("Can't search tickets with" + str(type(criteria)))
-        ticket_data_list = list()
         ticket_data_list = self.make_call('search', 'post', search_body)
         ticket_list = list()
         for ticket_data in ticket_data_list:
@@ -207,7 +204,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # #### CHANGING TICKETS #### #
 
-    def edit_ticket(self, ticket: Union[tdx_ticket.TDXTicket, str, int], changed_attributes: dict,
+    def edit_ticket(self, ticket: Union[tdxlib.tdx_ticket.TDXTicket, str, int], changed_attributes: dict,
                     notify: bool = False) -> tdxlib.tdx_ticket.TDXTicket:
         """
         Edits one ticket, based on a dict of parameters to change.
@@ -336,7 +333,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param ticket_id: the ticket ID to upload the attachment
         :param file: Python file object opened in binary read mode to upload as attachment
-        :param filename: (optional), explicitly specify filename header. If None, requests will determine from passed-in file object.
+        :param filename: (optional), explicitly specify filename header. If None, requests will determine from
+        passed-in file object.
 
         :return: python dict containing created attachment information
         
@@ -894,7 +892,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     def generate_ticket(self, title_template: str, ticket_type: str, account: str, responsible: str,
                         template_values: dict = None, body_template: str = None, attrib_prefix: str = None,
                         due_date: Union[datetime.datetime, str] = None, location: str = None, room: str = None,
-                        active_days: int = 5, priority: str = "Low", status: str = "New", requestor:str = None,
+                        active_days: int = 5, priority: str = "Low", status: str = "New", requestor: str = None,
                         classification: str = "Incident", form: str = None, responsible_is_group: str = False,
                         custom_attributes: dict = None) -> tdxlib.tdx_ticket.TDXTicket:
         """
@@ -1037,7 +1035,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # #### CREATING TICKETS #### #
 
-    def create_ticket(self, ticket: tdx_ticket.TDXTicket, silent: bool = True) -> tdx_ticket.TDXTicket:
+    def create_ticket(self, ticket: tdxlib.tdx_ticket.TDXTicket, silent: bool = True) -> tdxlib.tdx_ticket.TDXTicket:
         """
         Creates a ticket in TeamDynamix using a TdxTicket object
 
