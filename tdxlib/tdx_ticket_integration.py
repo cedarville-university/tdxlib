@@ -955,7 +955,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         # set up attribute values
         if attrib_prefix:
-            self.logger.warning(f"Deprecated parmeter in generate_ticket(): \"attrib_prefix\". In future versions,"
+            self.logger.warning(f"Deprecated parameter in generate_ticket(): \"attrib_prefix\". In future versions,"
                                 f" use \"custom_attributes\"")
             data['Attributes'] = []
             # attrib_count = 0
