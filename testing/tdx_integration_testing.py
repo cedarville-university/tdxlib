@@ -6,7 +6,7 @@ from tdxlib import tdx_integration
 import os
 
 
-class TdxTesting(unittest.TestCase):
+class TdxIntegrationTesting(unittest.TestCase):
     timestamp = dt.today().strftime("%d-%B-%Y %H:%M:%S")
     # Create TDXIntegration object for testing use. Called before testing methods.
 
@@ -211,7 +211,7 @@ class TdxTesting(unittest.TestCase):
             self.setUp()
         if not self.tdx.sandbox:
             return
-        name = 'Testing Account ' + TdxTesting.timestamp
+        name = 'Testing Account ' + TdxIntegrationTesting.timestamp
         additional_info = {'Address1': '123 Main Street'}
         ca = self.testing_vars['account_ca']
         custom_attributes = {ca['Name']:ca['choice']['Name']}
@@ -228,8 +228,8 @@ class TdxTesting(unittest.TestCase):
         if not self.tdx.sandbox:
             return
         # This will fail if test_create_account fails
-        name = 'Testing Account ' + TdxTesting.timestamp
-        changed_attributes = {'Name': 'Edited Account' + TdxTesting.timestamp}
+        name = 'Testing Account ' + TdxIntegrationTesting.timestamp
+        changed_attributes = {'Name': 'Edited Account' + TdxIntegrationTesting.timestamp}
         edited_account = self.tdx.edit_account(name, changed_attributes)
         self.assertEqual(edited_account['Name'], changed_attributes['Name'])
 
@@ -239,7 +239,7 @@ class TdxTesting(unittest.TestCase):
         if not self.tdx.sandbox:
             return
         location = self.tdx.get_location_by_name(self.testing_vars['location1']['Name'])
-        name = 'Testing Room ' + TdxTesting.timestamp
+        name = 'Testing Room ' + TdxIntegrationTesting.timestamp
         description = 'Testing room Description'
         new_room = self.tdx.create_room(location, name, description=description)
         time.sleep(2)
@@ -248,5 +248,5 @@ class TdxTesting(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(TdxTesting)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TdxIntegrationTesting)
     unittest.TextTestRunner(verbosity=2).run(suite)
