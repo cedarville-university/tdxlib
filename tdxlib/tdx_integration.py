@@ -32,8 +32,7 @@ class TDXIntegration:
     def __init__(self, filename=None, config=None):
         self.settings = None
         self.api_url = None
-        self.username = None
-        self.password = None
+        self.auth_type = None
         self.token = None
         self.token_exp = None
         self.timezone = None
@@ -59,8 +58,7 @@ class TDXIntegration:
             self.config['TDX API Settings'] = {
                 'orgname': 'myuniversity',
                 'sandbox': True,
-                'username': '',
-                'password': 'Prompt',
+                'authType': '',
                 'ticketAppId': '',
                 'assetAppId': '',
                 'caching': False,
@@ -98,23 +96,36 @@ class TDXIntegration:
                 elif sandbox_choice.lower() in ['n', 'no', 'false']:
                     self.config.set('TDX API Settings', 'sandbox', 'false')
                     sandbox_invalid = False
-            init_username = input("\nTDX API Username (tdxuser@orgname.com): ")
-            self.config.set('TDX API Settings', 'username', init_username)
-            print("\nTDXLib can store the password for the API user in the configuration file.")
-            print("This is convenient, but not very secure.")
-            password_invalid = True
-            while password_invalid:
-                password_choice = input("Store password for " + init_username + "? [Y/N]: ")
-                if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                    password_prompt = '\nEnter Password for ' + init_username + ": "
-                    init_password = getpass.getpass(password_prompt)
-                    self.config.set('TDX API Settings', 'password', init_password)
-                    password_invalid = False
-                elif password_choice.lower() in ['n', 'no', 'false']:
-                    self.config.set('TDX API Settings', 'password', 'Prompt')
-                    password_invalid = False
-                if password_invalid:
-                    print("Invalid Response.")
+            auth_type_invalid = True
+            while auth_type_invalid:
+                auth_type = input("\nAuthentication Type (Only password and token current supported): ")
+                if(auth_type == "password"):
+                    self.config.set("TDX API Settings", "authType", auth_type)
+                    init_username = input("\nTDX API Username (tdxuser@orgname.com): ")
+                    self.config.set('TDX API Settings', 'username', init_username)
+                    print("\nTDXLib can store the password for the API user in the configuration file.")
+                    print("This is convenient, but not very secure.")
+                    password_invalid = True
+                    while password_invalid:
+                        password_choice = input("Store password for " + init_username + "? [Y/N]: ")
+                        if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                            password_prompt = '\nEnter Password for ' + init_username + ": "
+                            init_password = getpass.getpass(password_prompt)
+                            self.config.set('TDX API Settings', 'password', init_password)
+                            password_invalid = False
+                        elif password_choice.lower() in ['n', 'no', 'false']:
+                            self.config.set('TDX API Settings', 'password', 'Prompt')
+                            password_invalid = False
+                        if password_invalid:
+                            print("Invalid Response.")
+                    auth_type_invalid = False
+                elif(auth_type == "token"):
+                    self.config.set("TDX API Settings", "authType", auth_type)
+                    provided_token = input("\nInput token now, or leave blank to fill programatically later: ")
+                    if(provided_token != ""):
+                        self.token = provided_token
+                    auth_type_invalid = False
+            
             init_ticket_id = input("\nTickets App ID (optional): ")
             self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
             init_asset_id = input("\nAssets App ID (optional): ")
@@ -170,8 +181,10 @@ class TDXIntegration:
         self.org_name = self.settings.get('orgname')
         fullhost = self.settings.get('fullhost', None)
         self.sandbox = self.settings.getboolean('sandbox')
-        self.username = self.settings.get('username')
-        self.password = self.settings.get('password')
+        self.auth_type = self.settings.get('authType')
+        if(self.auth_type == 'password'):
+            self.username = self.settings.get('username')
+            self.password = self.settings.get('password')
         self.ticket_app_id = self.settings.get('ticketAppId')
         self.asset_app_id = self.settings.get('assetAppId')
         self.caching = self.settings.getboolean('caching')
@@ -187,47 +200,66 @@ class TDXIntegration:
             self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
         else:
             self.api_url = 'https://' + fullhost + api_end
-        if self.password == 'Prompt':
-            pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
-            self.password = getpass.getpass(pass_prompt)
+        if(self.auth_type == 'password'):
+            if self.password == 'Prompt':
+                pass_prompt = 'Enter the TDX Password for user ' + self.username + '(this password will not be stored): '
+                self.password = getpass.getpass(pass_prompt)
         if self.log_level:
             self.logger = logging.getLogger('tdx_integration')
             self.logger.setLevel(logging.getLevelName(self.log_level))
-        if not (self.auth()):
-            self.logger.error(f"Login Failed. Username or password in {filename} likely incorrect.")
-        self.clean_cache()
+        if(self.auth_type == 'password'):
+            if not (self.auth()):
+                self.logger.error(f"Login Failed. Username or password in {filename} likely incorrect.")
+        elif(self.auth_type == 'token'):
+            if(self.token == None):
+                self.logger.info("Skipping initial authentication, no token provided yet.")
+            else:
+                if not (self.auth()):
+                    self.logger.error(f"Login Failed. Username or password in {filename} likely incorrect.")
+            self.clean_cache()
 
     def auth(self) -> bool:
-        try:
-            response = requests.post(
-                url=str(self.api_url) + '/auth',
-                headers={
-                    "Content-Type": "application/json; charset=utf-8",
-                },
-                data=json.dumps({
-                    "username": self.username,
-                    "password": self.password
-                })
-            )
-            if response.status_code != 200:
-                raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                                response.reason + " " + " Returned: " + response.text)
-            else:
-                self.token = response.text
-                time.sleep(1)
-                # Decode token to identify expiration date
-                decoded = jwt.decode(self.token,
-                                     algorithms=['HS256'],
-                                     options={'verify_signature': False},
-                                     audience="https://www.teamdynamix.com/")
-                self.token_exp = decoded['exp']
-                return True
+        if(self.auth_type == 'password'):
+            try:
+                response = requests.post(
+                    url=str(self.api_url) + '/auth',
+                    headers={
+                        "Content-Type": "application/json; charset=utf-8",
+                    },
+                    data=json.dumps({
+                        "username": self.username,
+                        "password": self.password
+                    })
+                )
+                if response.status_code != 200:
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
+                                                                    response.reason + " " + " Returned: " + response.text)
+                else:
+                    self.token = response.text
+                    time.sleep(1)
+                    # Decode token to identify expiration date
+                    decoded = jwt.decode(self.token,
+                                        algorithms=['HS256'],
+                                        options={'verify_signature': False},
+                                        audience="https://www.teamdynamix.com/")
+                    self.token_exp = decoded['exp']
+                    return True
 
-        except requests.exceptions.RequestException as e:
-            self.logger.warning(f"Auth request Failed. Exception: {str(e)}")
-            return False
-        except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
-            self.logger.error(str(e))
+            except requests.exceptions.RequestException as e:
+                self.logger.warning(f"Auth request Failed. Exception: {str(e)}")
+                return False
+            except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+                self.logger.error(str(e))
+                return False
+        elif(self.auth_type == 'token'):
+            # Decode token to identify expiration date
+            decoded = jwt.decode(self.token,
+                                algorithms=['HS256'],
+                                options={'verify_signature': False},
+                                audience="https://www.teamdynamix.com/")
+            self.token_exp = decoded['exp']
+            return True
+        else:
             return False
 
     def _check_auth_exp(self) -> bool:

@@ -19,6 +19,7 @@ class TdxTesting(unittest.TestCase):
             'TDX API Settings': {
                 'fullhost': 'tdx.myuniversity.org',
                 'sandbox': True,
+                'authType': 'password',
                 'username': '',
                 'password': 'not-a-real-password',
                 'ticketAppId': '',
