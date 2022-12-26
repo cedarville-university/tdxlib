@@ -28,7 +28,17 @@ class TDXIntegration:
         'ticket': 9,
         'vendor': 28
     }
-
+    default_config = {
+        'filename': 'tdxlib.ini',
+        # 'orgname': '',
+        # 'sandbox': True,
+        # 'authType': 'password',
+        # 'ticketAppId': '',
+        # 'assetAppId': '',
+        'caching': False,
+        'timezone': '-0500',
+        'logLevel': 'ERROR'
+    }
     def __init__(self, filename=None, config=None):
         self.settings = None
         self.api_url = None
@@ -41,140 +51,11 @@ class TDXIntegration:
         self.logger = logging.getLogger('tdx_integration')
         self.config = configparser.ConfigParser()
 
-        # Read in configuration
-        if filename is not None:
-            self.config.read(filename)
-        else:
-            if not config:
-                filename = 'tdxlib.ini'
-                self.config.read(filename)
-            else:
-                self.config.read_dict(config)
-                if 'TDX API Settings' not in self.config:
-                    raise ValueError(
-                        "Missing config section: 'TDX API Settings'")
+        self.load_config_from_file(filename)
 
         if 'TDX API Settings' not in self.config:
-            self.config['TDX API Settings'] = {
-                'orgname': 'myuniversity',
-                'sandbox': True,
-                'authType': '',
-                'ticketAppId': '',
-                'assetAppId': '',
-                'caching': False,
-                'timezone': '-0500',
-                'logLevel': 'ERROR'
-            }
-
-            # Initialization wizard
-            print("\nNo configuration file found. Please enter the following information: ")
-            fqdn_invalid = True
-            fqdn = False
-            while fqdn_invalid:
-                fqdn_choice = input("\nUse a Fully-Qualified DNS Name for your TDX Instance "
-                                    "(if not *.teamdynamix.com)? [Y/N]: ")
-                if fqdn_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                    fqdn = True
-                    fqdn_invalid = False
-                elif fqdn_choice.lower() in ['n', 'no', 'false']:
-                    fqdn_invalid = False
-            if fqdn:
-                print("Enter the fully qualified DNS name of your TDX instance.")
-                init_fullhost = input("FQDN (its.myuniversity.edu): ")
-                self.config.set('TDX API Settings', 'fullhost', init_fullhost)
-            else:
-                print("\n\nPlease enter your TeamDynamix organization name.")
-                print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
-                init_orgname = input("Organization Name/FQDN (<orgname>.teamdynamix.com/<FQDN>): ")
-                self.config.set('TDX API Settings', 'orgname', init_orgname)
-            sandbox_invalid = True
-            while sandbox_invalid:
-                sandbox_choice = input("\nUse TeamDynamix Sandbox? [Y/N]: ")
-                if sandbox_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                    self.config.set('TDX API Settings', 'sandbox', 'true')
-                    sandbox_invalid = False
-                elif sandbox_choice.lower() in ['n', 'no', 'false']:
-                    self.config.set('TDX API Settings', 'sandbox', 'false')
-                    sandbox_invalid = False
-            auth_type_invalid = True
-            while auth_type_invalid:
-                auth_type = input("\nAuthentication Type (Only password and token current supported): ")
-                if(auth_type == "password"):
-                    self.config.set("TDX API Settings", "authType", auth_type)
-                    init_username = input("\nTDX API Username (tdxuser@orgname.com): ")
-                    self.config.set('TDX API Settings', 'username', init_username)
-                    print("\nTDXLib can store the password for the API user in the configuration file.")
-                    print("This is convenient, but not very secure.")
-                    password_invalid = True
-                    while password_invalid:
-                        password_choice = input("Store password for " + init_username + "? [Y/N]: ")
-                        if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                            password_prompt = '\nEnter Password for ' + init_username + ": "
-                            init_password = getpass.getpass(password_prompt)
-                            self.config.set('TDX API Settings', 'password', init_password)
-                            password_invalid = False
-                        elif password_choice.lower() in ['n', 'no', 'false']:
-                            self.config.set('TDX API Settings', 'password', 'Prompt')
-                            password_invalid = False
-                        if password_invalid:
-                            print("Invalid Response.")
-                    auth_type_invalid = False
-                elif(auth_type == "token"):
-                    self.config.set("TDX API Settings", "authType", auth_type)
-                    provided_token = input("\nInput token now, or leave blank to fill programatically later: ")
-                    if(provided_token != ""):
-                        self.token = provided_token
-                    auth_type_invalid = False
-            
-            init_ticket_id = input("\nTickets App ID (optional): ")
-            self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
-            init_asset_id = input("\nAssets App ID (optional): ")
-            self.config.set('TDX API Settings', 'assetAppId', init_asset_id)
-            print("\nTDXLib uses intelligent caching to speed up API calls on repetitive operations.")
-            print("In very dynamic environments, TDXLib's caching can cause issues.")
-            caching_invalid = True
-            while caching_invalid:
-                caching_choice = input("Disable Caching? [Y/N]: ")
-                if caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                    self.config.set('TDX API Settings', 'caching', 'true')
-                    self.caching = False
-                    caching_invalid = False
-                elif caching_choice.lower() in ['n', 'no', 'false']:
-                    self.config.set('TDX API Settings', 'caching', 'false')
-                    self.caching = True
-                    caching_invalid = False
-                if caching_invalid:
-                    print("Invalid Response.")
-            print("\nWhat timezone would you like to set for this integration (default: '-0500')?")
-            timezone_invalid = True
-            while timezone_invalid:
-                timezone_choice = input("Timezone (default: -0500) [+/-0000]: ")
-                if len(timezone_choice) == 5 and timezone_choice[:1] in ["+", "-"] and timezone_choice[1:].isdigit():
-                    self.config.set('TDX API Settings', 'timezone', timezone_choice)
-                    self.timezone = timezone_choice
-                    timezone_invalid = False
-                if len(timezone_choice) == 0:
-                    self.config.set('TDX API Settings', 'timezone', '-0500')
-                    self.timezone = '-0500'
-                    timezone_invalid = False
-                if timezone_invalid:
-                    print("Invalid Reponse.")
-            logging_invalid = False
-            while logging_invalid:
-                logging_choice = input("Log Level (default: ERROR) [CRITICAL, ERROR, WARNING, INFO, DEBUG]: ")
-                if logging_choice in ["WARNING", "ERROR", "INFO", "DEBUG", "CRITICAL"]:
-                    self.config.set('TDX API Settings', 'logLevel', logging_choice)
-                    self.log_level = logging_choice
-                    logging_invalid = False
-                if len(logging_choice) == 0:
-                    self.config.set('TDX API Settings', 'logLevel', 'ERROR')
-                    self.log_level = 'ERROR'
-                    logging_invalid = False
-                if timezone_invalid:
-                    print("Invalid Reponse.")
-            print('\n\nInitial settings saved to: ' + filename)
-            with open(filename, 'w') as configfile:
-                self.config.write(configfile)
+            self.set_config(config)
+            self.run_init_wizard()
 
         # Read settings in
         self.settings = self.config['TDX API Settings']
@@ -212,11 +93,157 @@ class TDXIntegration:
                 self.logger.error(f"Login Failed. Username or password in {filename} likely incorrect.")
         elif(self.auth_type == 'token'):
             if(self.token == None):
+                self.token_exp = time.time()
                 self.logger.info("Skipping initial authentication, no token provided yet.")
             else:
                 if not (self.auth()):
                     self.logger.error(f"Login Failed. Username or password in {filename} likely incorrect.")
             self.clean_cache()
+            
+    def load_config_from_file(self, filename: str):
+        # Read in configuration
+        if(filename == None):
+            filename = self.default_config_filename
+        self.config.read(filename)
+        return
+
+    def set_config(self, config: dict):
+        if(not config):
+            config = self.default_config
+        
+        self.config['TDX API Settings'] = config
+
+    def run_init_wizard(self):
+        # Initialization wizard
+        print("\nNo configuration file found. Please enter the following information: ")
+        fqdn_invalid = True
+        fqdn = False
+        while fqdn_invalid:
+            fqdn_choice = input("\nUse a Fully-Qualified DNS Name for your TDX Instance "
+                                "(if not *.teamdynamix.com)? [Y/N]: ")
+            if fqdn_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                fqdn = True
+                fqdn_invalid = False
+            elif fqdn_choice.lower() in ['n', 'no', 'false']:
+                fqdn_invalid = False
+        if fqdn:
+            print("Enter the fully qualified DNS name of your TDX instance.")
+            init_fullhost = input("FQDN (its.myuniversity.edu): ")
+            self.config.set('TDX API Settings', 'fullhost', init_fullhost)
+        else:
+            print("\n\nPlease enter your TeamDynamix organization name.")
+            print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
+            init_orgname = input("Organization Name/FQDN (<orgname>.teamdynamix.com/<FQDN>): ")
+            self.config.set('TDX API Settings', 'orgname', init_orgname)
+        sandbox_invalid = True
+        while sandbox_invalid:
+            sandbox_choice = input("\nUse TeamDynamix Sandbox? [Y/N]: ")
+            if sandbox_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                self.config.set('TDX API Settings', 'sandbox', 'true')
+                sandbox_invalid = False
+            elif sandbox_choice.lower() in ['n', 'no', 'false']:
+                self.config.set('TDX API Settings', 'sandbox', 'false')
+                sandbox_invalid = False
+        auth_type_invalid = True
+        while auth_type_invalid:
+            auth_type = input("\nAuthentication Type (Only password and token current supported): ")
+            if(auth_type == "password"):
+                self.config.set("TDX API Settings", "authType", auth_type)
+                init_username = input("\nTDX API Username (tdxuser@orgname.com): ")
+                self.config.set('TDX API Settings', 'username', init_username)
+                print("\nTDXLib can store the password for the API user in the configuration file.")
+                print("This is convenient, but not very secure.")
+                password_invalid = True
+                while password_invalid:
+                    password_choice = input("Store password for " + init_username + "? [Y/N]: ")
+                    if password_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                        password_prompt = '\nEnter Password for ' + init_username + ": "
+                        init_password = getpass.getpass(password_prompt)
+                        self.config.set('TDX API Settings', 'password', init_password)
+                        password_invalid = False
+                    elif password_choice.lower() in ['n', 'no', 'false']:
+                        self.config.set('TDX API Settings', 'password', 'Prompt')
+                        password_invalid = False
+                    if password_invalid:
+                        print("Invalid Response.")
+                auth_type_invalid = False
+            elif(auth_type == "token"):
+                self.config.set("TDX API Settings", "authType", auth_type)
+                provided_token = input("\nInput token now, or leave blank to fill programatically later: ")
+                if(provided_token != ""):
+                    self.token = provided_token
+                auth_type_invalid = False
+        
+        self.set_asset_app_id()
+        self.set_ticket_app_id()
+        self.set_caching()
+        self.set_timezone()
+        self.set_logging()
+        self.save_config()
+    
+    def set_asset_app_id(self):
+        init_asset_id = input("\nAssets App ID (optional): ")
+        self.config.set('TDX API Settings', 'assetAppId', init_asset_id)
+    
+    def set_ticket_app_id(self):
+        init_ticket_id = input("\nTickets App ID (optional): ")
+        self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
+
+    def set_caching(self):
+        print("\nTDXLib uses intelligent caching to speed up API calls on repetitive operations.")
+        print("In very dynamic environments, TDXLib's caching can cause issues.")
+        caching_invalid = True
+        while caching_invalid:
+            caching_choice = input("Disable Caching? [Y/N]: ")
+            if caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
+                self.config.set('TDX API Settings', 'caching', 'true')
+                self.caching = False
+                caching_invalid = False
+            elif caching_choice.lower() in ['n', 'no', 'false']:
+                self.config.set('TDX API Settings', 'caching', 'false')
+                self.caching = True
+                caching_invalid = False
+            if caching_invalid:
+                print("Invalid Response.")
+                
+    def set_timezone(self):
+        print("\nWhat timezone would you like to set for this integration (default: '-0500')?")
+        timezone_invalid = True
+        while timezone_invalid:
+            timezone_choice = input(f"Timezone (default: {self.default_config['timezone']} ) [+/-0000]: ")
+            if len(timezone_choice) == 5 and timezone_choice[:1] in ["+", "-"] and timezone_choice[1:].isdigit():
+                self.config.set('TDX API Settings', 'timezone', timezone_choice)
+                self.timezone = timezone_choice
+                timezone_invalid = False
+            if len(timezone_choice) == 0:
+                self.config.set('TDX API Settings', 'timezone', '-0500')
+                self.timezone = self.default_config['timezone']
+                timezone_invalid = False
+            if timezone_invalid:
+                print("Invalid Reponse.")
+
+    def set_logging(self):
+        logging_invalid = False
+        while logging_invalid:
+            logging_choice = input(f"Log Level (default: {self.default_config['logging_level']}) [CRITICAL, ERROR, WARNING, INFO, DEBUG]: ")
+            if logging_choice in ["WARNING", "ERROR", "INFO", "DEBUG", "CRITICAL"]:
+                self.config.set('TDX API Settings', 'logLevel', logging_choice)
+                self.log_level = logging_choice
+                logging_invalid = False
+            if len(logging_choice) == 0:
+                self.config.set('TDX API Settings', 'logLevel', 'ERROR')
+                self.log_level = self.default_config['logging_level']
+                logging_invalid = False
+            if logging_invalid:
+                print("Invalid Reponse")
+    
+    def save_config(self):
+        filename = input(f"Enter config filename (default: {self.default_config['filename']}): ")
+        if(filename == ""):
+            filename = self.default_config['filename']
+        with open(filename, 'w') as configfile:
+            self.config.write(configfile)
+        print(f'\nSettings saved to {filename}')
 
     def auth(self) -> bool:
         if(self.auth_type == 'password'):
@@ -252,6 +279,9 @@ class TDXIntegration:
                 self.logger.error(str(e))
                 return False
         elif(self.auth_type == 'token'):
+            if(self.token == None):
+                self.token_exp = time.time()
+                self.logger.info("Skipping initial authentication, no token provided yet.")
             # Decode token to identify expiration date
             decoded = jwt.decode(self.token,
                                 algorithms=['HS256'],
