@@ -288,6 +288,10 @@ class TDXIntegration:
         self.config_filename = filename
 
     def auth(self) -> bool:
+        """
+        Internal method to authenticate to the TDX api using the selected method
+        Stores a token in the token property, used for future calls. Returns true for success, false for failure.
+        """
         if self.auth_type == 'password':
             try:
                 response = requests.post(
@@ -641,6 +645,9 @@ class TDXIntegration:
             self.logger.error(f"{message}")
 
     def clean_cache(self):
+        """
+        Internal method to refresh the cache in a tdxlib object.
+        """
         self.cache = {
             'locations': {},
             'rooms': {},

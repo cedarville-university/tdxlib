@@ -15,6 +15,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.clean_cache()
 
     def clean_cache(self) -> None:
+        """
+        Internal method to refresh the cache in a tdxlib object.
+        """
         super().clean_cache()
         if not self.caching:
             return
@@ -28,6 +31,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
 
     def _make_asset_call(self, url: str, action: str, post_body: Union[dict, list] = None) -> Union[list, dict]:
+        """
+        Internal method to make a http call using the assets endpoints and the provided HTTP verb.
+        """
         url_string = '/' + str(self.asset_app_id) + '/assets'
         if len(url) > 0:
             url_string += '/' + url
@@ -837,7 +843,9 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if self.caching:
             custom_attributes = self.cache['custom_attributes']
         else:
-            custom_attributes = self.get_all_custom_attributes()
+            custom_attributes = self.get_all_asset_custom_attributes()
+            custom_attributes.append(self.get_all_custom_attributes(
+                tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
         for item in custom_attributes:
             if type(item) == dict:
                 if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
