@@ -127,20 +127,20 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             value = tdxlib.tdx_utils.export_tdx_date(value)
         return {'ID': ca['ID'], 'Value': value}
 
-    def change_ticket_custom_attribute_value(self, asset: Union[dict, str, int, list], custom_attributes: list) \
+    def change_ticket_custom_attribute_value(self, ticket: Union[dict, str, int, list], custom_attributes: list) \
         -> Union[tdxlib.tdx_ticket.TDXTicket,list]:
         """
         Takes a correctly formatted list of CA's (from build_ticket_custom_attribute_value, for instance)
         and updates one or more assets with the new values.
 
-        :param asset: ticket/Ticket ID to update (doesn't have to be full record), or list of same
+        :param ticket: ticket/Ticket ID to update (doesn't have to be full record), or list of same
         :param custom_attributes: List of ID/Value dicts (from build_ticket_custom_attribute_value())
         :return: list of updated ticket in dict format
         """
         to_change = {'Attributes': custom_attributes}
-        if isinstance(asset, list):
-            return self.edit_tickets(asset, to_change)
-        return self.edit_ticket(asset, to_change)
+        if isinstance(ticket, list):
+            return self.edit_tickets(ticket, to_change)
+        return self.edit_ticket(ticket, to_change)
 
     # #### GETTING TICKETS #### #
 
@@ -267,8 +267,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                 # if we go through all the asset's  CA's, and haven't updated something, we just put it in.
                 if new_attrib_marker:
                     full_ticket.ticket_data['Attributes'].append(new_attrib)
-        # incorporate the non-custom changed attributes to the existing asset record
-        full_ticket.update(changed_attributes_copy, validate=True)
+        # incorporate the non-custom changed attributes to the existing asset record, if they exist
+        if changed_attributes_copy:
+            full_ticket.update(changed_attributes_copy, validate=True)
         url_string = '{ID}?notifyNewResponsible=' + str(notify)
         post_body = full_ticket.export(validate=True)
         edited_dict = self.make_call(url_string.format_map(
