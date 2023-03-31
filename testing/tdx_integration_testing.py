@@ -238,6 +238,8 @@ class TdxIntegrationTesting(unittest.TestCase):
             self.setUp()
         if not self.tdx.sandbox:
             return
+        if not self.is_admin:
+            return
         location = self.tdx.get_location_by_name(self.testing_vars['location1']['Name'])
         name = 'Testing Room ' + TdxIntegrationTesting.timestamp
         description = 'Testing room Description'
