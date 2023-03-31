@@ -11,10 +11,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
         if self.asset_app_id is None:
             raise ValueError("Asset App Id is required. Check your INI file for 'assetappid = 000'")
+        
         self.clean_cache()
 
     def clean_cache(self) -> None:
         super().clean_cache()
+        if(not self.caching):
+            return
         self.cache['product_model'] = {}
         self.cache['product_type'] = {}
         self.cache['vendor'] = {}
