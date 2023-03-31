@@ -1018,16 +1018,18 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if attrib_prefix:
             self.logger.warning(f"Deprecated parameter in generate_ticket(): \"attrib_prefix\". In future versions,"
                                 f" use \"custom_attributes\"")
-            data['Attributes'] = []
-            # attrib_count = 0
+            if 'Attributes' not in data.keys() or not data['Attributes']:
+                data['Attributes'] = []
             for key, value in template_values.items():
                 if attrib_prefix in key:
                     data['Attributes'].append(
                         self.build_ticket_custom_attribute_value(key.replace(attrib_prefix, ""), value))
 
         if custom_attributes:
+            if 'Attributes' not in data.keys() or not data['Attributes']:
+                data['Attributes'] = []
             for key, value in custom_attributes.items():
-                data['Attributes'].append = self.build_ticket_custom_attribute_value(key, value)
+                data['Attributes'].append(self.build_ticket_custom_attribute_value(key, value))
 
         if due_date:
             if isinstance(due_date, datetime.datetime):
