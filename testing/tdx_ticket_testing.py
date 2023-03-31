@@ -394,6 +394,39 @@ class TdxTicketTesting(unittest.TestCase):
         feed = self.tix.get_ticket_feed(ticket_id)
         self.assertGreater(len(feed), 0)
 
+    def test_build_custom_attribute_value(self):
+        if not self.tix:
+            self.setUp()
+        if not self.tix.sandbox:
+            return
+        new_ca = self.tix.build_ticket_custom_attribute_value(self.testing_vars['ticket_ca']['Name'],
+                                                              self.testing_vars['ticket_ca']['choice']['Name'])
+        self.assertEqual(new_ca['ID'], self.testing_vars['ticket_ca']['ID'])
+        self.assertEqual(new_ca['Value'], self.testing_vars['ticket_ca']['choice']['ID'])
+
+    def test_change_custom_attribute_value(self):
+        if not self.tix:
+            self.setUp()
+        if not self.tix.sandbox:
+            return
+        new_ca = self.tix.build_ticket_custom_attribute_value(self.testing_vars['ticket_ca']['Name'],
+                                                              self.testing_vars['ticket_ca']['choice2']['Name'])
+        a = self.tix.change_ticket_custom_attribute_value(self.testing_vars['ticket2']['ID'], [new_ca])
+        new_ca = self.tix.build_ticket_custom_attribute_value(self.testing_vars['ticket_ca']['Name'],
+                                                              self.testing_vars['ticket_ca']['choice']['Name'])
+        a2 = self.tix.change_ticket_custom_attribute_value(self.testing_vars['ticket2']['ID'], [new_ca])
+        found = False
+        found2 = False
+        for x in a.ticket_data['Attributes']:
+            if x['Name'] == self.testing_vars['ticket_ca']['Name']:
+                self.assertEqual(str(x['Value']), str(self.testing_vars['ticket_ca']['choice2']['ID']))
+                found = True
+        for x in a2.ticket_data['Attributes']:
+            if x['Name'] == self.testing_vars['ticket_ca']['Name']:
+                self.assertEqual(str(x['Value']), str(self.testing_vars['ticket_ca']['choice']['ID']))
+                found2 = True
+        self.assertTrue(found)
+        self.assertTrue(found2)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TdxTicketTesting)
