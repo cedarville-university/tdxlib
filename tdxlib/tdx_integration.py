@@ -39,6 +39,7 @@ class TDXIntegration:
         'timezone': '-0500',
         'logLevel': 'ERROR'
     }
+
     def __init__(self, filename=None, config=None):
         self.config_filename = None
         self.settings = None
@@ -48,6 +49,14 @@ class TDXIntegration:
         self.token_exp = None
         self.timezone = None
         self.log_level = None
+        self.caching = True
+        self.sandbox = True
+        self.username = None
+        self.password = None
+        self.org_name = None
+        self.auth_type = None
+        self.ticket_app_id = None
+        self.asset_app_id = None
         self.cache = dict()
         self.logger = logging.getLogger('tdx_integration')
         self.config = configparser.ConfigParser()
@@ -70,7 +79,7 @@ class TDXIntegration:
         
         self.sandbox = self.settings.getboolean('sandbox')
         self.auth_type = self.settings.get('authType')
-        if(self.auth_type == 'password'):
+        if self.auth_type == 'password':
             self.username = self.settings.get('username')
             self.password = self.settings.get('password')
         self.ticket_app_id = self.settings.get('ticketAppId')
@@ -93,20 +102,21 @@ class TDXIntegration:
         else:
             self.api_url = 'https://' + fullhost + api_end
 
-        if(self.auth_type == 'password'):
+        if self.auth_type == 'password':
             if self.password == 'Prompt':
-                pass_prompt = 'Enter the TDX Password for user ' + self.username + ' (this password will not be stored): '
+                pass_prompt = 'Enter the TDX Password for user ' + self.username + \
+                              ' (this password will not be stored): '
                 self.password = getpass.getpass(pass_prompt)
 
         if self.log_level:
             self.logger = logging.getLogger('tdx_integration')
             self.logger.setLevel(logging.getLevelName(self.log_level))
 
-        if(self.auth_type == 'password'):
-            if not (self.auth()):
+        if self.auth_type == 'password':
+            if not self.auth():
                 self.logger.error(f"Login Failed. Username or password in {self.config_filename} likely incorrect.")
-        elif(self.auth_type == 'token'):
-            if(self.token == None):
+        elif self.auth_type == 'token':
+            if self.token is None:
                 self.token_exp = time.time()
                 self.logger.info("Skipping initial authentication, no token provided yet.")
             else:
@@ -115,13 +125,13 @@ class TDXIntegration:
 
     def load_config_from_file(self, filename: str):
         # Read in configuration
-        if(filename == None):
+        if filename is None:
             filename = self.default_config["filename"]
         self.config.read(filename)
         return
 
     def set_config(self, config: dict):
-        if(not config):
+        if not config:
             config = self.default_config
         
         self.config['TDX API Settings'] = config
@@ -133,8 +143,8 @@ class TDXIntegration:
         self.set_fqdn_wizard()
         self.set_sandbox_wizard()
         self.set_auth_type_wizard()
-        self.set_asset_app_id_wizard()
         self.set_ticket_app_id_wizard()
+        self.set_asset_app_id_wizard()
         self.set_caching_wizard()
         self.set_timezone_wizard()
         self.set_logging_wizard()
@@ -153,13 +163,13 @@ class TDXIntegration:
                 fqdn_invalid = False
         if fqdn:
             print("Enter the fully qualified DNS name of your TDX instance.")
-            init_fullhost = input("FQDN (its.myuniversity.edu): ")
-            self.config.set('TDX API Settings', 'fullhost', init_fullhost)
+            init_full_host = input("FQDN (its.myuniversity.edu): ")
+            self.config.set('TDX API Settings', 'fullhost', init_full_host)
         else:
             print("\n\nPlease enter your TeamDynamix organization name.")
             print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
-            init_orgname = input("Organization Name/FQDN (<orgname>.teamdynamix.com/<FQDN>): ")
-            self.config.set('TDX API Settings', 'orgname', init_orgname)
+            init_org_name = input("Organization Name/FQDN (<orgname>.teamdynamix.com/<FQDN>): ")
+            self.config.set('TDX API Settings', 'orgname', init_org_name)
 
     def set_sandbox_wizard(self):
         sandbox_invalid = True
@@ -174,7 +184,7 @@ class TDXIntegration:
 
     def set_token_wizard(self):
         provided_token = input("\nInput token now, or leave blank to fill programatically later: ")
-        if(provided_token != ""):
+        if provided_token != "":
             self.token = provided_token
 
     def set_password_wizard(self):
@@ -198,12 +208,15 @@ class TDXIntegration:
 
     def set_auth_type_wizard(self):
         auth_type_invalid = True
+        auth_type = "password"
         while auth_type_invalid:
-            auth_type = input("\nAuthentication Type (Only password and token current supported): ")
-            if(auth_type == "password"):
+            auth_type = input("\nAuthentication Type (Only password and token currently supported) [password]: ")
+            if auth_type == '':
+                auth_type = 'password'
+            if auth_type == "password":
                 self.set_password_wizard()
                 auth_type_invalid = False
-            elif(auth_type == "token"):
+            elif auth_type == "token":
                 self.set_token_wizard()
                 auth_type_invalid = False
         self.config.set("TDX API Settings", "authType", auth_type)
@@ -221,8 +234,8 @@ class TDXIntegration:
         print("In very dynamic environments, TDXLib's caching can cause issues.")
         caching_invalid = True
         while caching_invalid:
-            caching_choice = input("Disable Caching? [Y/N]: ")
-            if caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
+            caching_choice = input("Disable Caching? Y/N [N]: ")
+            if caching_choice == '' or caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
                 self.config.set('TDX API Settings', 'caching', 'true')
                 self.caching = False
                 caching_invalid = False
@@ -252,7 +265,8 @@ class TDXIntegration:
     def set_logging_wizard(self):
         logging_invalid = False
         while logging_invalid:
-            logging_choice = input(f"Log Level (default: {self.default_config['logging_level']}) [CRITICAL, ERROR, WARNING, INFO, DEBUG]: ")
+            logging_choice = input(f"Log Level (default: {self.default_config['logging_level']}) "
+                                   f"[CRITICAL, ERROR, WARNING, INFO, DEBUG]: ")
             if logging_choice in ["WARNING", "ERROR", "INFO", "DEBUG", "CRITICAL"]:
                 self.config.set('TDX API Settings', 'logLevel', logging_choice)
                 self.log_level = logging_choice
@@ -266,7 +280,7 @@ class TDXIntegration:
     
     def save_config_wizard(self):
         filename = input(f"Enter config filename (default: {self.default_config['filename']}): ")
-        if(filename == ""):
+        if filename == "":
             filename = self.default_config['filename']
         with open(filename, 'w') as configfile:
             self.config.write(configfile)
@@ -274,7 +288,7 @@ class TDXIntegration:
         self.config_filename = filename
 
     def auth(self) -> bool:
-        if(self.auth_type == 'password'):
+        if self.auth_type == 'password':
             try:
                 response = requests.post(
                     url=str(self.api_url) + '/auth',
@@ -287,16 +301,17 @@ class TDXIntegration:
                     })
                 )
                 if response.status_code != 200:
-                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) + " " +
-                                                                    response.reason + " " + " Returned: " + response.text)
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) +
+                                                                    " " + response.reason + " " + " Returned: " +
+                                                                    response.text)
                 else:
                     self.token = response.text
                     time.sleep(1)
                     # Decode token to identify expiration date
                     decoded = jwt.decode(self.token,
-                                        algorithms=['HS256'],
-                                        options={'verify_signature': False},
-                                        audience="https://www.teamdynamix.com/")
+                                         algorithms=['HS256'],
+                                         options={'verify_signature': False},
+                                         audience="https://www.teamdynamix.com/")
                     self.token_exp = decoded['exp']
                     return True
 
@@ -306,15 +321,15 @@ class TDXIntegration:
             except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
                 self.logger.error(str(e))
                 return False
-        elif(self.auth_type == 'token'):
-            if(self.token == None):
+        elif self.auth_type == 'token':
+            if self.token is None:
                 self.token_exp = time.time()
                 self.logger.info("Skipping initial authentication, no token provided yet.")
             # Decode token to identify expiration date
             decoded = jwt.decode(self.token,
-                                algorithms=['HS256'],
-                                options={'verify_signature': False},
-                                audience="https://www.teamdynamix.com/")
+                                 algorithms=['HS256'],
+                                 options={'verify_signature': False},
+                                 audience="https://www.teamdynamix.com/")
             self.token_exp = decoded['exp']
             return True
         else:
@@ -856,9 +871,9 @@ class TDXIntegration:
         Gets all custom attributes for the component type in TDX.
         See https://solutions.teamdynamix.com/TDClient/KB/ArticleDet?ID=22203 for possible values.
 
+        :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
         :param associated_type: the associated type of object to get attributes for, default: 0
         :param app_id: the application number to get attributes from, default: 0
-        :param object_type: the object type to get attributes for (tickets = 9, assets = 27, CI's = 63)
 
         :return: list of dicts containing custom attributes, including choices and choice ID's
 
