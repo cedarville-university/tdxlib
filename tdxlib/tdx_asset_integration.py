@@ -16,15 +16,14 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def clean_cache(self) -> None:
         super().clean_cache()
-        if(not self.caching):
+        if not self.caching:
             return
         self.cache['product_model'] = {}
         self.cache['product_type'] = {}
         self.cache['vendor'] = {}
         self.cache['asset_form'] = {}
         self.cache['asset_status'] = {}
-        self.cache['custom_attributes'] = self.get_all_custom_attributes(
-            tdxlib.tdx_integration.TDXIntegration.component_ids['asset'], app_id=self.asset_app_id)
+        self.cache['custom_attributes'] = self.get_all_asset_custom_attributes()
         self.cache['custom_attributes'].append(self.get_all_custom_attributes(
             tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
 
@@ -56,28 +55,6 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         """
         return self._make_asset_call(url, action, post_body)
-
-    # TODO: Move this down to a more logical place
-    def get_asset_custom_attribute_by_name_id(self, key: str) -> dict:
-        """
-        Gets a specific Asset Custom Attribute object
-
-        :param key: name or id of the Custom Attribute. This must be the exact name, no partial searching.
-
-        :return: dict of custom attribute data
-
-        """
-        search_key = str(key) + "_asset_ci"
-        if search_key in self.cache['ca_search']:
-            return self.cache['ca_search'][search_key]
-        # There is no API for searching attributes -- the only way is to get them all.
-        for item in self.cache['custom_attributes']:
-            if type(item) == dict:
-                if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
-                    self.cache['ca_search'][search_key] = item
-                    return item
-        raise TdxApiObjectNotFoundError(
-            "No custom asset or CI attribute found for " + str(key))
 
     def get_all_asset_forms(self) -> list:
         """
@@ -701,7 +678,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param assets: a list of assets (maybe from search_assets()) or a single asset (only ID required)
         :param changed_attributes: a dict of attributes in the ticket to be changed
-        :param clear_custom_attributes: (default: False) Indicates whether or not custom attributes not specified
+        :param clear_custom_attributes: (default: False) Indicates whether custom attributes not specified
                                         in the changed_attributes argument should be cleared
 
         :return: list of updated assets
@@ -715,8 +692,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         else:
             asset_list = assets
         updated_assets = list()
-        # Separate CA changes into their own object: 'changed_custom_attributes'.'
-        # need to make a full copy of this dict so we can reuse it
+        # Separate CA changes into their own object: 'changed_custom_attributes'.
+        # need to make a full copy of this dict, so we can reuse it
         changed_attributes_copy = copy.deepcopy(changed_attributes)
         if 'Attributes' in changed_attributes:
             if isinstance(changed_attributes['Attributes'], list):
@@ -724,7 +701,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
             else:
                 changed_custom_attributes = [changed_attributes['Attributes']]
             # Remove attributes field of "changed_attributes" so it doesn't mess up the existing asset(s) CA's
-            # need to set it to an empty list first so it doesn't delete the object that was passed in
+            # need to set it to an empty list first, so it doesn't delete the object that was passed in
             del changed_attributes_copy['Attributes']
         for this_asset in asset_list:
             # Need to get the full record so that we can see existing CA's
@@ -747,7 +724,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                         if str(new_attrib['ID']) == str(attrib['ID']):
                             attrib['Value'] = new_attrib['Value']
                             new_attrib_marker = False
-                    # if we go through all the asset's  CA's, an haven't updated something, we just put it in.
+                    # if we go through all the asset's  CA's, and haven't updated something, we just put it in.
                     if new_attrib_marker:
                         full_asset['Attributes'].append(new_attrib)
             # incorporate the non-custom changed attributes to the existing asset record
@@ -840,6 +817,34 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
                 f"Department of type {str(type(new_dept))} not searchable."
             )
         return self.update_assets(asset, changed_attributes)
+
+    def get_all_asset_custom_attributes(self):
+        return self.get_all_custom_attributes(TDXAssetIntegration.component_ids['asset'], app_id=self.asset_app_id)
+
+    def get_asset_custom_attribute_by_name_id(self, key: str) -> dict:
+        """
+        Gets a specific Asset Custom Attribute object
+
+        :param key: name or id of the Custom Attribute. This must be the exact name, no partial searching.
+
+        :return: dict of custom attribute data
+
+        """
+        search_key = str(key) + "_asset_ci"
+        if self.caching and search_key in self.cache['ca_search']:
+            return self.cache['ca_search'][search_key]
+        # There is no API for searching attributes -- the only way is to get them all.
+        if self.caching:
+            custom_attributes = self.cache['custom_attributes']
+        else:
+            custom_attributes = self.get_all_custom_attributes()
+        for item in custom_attributes:
+            if type(item) == dict:
+                if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
+                    self.cache['ca_search'][search_key] = item
+                    return item
+        raise TdxApiObjectNotFoundError(
+            "No custom asset or CI attribute found for " + str(key))
 
     def build_asset_custom_attribute_value(self, custom_attribute: Union[dict, str, int],
                                            value: Union[datetime.datetime, str, int]) -> dict:
