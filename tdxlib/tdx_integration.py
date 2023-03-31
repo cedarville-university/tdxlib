@@ -44,7 +44,6 @@ class TDXIntegration:
         self.config_filename = None
         self.settings = None
         self.api_url = None
-        self.auth_type = None
         self.token = None
         self.token_exp = None
         self.timezone = None
@@ -79,7 +78,7 @@ class TDXIntegration:
         
         self.sandbox = self.settings.getboolean('sandbox')
         self.auth_type = self.settings.get('authType')
-        if self.auth_type == 'password':
+        if not self.auth_type or self.auth_type == 'password':
             self.username = self.settings.get('username')
             self.password = self.settings.get('password')
         self.ticket_app_id = self.settings.get('ticketAppId')
@@ -96,13 +95,13 @@ class TDXIntegration:
         else:
             api_end = '/TDWebApi/api'
 
-        fullhost = self.settings.get('fullhost', None)
-        if fullhost is None:
+        full_host = self.settings.get('full_host', None)
+        if full_host is None:
             self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
         else:
-            self.api_url = 'https://' + fullhost + api_end
+            self.api_url = 'https://' + full_host + api_end
 
-        if self.auth_type == 'password':
+        if not self.auth_type or self.auth_type == 'password':
             if self.password == 'Prompt':
                 pass_prompt = 'Enter the TDX Password for user ' + self.username + \
                               ' (this password will not be stored): '
@@ -112,7 +111,7 @@ class TDXIntegration:
             self.logger = logging.getLogger('tdx_integration')
             self.logger.setLevel(logging.getLevelName(self.log_level))
 
-        if self.auth_type == 'password':
+        if not self.auth_type or self.auth_type == 'password':
             if not self.auth():
                 self.logger.error(f"Login Failed. Username or password in {self.config_filename} likely incorrect.")
         elif self.auth_type == 'token':
@@ -164,7 +163,7 @@ class TDXIntegration:
         if fqdn:
             print("Enter the fully qualified DNS name of your TDX instance.")
             init_full_host = input("FQDN (its.myuniversity.edu): ")
-            self.config.set('TDX API Settings', 'fullhost', init_full_host)
+            self.config.set('TDX API Settings', 'full_host', init_full_host)
         else:
             print("\n\nPlease enter your TeamDynamix organization name.")
             print("This is the teamdynamix.com subdomain that you use to access TeamDynamix.")
@@ -292,7 +291,7 @@ class TDXIntegration:
         Internal method to authenticate to the TDX api using the selected method
         Stores a token in the token property, used for future calls. Returns true for success, false for failure.
         """
-        if self.auth_type == 'password':
+        if not self.auth_type or self.auth_type == 'password':
             try:
                 response = requests.post(
                     url=str(self.api_url) + '/auth',
