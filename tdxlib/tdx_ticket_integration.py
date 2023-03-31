@@ -900,6 +900,20 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             }
         return self.make_call(url_string, 'post', data)
 
+    def get_all_ticket_assets(self, ticket_id: int) -> list:
+        """
+        Gets all asset attached to a ticket.
+
+        :param ticket_id: The Ticket ID to update
+
+        :return: list of asset info
+
+        :rtype: list
+
+        """
+        url_string = f'{ticket_id}/assets'
+        return self.make_call(url_string, 'get')
+
     def add_asset_to_ticket(self, ticket_id: int, asset_id: int) -> dict:
         """
         Attaches an asset to a ticket.
