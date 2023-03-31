@@ -1,4 +1,5 @@
 import tdxlib.tdx_ticket
+import copy
 import datetime
 import tdxlib.tdx_integration
 import tdxlib.tdx_api_exceptions
@@ -126,6 +127,21 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             value = tdxlib.tdx_utils.export_tdx_date(value)
         return {'ID': ca['ID'], 'Value': value}
 
+    def change_ticket_custom_attribute_value(self, asset: Union[dict, str, int, list], custom_attributes: list) \
+        -> Union[tdxlib.tdx_ticket.TDXTicket,list]:
+        """
+        Takes a correctly formatted list of CA's (from build_ticket_custom_attribute_value, for instance)
+        and updates one or more assets with the new values.
+
+        :param asset: ticket/Ticket ID to update (doesn't have to be full record), or list of same
+        :param custom_attributes: List of ID/Value dicts (from build_ticket_custom_attribute_value())
+        :return: list of updated ticket in dict format
+        """
+        to_change = {'Attributes': custom_attributes}
+        if isinstance(asset, list):
+            return self.edit_tickets(asset, to_change)
+        return self.edit_ticket(asset, to_change)
+
     # #### GETTING TICKETS #### #
 
     def get_ticket_by_id(self, ticket_id: int) -> tdxlib.tdx_ticket.TDXTicket:
@@ -218,12 +234,42 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :rtype: tdxlib.tdx_ticket.TDXTicket
 
         """
+        changed_custom_attributes = False
         if not isinstance(ticket, tdxlib.tdx_ticket.TDXTicket):
             full_ticket = self.get_ticket_by_id(ticket)
         else:
             full_ticket = ticket
+        # Separate CA changes into their own object: 'changed_custom_attributes'.
+        # need to make a full copy of this dict, so we can reuse it
+        changed_attributes_copy = copy.deepcopy(changed_attributes)
+        if 'Attributes' in changed_attributes:
+            if isinstance(changed_attributes['Attributes'], list):
+                changed_custom_attributes = changed_attributes['Attributes']
+            else:
+                changed_custom_attributes = [changed_attributes['Attributes']]
+            # Remove attributes field of "changed_attributes" so it doesn't mess up the existing asset(s) CA's
+            # need to set it to an empty list first, so it doesn't delete the object that was passed in
+            del changed_attributes_copy['Attributes']
+        # not totally sure the first part is necessary. I think it always comes through as an empty list if no CA's
+        if 'Attributes' not in full_ticket.ticket_data.keys():
+            full_ticket.ticket_data['Attributes'] = []
+        if changed_custom_attributes:
+            # Loop through each of the CAs to be changed
+            for new_attrib in changed_custom_attributes:
+                # Drop a marker so we know if
+                new_attrib_marker = True
+                # Loop through the existing CA's, to look for stuff to update
+                for attrib in full_ticket.ticket_data['Attributes']:
+                    # if we find a match, we update it in the existing asset record
+                    if str(new_attrib['ID']) == str(attrib['ID']):
+                        attrib['Value'] = new_attrib['Value']
+                        new_attrib_marker = False
+                # if we go through all the asset's  CA's, and haven't updated something, we just put it in.
+                if new_attrib_marker:
+                    full_ticket.ticket_data['Attributes'].append(new_attrib)
+        # incorporate the non-custom changed attributes to the existing asset record
+        full_ticket.update(changed_attributes_copy, validate=True)
         url_string = '{ID}?notifyNewResponsible=' + str(notify)
-        full_ticket.update(changed_attributes, validate=True)
         post_body = full_ticket.export(validate=True)
         edited_dict = self.make_call(url_string.format_map(
             {'ID': str(full_ticket.get_id())}), 'post', post_body)
