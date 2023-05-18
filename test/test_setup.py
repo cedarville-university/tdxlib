@@ -15,11 +15,10 @@ class TdxSetupTesting(unittest.TestCase):
 		interactively or from a file are not used when 
 		dictionary settings are provided.
 		"""
-		tdx = tdx_integration.TDXIntegration(config={
-			'TDX API Settings':{
-				"org_name":'example.edu'
-			}
-		})
+		tdx = tdx_integration.TDXIntegration(config=
+			{
+				"orgname":'example.edu'
+			})
 		assert mock_load.call_count == 0
 		assert mock_wizzard.call_count == 0
 

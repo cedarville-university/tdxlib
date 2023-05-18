@@ -59,8 +59,9 @@ class TDXIntegration:
         self.cache = dict()
         self.logger = logging.getLogger('tdx_integration')
         self.config = configparser.ConfigParser()
-
-        self.load_config_from_file(filename)
+        
+        if not filename:
+            self.load_config_from_file(filename)
 
         if 'TDX API Settings' not in self.config:
             self.set_config(config)
