@@ -59,11 +59,14 @@ class TDXIntegration:
         self.cache = dict()
         self.logger = logging.getLogger('tdx_integration')
         self.config = configparser.ConfigParser()
+        
+        if filename:
+            self.load_config_from_file(filename)
 
-        self.load_config_from_file(filename)
+        if config:
+            self.set_config(config)
 
         if 'TDX API Settings' not in self.config:
-            self.set_config(config)
             self.run_setup_wizard()
 
         self.config_to_attributes()
@@ -132,7 +135,7 @@ class TDXIntegration:
     def set_config(self, config: dict):
         if not config:
             config = self.default_config
-        
+
         self.config['TDX API Settings'] = config
 
     def run_setup_wizard(self):
