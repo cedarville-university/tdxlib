@@ -27,7 +27,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_authn(self):
         if not self.timestamp:
             self.setUp()
-        self.assertGreater(len(self.tix.token), 200)
+        self.assertGreater(len(self.tix.config.token), 200)
 
     def test_get_ticket_by_id(self):
         if not self.timestamp:
@@ -45,7 +45,7 @@ class TdxTicketTesting(unittest.TestCase):
         if not self.timestamp:
             self.setUp()
         # Protect production from deleting tasks
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_list = list()
         ticket_list.append(self.tix.get_ticket_by_id(self.testing_vars['ticket2']['ID']))
@@ -179,14 +179,14 @@ class TdxTicketTesting(unittest.TestCase):
         if not self.timestamp:
             self.setUp()
         # Protect production from testing tickets
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         else:
             title_string = "Testing Ticket Created " + self.timestamp
             json_data = self.tix.generate_ticket(title_string,
                                                  self.testing_vars['ticket_type']['Name'],
                                                  self.testing_vars['account']['Name'],
-                                                 self.tix.username)
+                                                 self.tix.config.username)
             created_ticket = self.tix.create_ticket(json_data)
             self.assertTrue(created_ticket.get_id() > 10000)
 
@@ -209,7 +209,7 @@ class TdxTicketTesting(unittest.TestCase):
         if not self.timestamp:
             self.setUp()
         # Protect production from testing tasks
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         else:
             ticket_id = self.testing_vars['ticket2']['ID']
@@ -223,7 +223,7 @@ class TdxTicketTesting(unittest.TestCase):
         if not self.timestamp:
             self.setUp()
         # Protect production from deleting tasks
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
@@ -238,7 +238,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_delete_ticket_task(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         # Create the task
         ticket_id = self.testing_vars['ticket2']['ID']
@@ -256,7 +256,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_reassign_ticket_task(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
@@ -271,7 +271,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_reassign_ticket(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
         ticket = self.tix.get_ticket_by_id(ticket_id)
@@ -285,7 +285,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_reschedule_ticket(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket1']['ID']
         start = dt.utcnow()
@@ -296,7 +296,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_reschedule_ticket_task(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
@@ -308,7 +308,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_generate_ticket_task(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         task = self.tix.generate_ticket_task("Testing Task", description="this is a test",start=dt.utcnow(),
                                              responsible=self.testing_vars['person1']['FullName'])
@@ -319,7 +319,7 @@ class TdxTicketTesting(unittest.TestCase):
             self.setUp()
         if not self.is_admin:
             return
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         status = self.tix.create_custom_ticket_status('Never Gonna Happen', 1, 'Cancelled')
         get_status = self.tix.get_ticket_status_by_id(status['ID'])
@@ -330,7 +330,7 @@ class TdxTicketTesting(unittest.TestCase):
             self.setUp()
         if not self.is_admin:
             return
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         self.test_create_custom_ticket_status()
         to_change = {'Name': 'Never Gonna Give You Up'}
@@ -340,7 +340,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_update_ticket_task(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
         task_id = self.testing_vars['ticket2']['task']['ID']
@@ -350,7 +350,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_update_ticket(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket1']['ID']
         update = self.tix.update_ticket(ticket_id, comments=str(self.timestamp), new_status='Open')
@@ -359,7 +359,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_upload_attachment(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket1']['ID']
         filename = self.testing_vars['attachment']['Name']
@@ -370,7 +370,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_upload_attachment_filename(self):
         if not self.timestamp:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         ticket_id = self.testing_vars['ticket2']['ID']
         filepath = self.testing_vars['attachment']['Name']
@@ -397,7 +397,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_build_custom_attribute_value(self):
         if not self.tix:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         new_ca = self.tix.build_ticket_custom_attribute_value(self.testing_vars['ticket_ca']['Name'],
                                                               self.testing_vars['ticket_ca']['choice']['Name'])
@@ -407,7 +407,7 @@ class TdxTicketTesting(unittest.TestCase):
     def test_change_custom_attribute_value(self):
         if not self.tix:
             self.setUp()
-        if not self.tix.sandbox:
+        if not self.tix.config.sandbox:
             return
         new_ca = self.tix.build_ticket_custom_attribute_value(self.testing_vars['ticket_ca']['Name'],
                                                               self.testing_vars['ticket_ca']['choice2']['Name'])

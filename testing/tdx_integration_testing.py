@@ -23,11 +23,37 @@ class TdxIntegrationTesting(unittest.TestCase):
             print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
                   'A sample file is available in testing/sample_ticket_testing_vars. Any *.json files are ignored by git.')
 
+    def test_config_by_file(self):
+        test_tdxlib = tdx_integration.TDXIntegration('../tdxlib.ini')
+        self.assertIsNotNone(test_tdxlib.config)
+        self.assertGreater(len(test_tdxlib.config.api_url), 13)
+        self.assertTrue(self.testing_vars['org_name'] in test_tdxlib.config.api_url)
+
+    def test_config_by_dict(self):
+        test_dict = self.testing_vars['test_config_dict']
+        test_tdxlib = tdx_integration.TDXIntegration(config=test_dict)
+        self.assertIsNotNone(test_tdxlib.config)
+        self.assertGreater(len(test_tdxlib.config.api_url), 13)
+        self.assertTrue(self.testing_vars['org_name'] in test_tdxlib.config.api_url)
+        self.assertFalse(test_tdxlib.config.caching)
+
+    def test_config_by_env(self):
+        test_dict = self.testing_vars['test_config_dict']['TDX API Settings']
+        for k,v in test_dict.items():
+            env_name = f'TDXLIB_{k.upper()}'
+            os.environ[env_name] = str(v)
+        os.environ.update()
+        test_tdxlib = tdx_integration.TDXIntegration()
+        self.assertIsNotNone(test_tdxlib.config)
+        self.assertGreater(len(test_tdxlib.config.api_url), 13)
+        self.assertTrue(self.testing_vars['org_name'] in test_tdxlib.config.api_url)
+        self.assertFalse(test_tdxlib.config.caching)
+
     def test_authentication(self):
         if not self.tdx:
             self.setUp()
-        self.assertIsNotNone(self.tdx.token)
-        self.assertGreater(len(self.tdx.token), 200)
+        self.assertIsNotNone(self.tdx.config.token)
+        self.assertGreater(len(self.tdx.config.token), 200)
 
     def test_check_auth_exp(self):
         if not self.tdx:
@@ -209,13 +235,13 @@ class TdxIntegrationTesting(unittest.TestCase):
     def test_create_account(self):
         if not self.tdx:
             self.setUp()
-        if not self.tdx.sandbox:
+        if not self.tdx.config.sandbox:
             return
         name = 'Testing Account ' + TdxIntegrationTesting.timestamp
         additional_info = {'Address1': '123 Main Street'}
         ca = self.testing_vars['account_ca']
         custom_attributes = {ca['Name']:ca['choice']['Name']}
-        account = self.tdx.create_account(name, self.tdx.username, additional_info,
+        account = self.tdx.create_account(name, self.tdx.config.username, additional_info,
                                           custom_attributes)
         self.assertTrue(account)
         self.assertEqual(account['Address1'], additional_info['Address1'])
@@ -225,7 +251,7 @@ class TdxIntegrationTesting(unittest.TestCase):
     def test_edit_account(self):
         if not self.tdx:
             self.setUp()
-        if not self.tdx.sandbox:
+        if not self.tdx.config.sandbox:
             return
         # This will fail if test_create_account fails
         name = 'Testing Account ' + TdxIntegrationTesting.timestamp
@@ -236,7 +262,7 @@ class TdxIntegrationTesting(unittest.TestCase):
     def test_create_room(self):
         if not self.tdx:
             self.setUp()
-        if not self.tdx.sandbox:
+        if not self.tdx.config.sandbox:
             return
         if not self.is_admin:
             return
