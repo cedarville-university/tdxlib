@@ -10,7 +10,7 @@ default_config = tdxlib.tdx_constants.default_config
 class TDXConfig:
     def __init__(self, filename: str = None, config: dict = None):
         self.filename = filename
-        self.config = {}
+        self.config = configparser.ConfigParser()
         self.api_url = None
         self.token = None
         self.token_exp = None
@@ -28,8 +28,6 @@ class TDXConfig:
         self.load_config_from_env()
         if config:
             self.set_config_from_dict(config)
-        if not self.config:
-            self.config = configparser.ConfigParser()
         self.load_config_from_file(filename)
         if not self.config_complete():
             self.run_setup_wizard()
@@ -37,36 +35,33 @@ class TDXConfig:
         self.setup_from_attributes()
 
     def config_complete(self):
-        if not self.get_value('org_name') and not self.get_value('full_host'):
+        if not self.get_value('org_name') and not self.get_value('orgname') and not self.get_value('full_host'):
             return False
-        if self.get_value('auth_type') == 'password' and \
+        if self.get_value('authType') == 'password' and \
                 (not self.get_value('username')):
             return False
         return True
 
-
     def set_config_from_dict(self, config: dict):
-        if not config:
-            config = default_config
-        self.config['TDX API Settings'] = config
+        if 'TDX API Settings' in config.keys():
+            self.config['TDX API Settings'] = config['TDX API Settings']
+        else:
+            self.config['TDX API Settings'] = config
 
     def load_config_from_file(self, filename: str):
         # Read in configuration
         if filename is None:
             filename = tdxlib.tdx_constants.default_filename
         self.config.read(filename)
-        # Backwards compatiblity
-        if 'orgname' in self.config['TDX API Settings'].keys():
-            self.config.set('TDX API Settings', 'org_name', self.config.get('TDX API Settings', 'orgname'))
         return
 
     def load_config_from_env(self):
-        tdx_vars = [x for x in os.environ if 'TDXLIB' in x]
+        self.config.add_section('TDX API Settings')
+        tdx_vars = {k:v for k,v in os.environ.items() if 'TDXLIB' in k}
         for i in tdxlib.tdx_constants.config_keys.keys():
             environ_key = f'TDXLIB_{i.upper()}'
-            if environ_key in tdx_vars and tdx_vars[environ_key]:
+            if environ_key in tdx_vars.keys() and tdx_vars[environ_key]:
                 self.config.set('TDX API Settings', i, tdx_vars[environ_key])
-
 
     def get_value(self, key: str, default=None):
         if key and 'TDX API Settings' in self.config.keys():
@@ -82,19 +77,27 @@ class TDXConfig:
                     return self.config['TDX API Settings'].getfloat(key)
             else:
                 if key in default_config.keys():
-                    return default_config['key']
+                    return default_config[key]
         return default
 
     def config_to_attributes(self):
-        # Read settings in
+        # Read settings in, respecting backwards compatibility
         self.org_name = self.get_value('org_name')
+        if not self.org_name:
+            self.org_name = self.get_value('orgname')
         self.sandbox = self.get_value('sandbox', bool)
-        self.auth_type = self.get_value('authType')
+        self.auth_type = self.get_value('auth_type')
+        if not self.auth_type:
+            self.auth_type = self.get_value('authType')
         if not self.auth_type or self.auth_type == 'password':
             self.username = self.get_value('username')
             self.password = self.get_value('password')
-        self.ticket_app_id = self.get_value('ticketAppId')
-        self.asset_app_id = self.get_value('assetAppId')
+        self.ticket_app_id = self.get_value('ticket_app_id')
+        if not self.ticket_app_id:
+            self.ticket_app_id = self.get_value('ticketAppId')
+        self.asset_app_id = self.get_value('asset_app_id')
+        if not self.ticket_app_id:
+            self.ticket_app_id = self.get_value('assetAppId')
         self.caching = self.get_value('caching', bool)
         self.timezone = self.get_value('timezone')
         self.full_host = self.get_value('full_host')
@@ -204,11 +207,11 @@ class TDXConfig:
 
     def set_asset_app_id_wizard(self):
         init_asset_id = input("\nAssets App ID (optional): ")
-        self.config.set('TDX API Settings', 'assetAppId', init_asset_id)
+        self.config.set('TDX API Settings', 'asset_app_id', init_asset_id)
 
     def set_ticket_app_id_wizard(self):
         init_ticket_id = input("\nTickets App ID (optional): ")
-        self.config.set('TDX API Settings', 'ticketAppId', init_ticket_id)
+        self.config.set('TDX API Settings', 'ticket_app_id', init_ticket_id)
 
     def set_caching_wizard(self):
         print("\nTDXLib uses intelligent caching to speed up API calls on repetitive operations.")
@@ -218,11 +221,9 @@ class TDXConfig:
             caching_choice = input("Disable Caching? Y/N [N]: ")
             if caching_choice == '' or caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
                 self.config.set('TDX API Settings', 'caching', 'true')
-                self.caching = False
                 caching_invalid = False
             elif caching_choice.lower() in ['n', 'no', 'false']:
                 self.config.set('TDX API Settings', 'caching', 'false')
-                self.caching = True
                 caching_invalid = False
             if caching_invalid:
                 print("Invalid Response.")
@@ -234,11 +235,9 @@ class TDXConfig:
             timezone_choice = input(f"Timezone (default: {default_config['timezone']} ) [+/-0000]: ")
             if len(timezone_choice) == 5 and timezone_choice[:1] in ["+", "-"] and timezone_choice[1:].isdigit():
                 self.config.set('TDX API Settings', 'timezone', timezone_choice)
-                self.timezone = timezone_choice
                 timezone_invalid = False
             if len(timezone_choice) == 0:
-                self.config.set('TDX API Settings', 'timezone', '-0500')
-                self.timezone = default_config['timezone']
+                self.config.set('TDX API Settings', 'timezone', default_config['timezone'])
                 timezone_invalid = False
             if timezone_invalid:
                 print("Invalid Reponse.")
@@ -249,12 +248,10 @@ class TDXConfig:
             logging_choice = input(f"Log Level (default: {default_config['logging_level']}) "
                                    f"[CRITICAL, ERROR, WARNING, INFO, DEBUG]: ")
             if logging_choice in ["WARNING", "ERROR", "INFO", "DEBUG", "CRITICAL"]:
-                self.config.set('TDX API Settings', 'logLevel', logging_choice)
-                self.log_level = logging_choice
+                self.config.set('TDX API Settings', 'log_level', logging_choice)
                 logging_invalid = False
             if len(logging_choice) == 0:
-                self.config.set('TDX API Settings', 'logLevel', 'ERROR')
-                self.log_level = default_config['logging_level']
+                self.config.set('TDX API Settings', 'log_level', default_config['log_level'])
                 logging_invalid = False
             if logging_invalid:
                 print("Invalid Reponse")

@@ -19,28 +19,37 @@ component_ids = {
 default_config = {
     # 'org_name': '',
     'sandbox': True,
-    'authType': 'password',
+    'auth_type': 'password',
     # 'username': '',
     # 'password': '',
-    # 'ticketAppId': '',
-    # 'assetAppId': '',
+    # 'ticket_app_id': '',
+    # 'asset_app_id': '',
     'caching': False,
     'timezone': '-0500',
-    'logLevel': 'ERROR',
+    'log_level': 'ERROR',
     # 'full_host': ''
 
 }
 
 config_keys = {
     'org_name': str,
+    'orgname': str,
     'sandbox': bool,
+    'auth_type': str,
+    # backwards compatibility
     'authType': str,
     'password': str,
     'username': str,
+    'ticket_app_id': str,
+    # backwards compatibility
     'ticketAppId': str,
+    'asset_app_id': str,
+    # backwards compatibility
     'assetAppId': str,
     'caching': bool,
     'timezone': str,
+    'log_level': str,
+    # backwards compatibility
     'logLevel': str,
     'full_host': str
 }
