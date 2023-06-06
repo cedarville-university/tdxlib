@@ -31,8 +31,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def __init__(self, filename: str = None, config=None):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename, config)
-        if self.ticket_app_id is None:
-            raise ValueError("Ticket App Id is required. Check your config file for 'ticketappid = 000'")
+        if self.config.ticket_app_id is None:
+            raise RuntimeError("Ticket App Id is required. Check your configuration.")
         self.clean_cache()
 
     def clean_cache(self):
@@ -52,7 +52,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.cache['ticket_form'] = {}
 
     def get_url_string(self):
-        return '/' + str(self.ticket_app_id) + '/tickets'
+        return '/' + str(self.config.ticket_app_id) + '/tickets'
 
     def _make_ticket_call(self, url: str, action: str, post_body: dict = None):
         url_string = self.get_url_string()
@@ -78,13 +78,14 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param action: The HTTP action (get, put, post, delete, patch) to perform.
         :param post_body: A dict of the information to post, put, or patch. Not used for get/delete.
 
-        :return: the API's response as a python dict or list
+        :return: the API response as a python dict or list
 
         """
         return self._make_ticket_call(url, action, post_body)
 
     def get_all_ticket_custom_attributes(self):
-        return self.get_all_custom_attributes(TDXTicketIntegration.component_ids['ticket'], app_id=self.ticket_app_id)
+        return self.get_all_custom_attributes(TDXTicketIntegration.component_ids['ticket'],
+                                              app_id=self.config.ticket_app_id)
 
     def get_ticket_custom_attribute_by_name_id(self, key: str) -> dict:
         """
@@ -127,8 +128,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             value = tdxlib.tdx_utils.export_tdx_date(value)
         return {'ID': ca['ID'], 'Value': value}
 
-    def change_ticket_custom_attribute_value(self, ticket: Union[dict, str, int, list], custom_attributes: list) \
-        -> Union[tdxlib.tdx_ticket.TDXTicket,list]:
+    def change_ticket_custom_attribute_value(self, ticket: Union[dict, str, int, list],
+                                             custom_attributes: list) -> Union[tdxlib.tdx_ticket.TDXTicket, list]:
         """
         Takes a correctly formatted list of CA's (from build_ticket_custom_attribute_value, for instance)
         and updates one or more assets with the new values.
@@ -351,9 +352,9 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         :param ticket_id: the ticket ID whose task to update
         :param comments: a string to provide as a comment to the update.
-        :param new_status: The name of the new status to set for the ticket (Default:
+        :param new_status: The name of the new status to set for the ticket (Default: The status whose ID is 0)
         :param notify: a list of strings containing email addresses to notify regarding this ticket. Default: None
-        :param private: boolean indicating whether or not the update to the task should be private. Default: True
+        :param private: boolean indicating whether the update to the task should be private. Default: True
 
         :return: python dict containing created ticket update information
 
@@ -564,7 +565,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     def get_all_ticket_urgencies(self) -> list:
         """
-        Gets all ticket urgencies from the tickets app.
+        Gets all ticket urgencies from the Tickets app.
 
         :return: list of priorities in python dict
 
@@ -672,7 +673,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param status_class:    A name of a status class. These values are hard-coded into the TDWebApi, and stored in
                                 this class as a class variable.
         :param description:     A string containing the description of the new status. (Default: Empty String)
-        :param active:          A bool indicating whether or not this new status should be active. (Default: True)
+        :param active:          A bool indicating whether this new status should be active. (Default: True)
 
         :return:                The new ticket status as a dict
 
@@ -792,7 +793,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Edits a ticket task with a set of new values.
 
-        :param ticket_id: The ticket Id on which the ticket task exists.
+        :param ticket_id: The ticket ID on which the ticket task exists.
         :param task: a single ticket task in dict (maybe from get_ticket_task_by_id), or a task ID
         :param changed_attributes: The new values ot set on the ticket task.
 
@@ -818,7 +819,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Deletes a ticket task by ID
 
-        :param ticket_id: The ticket Id on which the ticket task exists.
+        :param ticket_id: The ticket ID on which the ticket task exists.
         :param task_id: The task ID of the task you want to delete.
 
         :return: none
@@ -831,7 +832,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Reassigns a ticket task to a person or group
 
-        :param ticket_id: The ticket Id on which the ticket task exists.
+        :param ticket_id: The ticket ID on which the ticket task exists.
         :param task: a single ticket task in dict (maybe from get_ticket_task_by_id), or a task ID
         :param responsible: a username, email, Full Name, or ID number to use to search for a person, or a group name.
         :param group: If this parameter is True, assign to group instead of individual
@@ -853,7 +854,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Sets the start date and end date for a ticket task. This will affect the start & end dates of the parent ticket.
 
-        :param ticket_id: The ticket Id on which the ticket task exists.
+        :param ticket_id: The ticket ID on which the ticket task exists.
         :param task: a single ticket task in dict (maybe from get_ticket_task_by_id), or a task ID
         :param start_date: datetime.datetime object to use as the starting date for a task, defaults to now.
         :param end_date: datetime.datetime object to use as the starting date for a task, defaults to now + 1 day.
@@ -868,8 +869,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not end_date:
             end_date = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         new_dates = {
-            'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date, self.timezone),
-            'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date, self.timezone)
+            'StartDate': tdxlib.tdx_utils.export_tdx_date(start_date, self.config.timezone),
+            'EndDate': tdxlib.tdx_utils.export_tdx_date(end_date, self.config.timezone)
         }
         return self.edit_ticket_task(ticket_id, task, new_dates)
 
@@ -883,7 +884,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param percent: the percent complete to set the task to after update
         :param comments: a string to provide as a comment to the update. Defaults to empty string.
         :param notify: a list of strings containing email addresses to notify regarding this ticket. Default: None
-        :param private: boolean indicating whether or not the update to the task should be private. Default: True
+        :param private: boolean indicating whether the update to the task should be private. Default: True
 
         :return: dict of update info
 
@@ -976,7 +977,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param requestor: name or email for requester of the ticket, defaults to username of integration (optional)
         :param classification: name of classification name for new ticket, default "Incident" (optional)
         :param form: name or ID of a form to use for the new ticket
-        :param responsible_is_group: Boolean indicating whether or not 'responsible' refers to a group. (Default: False)
+        :param responsible_is_group: Boolean indicating whether 'responsible' refers to a group. (Default: False)
         :param custom_attributes: dict of attribute names and values
 
         :return: TdxTicket object ready to be created via create_ticket()
@@ -988,7 +989,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         # set defaults
         if not requestor:
-            requestor = self.username
+            requestor = self.config.username
 
         # Required or defaulted parameters
         data = dict()
@@ -1037,8 +1038,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
             else:
                 target_date = tdxlib.tdx_utils.import_tdx_date(due_date)
             start_date = target_date - datetime.timedelta(days=active_days)
-            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start_date, self.timezone)
-            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(target_date, self.timezone)
+            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start_date, self.config.timezone)
+            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(target_date, self.config.timezone)
 
         if location:
             building = self.get_location_by_name(location)
@@ -1084,8 +1085,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if description:
             data['Description'] = description
         if start and end:
-            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start, self.timezone)
-            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(end, self.timezone)
+            data['StartDate'] = tdxlib.tdx_utils.export_tdx_date(start, self.config.timezone)
+            data['EndDate'] = tdxlib.tdx_utils.export_tdx_date(end, self.config.timezone)
         if completion_minutes:
             data['CompleteWithinMinutes'] = completion_minutes
         if group:

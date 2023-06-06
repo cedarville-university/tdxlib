@@ -13,7 +13,7 @@ class TdxAssetTesting(unittest.TestCase):
         self.is_admin = False
         testing_vars_file = '../testing_vars.json'
         self.tax = tdx_asset_integration.TDXAssetIntegration('../tdxlib.ini')
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             print("Not in Sandbox... Aborting")
             quit()
         right_now = dt.today()
@@ -29,14 +29,14 @@ class TdxAssetTesting(unittest.TestCase):
     def test_aaa(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
-        self.assertGreater(len(self.tax.token), 200)
+        self.assertGreater(len(self.tax.config.token), 200)
 
     def test_asset_forms(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         forms = self.tax.get_all_asset_forms()
         self.assertGreater(len(forms), 1)
@@ -44,7 +44,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_form_name(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         form = self.tax.get_asset_form_by_name_id(self.testing_vars['asset_form']['Name'])
         self.assertEqual(int(form['ID']), self.testing_vars['asset_form']['ID'])
@@ -52,7 +52,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_form_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         form = self.tax.get_asset_form_by_name_id(self.testing_vars['asset_form']['ID'])
         self.assertEqual(form['Name'], self.testing_vars['asset_form']['Name'])
@@ -60,7 +60,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_statuses(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         statuses = self.tax.get_all_asset_statuses()
         self.assertGreater(len(statuses),3)
@@ -68,7 +68,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_status_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         status = self.tax.get_asset_status_by_name_id(self.testing_vars['asset_status1']['ID'])
         self.assertEqual(status['Name'], self.testing_vars['asset_status1']['Name'])
@@ -76,7 +76,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_status_name(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         status = self.tax.get_asset_status_by_name_id(self.testing_vars['asset_status1']['Name'])
         self.assertEqual(int(status['ID']), self.testing_vars['asset_status1']['ID'])
@@ -84,7 +84,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_product_types(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_types = self.tax.get_all_product_types()
         self.assertGreater(len(product_types),3)
@@ -92,7 +92,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_product_type_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_type = self.tax.get_product_type_by_name_id(self.testing_vars['product_type']['ID'])
         self.assertEqual(product_type['Name'], self.testing_vars['product_type']['Name'])
@@ -100,7 +100,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_product_type_name(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_type = self.tax.get_product_type_by_name_id(self.testing_vars['product_type']['Name'])
         self.assertEqual(int(product_type['ID']), self.testing_vars['product_type']['ID'])
@@ -108,7 +108,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_product_models(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_models = self.tax.get_all_product_models()
         self.assertGreater(len(product_models),3)
@@ -116,7 +116,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_product_model_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_model = self.tax.get_product_model_by_name_id(self.testing_vars['product_model']['ID'])
         self.assertEqual(product_model['Name'], self.testing_vars['product_model']['Name'])
@@ -124,7 +124,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_asset_product_model_name(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_model = self.tax.get_product_model_by_name_id(self.testing_vars['product_model']['Name'])
         self.assertEqual(int(product_model['ID']), self.testing_vars['product_model']['ID'])
@@ -132,7 +132,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_update_product_type(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         product_type = self.tax.get_product_type_by_name_id(self.testing_vars['product_type']['Name'])
         changed_attributes = {'Description': self.timestamp}
@@ -142,7 +142,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_create_product_type(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         name = 'Temp Product Type ' + self.timestamp
         new_product_type = self.tax.create_product_type(name)
@@ -154,7 +154,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_create_product_model(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         name = 'Temp Product Model ' + self.timestamp
         type = self.tax.get_product_type_by_name_id(self.testing_vars['product_type']['ID'])
@@ -166,7 +166,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_all_vendors(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         vendors = self.tax.get_all_vendors()
         self.assertGreaterEqual(len(vendors), 5)
@@ -174,7 +174,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_vendor_by_name_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         name = self.testing_vars['vendor']['Name']
         vendor = self.tax.get_vendor_by_name_id(name)
@@ -185,7 +185,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_create_vendor(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         name = 'Temp Vendor ' + self.timestamp
         new_vendor = self.tax.create_vendor(name)
@@ -195,7 +195,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_asset_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
         self.assertEqual(asset['Name'], self.testing_vars['asset1']['Name'])
@@ -203,7 +203,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_search_asset(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets = self.tax.search_assets(self.testing_vars['asset_search']['Text'])
         self.assertGreaterEqual(len(assets), self.testing_vars['asset_search']['Count'])
@@ -211,7 +211,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_find_asset_tag(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.find_asset_by_tag(self.testing_vars['asset2']['Tag'])
         self.assertEqual(asset['SerialNumber'], self.testing_vars['asset2']['SerialNumber'])
@@ -219,7 +219,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_find_asset_SN(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.find_asset_by_sn(self.testing_vars['asset2']['SerialNumber'])
         self.assertEqual(asset['Tag'].lstrip('0'), self.testing_vars['asset2']['Tag'].lstrip('0'))
@@ -233,7 +233,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_locations(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets = self.tax.get_assets_by_location([self.testing_vars['location1'],self.testing_vars['location2']])
         self.assertGreaterEqual(len(assets),
@@ -242,7 +242,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_room(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         location = self.tax.get_location_by_name(self.testing_vars['location3']['Name'])
         room1 = self.tax.get_room_by_name(location, self.testing_vars['room1']['Name'])
@@ -252,7 +252,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_owner(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['owner']['asset_count'])
@@ -260,7 +260,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_requesting_dept(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets = self.tax.get_assets_by_requesting_department(self.testing_vars['department']['Name'], max_results=100, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['department']['asset_count'])
@@ -268,7 +268,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_product_model(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets = self.tax.get_assets_by_product_model(self.testing_vars['product_model']['Name'], max_results=100, retired=True, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['product_model']['asset_count'])
@@ -276,7 +276,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_assets_by_product_type(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets = self.tax.get_assets_by_product_type(self.testing_vars['product_type']['Name'], max_results=100, retired=True, disposed=True)
         self.assertGreaterEqual(len(assets), self.testing_vars['product_type']['asset_count'])
@@ -284,7 +284,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_update_asset_status(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         assets_to_update = self.tax.get_assets_by_owner(self.testing_vars['owner']['PrimaryEmail'], max_results=100, disposed=True)
         new_status = str(self.testing_vars['asset_status1']['ID'])
@@ -299,7 +299,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_update_asset_owner(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
         new_owner = self.testing_vars['owner']
@@ -312,7 +312,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_update_asset_requesting_dept(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
         new_dept = self.testing_vars['department']
@@ -324,7 +324,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_custom_attribute_updating_id(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
         new_attributes = self.testing_vars['attributes1']
@@ -345,7 +345,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_custom_attribute_updating_name(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.get_asset_by_id(self.testing_vars['asset1']['ID'])
         new_attributes = self.testing_vars['attributes1']
@@ -366,7 +366,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_add_custom_attributes(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         asset = self.tax.get_asset_by_id(self.testing_vars['asset2']['ID'])
         change = {'Name': asset['Name']+'(Cleared)'}
@@ -391,7 +391,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_add_asset_user(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         self.tax.delete_asset_users(self.testing_vars['asset2']['ID'], self.testing_vars['person1']['UID'])
         validate1 = self.tax.get_asset_users(self.testing_vars['asset2']['ID'])
@@ -402,7 +402,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_asset_users(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         self.tax.add_asset_user(self.testing_vars['asset2']['ID'], self.testing_vars['person1']['UID'])
         validate = self.tax.get_asset_users(self.testing_vars['asset2']['ID'])
@@ -412,7 +412,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_delete_asset_users(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         self.tax.add_asset_user(self.testing_vars['asset2']['ID'], self.testing_vars['person1']['UID'])
         self.tax.delete_asset_users(self.testing_vars['asset2']['ID'], self.testing_vars['person1']['UID'])
@@ -434,7 +434,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_clear_asset_custom_attributes(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         new_asset =  self.tax.create_asset(
             self.tax.build_asset(f'testing2.{self.timestamp}', f'testing2.{self.timestamp}',
@@ -447,7 +447,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_get_asset_custom_attribute_value_by_name(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         new_asset = self.tax.create_asset(
             self.tax.build_asset(f'testing3.{self.timestamp}', f'testing3.{self.timestamp}',
@@ -460,7 +460,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_copy_asset_attributes(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         sn1 = f'testing4.{self.timestamp}'
         new_asset1 = self.tax.create_asset(
@@ -479,7 +479,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_change_asset_custom_attributes(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         sn1 = f'testing4.{self.timestamp}'
         new_asset1 = self.tax.create_asset(
@@ -499,7 +499,7 @@ class TdxAssetTesting(unittest.TestCase):
     def test_move_child_assets(self):
         if not self.tax:
             self.setUp()
-        if not self.tax.sandbox:
+        if not self.tax.config.sandbox:
             return
         child_asset_id = self.testing_vars['child_asset']['ID']
         parent_asset_id = self.testing_vars['parent_asset']['ID']

@@ -113,17 +113,17 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
     The generated file will look something like this:
 
         [TDX API Settings]
-        'orgname': 'myuniversity',
-        'fullhost': 'its.myuniversity.edu',
+        'org_name': 'myuniversity',
+        'full_host': 'its.myuniversity.edu',
         'sandbox': True,
         'username': 'myuser@university.edu',
         'password': 'Prompt',
-        'ticketAppId': '123',
-        'assetAppId': '456',
+        'ticket_app_id': '123',
+        'asset_app_id': '456',
         'caching': True,
         'log_level': 'ERROR'
      
-    * The `orgname` field is whatever subdomain your organization uses to access TeamDynamix. For example, `https://myuniversity.teamdynamix.com`.
+    * The `org_name` field is whatever subdomain your organization uses to access TeamDynamix. For example, `https://myuniversity.teamdynamix.com`.
 
     * The `sandbox` field specifies whether TDXLib should interact with a sandbox version of the TDX Environment, which is written over by production monthly. It is recommended to use the sandbox environment when first getting familiar with the API environment.
 
@@ -133,22 +133,62 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
     
        <pre>Enter the TDX Password for user myuser@myuniversity.edu (this password will not be stored):   </pre>
 
-    * The `ticketAppId` and `assetAppId` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. You can find these ID's in the URLs in the following locations when using a TDX Tickets or Assets app through TDNext in your browser: 
+    * The `ticket_app_id` and `asset_app_id` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. You can find these ID's in the URLs in the following locations when using a TDX Tickets or Assets app through TDNext in your browser: 
     
       * Tickets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{ticketAppId}/Tickets/...`  
       * Assets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{assetAppId}/Assets/...`
 
     * The `caching` field specifies whether or not TDXLib should cache TeamDynamix objects such as valid ticket types, statuses and priorities. Setting this option to `True` reduces the volume of API calls and allows TDXLib to perform some batch operations much faster.
+    
+    * The `log_level` field specifies the python logging level that TDXLib will log at.
 
-    * You can optionally specify an alternative configuration file that TDXLib should search for in your working directory. By default, it will look for `tdxlib.ini`.
+    * The `timezone` field specifies the timezone you'd like TDXLib to operate in. TDXLib will translate date/time objects from TeamDyanmix in UTC to this timezone.
+    
+  * You can optionally specify an alternative configuration file that TDXLib should search for in your working directory. By default, it will look for `tdxlib.ini`.
 
           >>> tdx = tdx_ticket_integration.TDXTicketIntegration("specialconfig.ini")
 
-    * Depending on your `tdxlib.ini` settings, you may be prompted for a password to authenticate into the TeamDynamix API. Once everything is working, go ahead and test out a method:
+  * Depending on your `tdxlib.ini` settings, you may be prompted for a password to authenticate into the TeamDynamix API. Once everything is working, go ahead and test out a method:
 
           >>> accounts = tdx.get_all_accounts()
 
-9. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For more detailed tutorials on how to use TDXLib to manipulate Tickets and Asset, as well as for information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
+8. TDXLib can also be configured directly by a python dictionary. 
+
+    Settings passed in as a dictionary are overwritten by any values in a filename (and if no file name is passed, the default configuration file, `tdxlib.ini` in the working directory)
+   
+    Use the following format for the dictionary configuration:
+    <pre>
+    config = {
+         "org_name": "exampleorg",
+         "sandbox": true,
+         "auth_type": "password",
+         "username": "someone@example.edu",
+         "password": "a password",
+         "ticket_app_id": 300,
+         "asset_app_id": "",
+         "caching": true,
+         "timezone": "-0500",
+         "log_level": "ERROR"
+     }
+    </pre>
+    The only required settings in this are `org_name` and either `asset_app_id` or `ticket_app_id` if you're creating `TDXAssetIntegration` or `TDXTicketIntegration` objects. If you set `auth_type` to `password` a username is also required.
+    Unset settings will be defaulted per the values in `tdxlib.tdx_constants.default_config`.
+9. TDXLib can also be configured via Environment variables. Any values passed in via dictionary, from a file, or in the default configuration file (`tdxlib.ini` in the working directory) override any values passed in as environment variables. 
+
+    Here's a sample of environment variables you can use (they are the same as the config values for dictionary config, but uppercase and prefixed with `TDXLIB_`): 
+    <pre>
+        export TDXLIB_ORG_NAME=exampleorg
+        export TDXLIB_SANDBOX=true
+        export TDXLIB_AUTH_TYPE=password
+        export TDXLIB_USERNAME=someon@example.edu
+        export TDXLIB_PASSWORD=mypassword
+        export TDXLIB_TICKET_APP_ID=300
+        export TDXLIB_ASSET_APP_ID=400
+        export TDXLIB_CACHING=true
+        export TDXLIB_TIMEZONE=-0500
+        export TDXLIB_LOG_LEVEL=ERROR
+   </pre>
+10. Congratulations! You now have the power of the TeamDynamix API at your fingertips. For more detailed tutorials on how to use TDXLib to manipulate Tickets and Asset, as well as for information on the methods and classes included with TDXLib, check out our documentation on [ReadtheDocs.io](http://tdxlib.readthedocs.io).
     
 
 ##  TDXLib Implementation status and Future Plans

@@ -9,8 +9,8 @@ from tdxlib.tdx_api_exceptions import *
 class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
     def __init__(self, filename: str = None):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
-        if self.asset_app_id is None:
-            raise ValueError("Asset App Id is required. Check your INI file for 'assetappid = 000'")
+        if self.config.asset_app_id is None:
+            raise RuntimeError("Asset App Id is required. Check your configuration.")
         
         self.clean_cache()
 
@@ -19,7 +19,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         Internal method to refresh the cache in a tdxlib object.
         """
         super().clean_cache()
-        if not self.caching:
+        if not self.config.caching:
             return
         self.cache['product_model'] = {}
         self.cache['product_type'] = {}
@@ -28,13 +28,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         self.cache['asset_status'] = {}
         self.cache['custom_attributes'] = self.get_all_asset_custom_attributes()
         self.cache['custom_attributes'].append(self.get_all_custom_attributes(
-            tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
+            tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.config.asset_app_id))
 
     def _make_asset_call(self, url: str, action: str, post_body: Union[dict, list] = None) -> Union[list, dict]:
         """
         Internal method to make a http call using the assets endpoints and the provided HTTP verb.
         """
-        url_string = '/' + str(self.asset_app_id) + '/assets'
+        url_string = '/' + str(self.config.asset_app_id) + '/assets'
         if len(url) > 0:
             url_string += '/' + url
         if action == 'get':
@@ -57,7 +57,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param action: The HTTP action (get, put, post, delete, patch) to perform.
         :param post_body: A python dict of the information to post, put, or patch. Not used for get/delete.
 
-        :return: the API's response as a python dict or list
+        :return: the API response as a python dict or list
 
         """
         return self._make_asset_call(url, action, post_body)
@@ -157,7 +157,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param description: A description of the type (optional)
         :param parent: A Type (dict) or Type ID to set as the parent type of this type (creates a subtype)(optional)
         :param order: Sort order for this type (optional, defaults to 1)
-        :param active: Boolean indicating whether or not the new type should be active (optional, default True)
+        :param active: Boolean indicating whether the new type should be active (optional, default True)
 
         :return: dict of created product type
 
@@ -276,7 +276,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param source: The manufacturer or vendor the model is sourced from
         :param description: A description of the model (optional)
         :param part_number: Part number for this model (optional)
-        :param active: Boolean indicating whether or not the new model should be active (optional, default True)
+        :param active: Boolean indicating whether the new model should be active (optional, default True)
         :param attributes: Dict of custom attributes to set on the new model (no validation yet -- build this by hand)
 
         :return: dict of created product type
@@ -379,7 +379,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :param asset_id: the ID of the asset to get users
         :param user_uid: the UID of the person to add
 
-        :return: the API's response (success/failure only)
+        :return: the API response (success/failure only)
         """
         return self.make_call(f'{asset_id}/users/{user_uid}', 'post', {'data': None})
 
@@ -604,7 +604,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         """
         Gets all assets requested by a particular account/department in TDX
 
-        :param dept: the name or email of a account/department, or a dict containing its information
+        :param dept: the name or email of an account/department, or a dict containing its information
         :param max_results: an integer indicating the maximum number of results that should be returned (default: 25)
         :param full_record: boolean indicating whether to fetch the full Asset record, or just summary info
         :param retired: include retired assets in search if true
@@ -825,7 +825,8 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         return self.update_assets(asset, changed_attributes)
 
     def get_all_asset_custom_attributes(self):
-        return self.get_all_custom_attributes(TDXAssetIntegration.component_ids['asset'], app_id=self.asset_app_id)
+        return self.get_all_custom_attributes(TDXAssetIntegration.component_ids['asset'],
+                                              app_id=self.config.asset_app_id)
 
     def get_asset_custom_attribute_by_name_id(self, key: str) -> dict:
         """
@@ -837,15 +838,16 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         """
         search_key = str(key) + "_asset_ci"
-        if self.caching and search_key in self.cache['ca_search']:
+        if self.config.caching and search_key in self.cache['ca_search']:
             return self.cache['ca_search'][search_key]
         # There is no API for searching attributes -- the only way is to get them all.
-        if self.caching:
+        if self.config.caching:
             custom_attributes = self.cache['custom_attributes']
         else:
             custom_attributes = self.get_all_asset_custom_attributes()
             custom_attributes.append(self.get_all_custom_attributes(
-                tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'], app_id=self.asset_app_id))
+                tdxlib.tdx_integration.TDXIntegration.component_ids['configuration_item'],
+                app_id=self.config.asset_app_id))
         for item in custom_attributes:
             if type(item) == dict:
                 if str(key).lower() == item['Name'].lower() or str(key) == str(item['ID']):
@@ -1054,7 +1056,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         if not acquisition_date:
             acquisition_date = datetime.datetime.today()
         if not requester:
-            requester = self.username
+            requester = self.config.username
         if not external_id:
             external_id = serial_number
 
@@ -1127,7 +1129,7 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         Creates an asset
 
         :param asset: a dict of asset info (maybe from make_asset_json()) to use in creation
-        :param check_duplicate: boolean of whether or not we should check to see if this is a duplicate asset
+        :param check_duplicate: boolean of whether we should check to see if this is a duplicate asset
 
         :return: dict of created asset details
 
