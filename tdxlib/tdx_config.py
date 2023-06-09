@@ -99,7 +99,7 @@ class TDXConfig:
             self.ticket_app_id = self.get_value('ticketappid')
         self.asset_app_id = self.get_value('asset_app_id')
         if not self.asset_app_id:
-            self.asset_app_id = self.get_value('assetappid')
+            self.asset_app_id = self.get_value('assetAppId')
         if not self.asset_app_id:
             self.asset_app_id = self.get_value('assetappid')
         self.caching = self.get_value('caching', bool)
