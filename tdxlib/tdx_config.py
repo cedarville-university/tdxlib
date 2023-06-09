@@ -95,9 +95,13 @@ class TDXConfig:
         self.ticket_app_id = self.get_value('ticket_app_id')
         if not self.ticket_app_id:
             self.ticket_app_id = self.get_value('ticketAppId')
-        self.asset_app_id = self.get_value('asset_app_id')
         if not self.ticket_app_id:
-            self.ticket_app_id = self.get_value('assetAppId')
+            self.ticket_app_id = self.get_value('ticketappid')
+        self.asset_app_id = self.get_value('asset_app_id')
+        if not self.asset_app_id:
+            self.asset_app_id = self.get_value('assetappid')
+        if not self.asset_app_id:
+            self.asset_app_id = self.get_value('assetappid')
         self.caching = self.get_value('caching', bool)
         self.timezone = self.get_value('timezone')
         self.full_host = self.get_value('full_host')
