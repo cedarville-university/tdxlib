@@ -315,7 +315,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
     
         """
         if group:
-            reassign = {'ResponsibleUid': self.get_group_by_name(responsible)['ID']}
+            reassign = {'ResponsibleGroupID': self.get_group_by_name(responsible)['ID']}
         else:
             reassign = {'ResponsibleUid': self.get_person_by_name_email(responsible)['UID']}
         return self.edit_ticket(ticket_id, reassign)
