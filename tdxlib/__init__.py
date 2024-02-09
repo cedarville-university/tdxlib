@@ -4,7 +4,8 @@ __all__ = [
     "tdx_api_exceptions",
     "tdx_utils",
     "tdx_constants",
-    "tdx_config"
+    "tdx_config",
+    "tdx_report_integration"
 ]
 
 import tdxlib.tdx_api_exceptions
@@ -14,6 +15,8 @@ import tdxlib.tdx_integration
 import tdxlib.tdx_asset_integration
 import tdxlib.tdx_ticket_integration
 import tdxlib.tdx_ticket
+import tdxlib.tdx_report_integration
+import tdxlib.tdx_report
 import tdxlib.tdx_utils
 
 
