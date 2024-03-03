@@ -1,12 +1,13 @@
 import tdxlib.tdx_report
 import copy
 import datetime
-import tdxlib.tdx_integration
+from tdxlib.tdx_integration import TDXIntegration
 import tdxlib.tdx_api_exceptions
 from typing import Union
 from typing import BinaryIO
+import json
 
-class TDXReportIntegration(tdxlib.tdx_integration.TDXIntegration):
+class TDXReportIntegration(TDXIntegration):
     def __init__(self, filename: str = None, config=None):
         tdxlib.tdx_integration.TDXIntegration.__init__(self, filename, config)
         self.clean_cache()
@@ -25,8 +26,13 @@ class TDXReportIntegration(tdxlib.tdx_integration.TDXIntegration):
         if action == 'patch' and post_body:
             return self.make_patch(url_string, post_body)
         raise tdxlib.tdx_api_exceptions.TdxApiHTTPRequestError('No method ' + action + ' or no post information')
-    def get_report_by_id(self, id: int, withData: bool, dataSortExpression: str) -> list:
+    def get_report_by_id(self, id: int, withData: bool = False, dataSortExpression: str = "") -> tdxlib.tdx_report.TDXReport:
         url_string = f"{id}?withData={withData}&dataSortExpression={dataSortExpression}"
         report_data = self.make_report_call(url_string, 'get')
         if report_data:
-            return tdxlib.tdx_ticket.TDXReport(self, report_data)
+            #return tdxlib.tdx_report.TDXReport.__init__(integration=self, json=report_data)
+            result: tdxlib.tdx_report.TDXReport = {
+                'report_data': report_data,
+                'tdx_api': self
+            }
+            return result

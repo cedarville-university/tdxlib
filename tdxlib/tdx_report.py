@@ -1,15 +1,21 @@
-import datetime
-from typing_json import dumps, loads
+import json
 from typing import Optional
 from enum import Enum
+import tdxlib.tdx_api_exceptions
+import tdxlib.tdx_utils
+import datetime
+from typing_extensions import TypedDict
+import json
 from typing import TYPE_CHECKING
-import tdxlib.tdx_report_integration
 
-class OrderByColumn:
+if TYPE_CHECKING:
+    import tdxlib.tdx_report_integration
+
+class OrderByColumn(TypedDict):
     ColumnLabel: str
     ColumnName: str
     IsAscending: bool
-class ChartSetting:
+class ChartSetting(TypedDict):
     Axis: Optional[str]
     ColumnLabel: Optional[str]
     ColumnName: Optional[str]
@@ -41,7 +47,7 @@ class ComponentFunction(Enum):
     Hour = 4
     HourWeek = 5
     HourMonth = 6
-class DisplayColumn:
+class DisplayColumn(TypedDict):
     HeaderText: str
     ColumnName: str
     DataType: ColumnDataType
@@ -51,7 +57,7 @@ class DisplayColumn:
     Aggregate: AggregateFunction
     Component: ComponentFunction
     FooterExpression: Optional[str]
-class TDXReportData:
+class TDXReportData(TypedDict):
     Description: Optional[str]
     MaxResults: int
     DisplayedColumns: Optional[list[DisplayColumn]]
@@ -72,15 +78,15 @@ class TDXReportData:
     ReportSourceID: int
     ReportSourceName: str
     Uri: str
-class TDXReport:
+class TDXReport(TypedDict):
     report_data: TDXReportData
-    tdx_api: tdxlib.tdx_report_integration.TDXReportIntegration
+    tdx_api: 'tdxlib.tdx_report_integration.TDXReportIntegration'
     def __repr__(self):
         return str(self.report_data.__dict__)
     
     def __str__(self):
-        return typing_json.dumps(self, TDXReportData)
+        return json.dumps(self)
     
     def __init__(self, integration: 'tdxlib.tdx_report_integration.TDXReportIntegration', json: str):
         self.tdx_api = integration
-        self.report_data = typing_json.loads(json, TDXReport)
+        self.report_data = json.loads(json)

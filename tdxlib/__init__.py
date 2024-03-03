@@ -1,11 +1,11 @@
 __all__ = [
     "tdx_ticket_integration",
+    "tdx_report_integration",
     "tdx_asset_integration",
     "tdx_api_exceptions",
     "tdx_utils",
     "tdx_constants",
-    "tdx_config",
-    "tdx_report_integration"
+    "tdx_config"
 ]
 
 import tdxlib.tdx_api_exceptions
@@ -20,4 +20,4 @@ import tdxlib.tdx_report
 import tdxlib.tdx_utils
 
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
