@@ -27,8 +27,8 @@ default_config = {
     'caching': False,
     'timezone': '-0500',
     'log_level': 'ERROR',
-    # 'full_host': ''
-
+    # 'full_host': '',
+    'filename': 'tdxlib.ini'
 }
 
 config_keys = {
