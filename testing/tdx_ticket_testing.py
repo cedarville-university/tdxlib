@@ -97,6 +97,24 @@ class TdxTicketTesting(unittest.TestCase):
         key = self.testing_vars['ticket_status']['Name']
         self.assertTrue(self.tix.search_ticket_status(key))
 
+    def test_get_default_not_closed_ticket_statuses(self):
+        if not self.timestamp:
+            self.setUp()
+        statuses = self.tix.get_default_not_closed_ticket_statuses()
+        self.assertGreaterEqual(len(statuses), 1)
+
+    def test_get_default_closed_ticket_statuses(self):
+        if not self.timestamp:
+            self.setUp()
+        statuses = self.tix.get_default_closed_ticket_statuses()
+        self.assertGreaterEqual(len(statuses), 1)
+
+    def test_get_default_cancelled_ticket_statuses(self):
+        if not self.timestamp:
+            self.setUp()
+        statuses = self.tix.get_default_cancelled_ticket_statuses()
+        self.assertGreaterEqual(len(statuses), 1)
+
     def test_get_all_ticket_priorities(self):
         if not self.timestamp:
             self.setUp()
