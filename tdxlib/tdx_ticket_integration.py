@@ -192,16 +192,14 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
         """
         # Set default statuses
-        statuses = list()
-        statuses.append(self.search_ticket_status("New")['ID'])
-        statuses.append(self.search_ticket_status("Open")['ID'])
-        statuses.append(self.search_ticket_status("On Hold")['ID'])
+        open_statuses = self.get_default_not_closed_ticket_statuses()
+        statuses = [x['ID'] for x in open_statuses]
 
         # Set conditional statuses
         if closed:
-            statuses.append(self.search_ticket_status("Closed")['ID'])
+            statuses.extend([x['ID'] for x in self.get_default_closed_ticket_statuses()])
         if cancelled:
-            statuses.append(self.search_ticket_status("Cancelled")['ID'])
+            statuses.extend([x['ID'] for x in self.get_default_cancelled_ticket_statuses()])
         if other_status:
             statuses.append(other_status)
 
@@ -473,6 +471,56 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
                 return ticket_type
         raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
                 f'No type found with ID or Name {key}')
+
+    def get_default_not_closed_ticket_statuses(self):
+        """
+        Gets the default in-process ticket statuses from TDX. These are generally marked by a StatusClass of 1,2, or 5.
+        StatusClass 1 = New, 2 = In Process, 5 = On Hold
+
+        :return: list of status data in python dicts
+
+        :rtype: list
+
+        """
+        return self.get_ticket_status_by_status_class([1, 2, 5])
+
+    def get_default_closed_ticket_statuses(self):
+        """
+        Gets the default completed ticket statuses from TDX. These are generally marked by a StatusClass of 3.
+        StatusClass 3 = Completed
+
+        :return: list of status data in python dicts
+
+        :rtype: list
+
+        """
+        return self.get_ticket_status_by_status_class([3])
+
+    def get_default_cancelled_ticket_statuses(self):
+        """
+        Gets the default cancelled ticket statuses from TDX. These are generally marked by a StatusClass of 4.
+        StatusClass 4 = Cancelled
+
+        :return: list of status data in python dicts
+
+        :rtype: list
+
+        """
+        return self.get_ticket_status_by_status_class([4])
+
+    def get_ticket_status_by_status_class(self, status_class: list[int]) -> list:
+        """
+        Gets ticket statuses based on status class.
+
+        :param status_class: Status class to search for
+
+        :return: list of status data in python dicts
+
+        :rtype: list
+
+        """
+        all_statuses = self.get_all_ticket_statuses()
+        return [x for x in all_statuses if x['StatusClass'] in status_class]
 
     def get_all_ticket_statuses(self) -> list:
         """
