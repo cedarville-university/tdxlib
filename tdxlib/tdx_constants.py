@@ -33,6 +33,7 @@ default_config = {
 
 config_keys = {
     'org_name': str,
+    # backwards compatibility
     'orgname': str,
     'sandbox': bool,
     'auth_type': str,
@@ -51,6 +52,8 @@ config_keys = {
     'log_level': str,
     # backwards compatibility
     'logLevel': str,
+    # backwards compatibility
+    'fullhost': str,
     'full_host': str
 }
 
