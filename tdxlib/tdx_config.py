@@ -28,7 +28,8 @@ class TDXConfig:
         self.load_config_from_env()
         if config:
             self.set_config_from_dict(config)
-        self.load_config_from_file(filename)
+        else:
+            self.load_config_from_file(filename)
         if not self.config_complete():
             self.run_setup_wizard()
         self.config_to_attributes()
@@ -52,11 +53,14 @@ class TDXConfig:
         # Read in configuration
         if filename is None:
             filename = tdxlib.tdx_constants.default_filename
+        if not os.path.exists(filename):
+            raise Exception(f"Configuration file {filename} does not exist.")
         self.config.read(filename)
         return
 
     def load_config_from_env(self):
-        self.config.add_section('TDX API Settings')
+        if 'TDX API Settings' not in self.config.sections():
+            self.config.add_section('TDX API Settings')
         tdx_vars = {k:v for k,v in os.environ.items() if 'TDXLIB' in k}
         for i in tdxlib.tdx_constants.config_keys.keys():
             environ_key = f'TDXLIB_{i.upper()}'
@@ -105,7 +109,8 @@ class TDXConfig:
         self.caching = self.get_value('caching', bool)
         self.timezone = self.get_value('timezone')
         self.full_host = self.get_value('full_host')
-
+        if not self.full_host:
+            self.full_host = self.get_value('fullhost')
     def setup_from_attributes(self):
         if not self.timezone:
             self.timezone = 'Z'
