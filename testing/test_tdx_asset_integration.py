@@ -5,26 +5,41 @@ from tdxlib import tdx_asset_integration
 import os
 from sys import argv
 
-
 class TdxAssetTesting(unittest.TestCase):
+    tax = None
+    is_admin = False
+
     # Create TDXIntegration object for testing use. Called before testing methods.
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # only run admin tests if this is true
-        self.is_admin = False
-        testing_vars_file = '../testing_vars.json'
-        self.tax = tdx_asset_integration.TDXAssetIntegration('../tdxlib.ini')
-        if not self.tax.config.sandbox:
+        cls.is_admin = False
+        testing_vars_file = './asset_testing_vars.json'
+        cls.tax = tdx_asset_integration.TDXAssetIntegration('../tdxlib.ini')
+        if not cls.tax.config.sandbox:
             print("Not in Sandbox... Aborting")
             quit()
-        right_now = dt.today()
-        self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
+
         if os.path.isfile(testing_vars_file):
             with open(testing_vars_file, 'r') as f:
-                self.testing_vars = json.load(f)
+                cls.testing_vars = json.load(f)
         else:
             print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
                   'A sample file is available in testing/sample_ticket_testing_vars. ',
                   'Any *.json files are ignored by git.')
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls.tax:
+            cls.tax = None
+
+    def setUp(self):
+        right_now = dt.now()
+        self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
+        if not self.tax:
+            self.fail("TDXAssetIntegration object not created. Please run setUpClass first.")
+        if not self.tax.config.sandbox:
+            self.fail("Not in Sandbox mode. Please set sandbox to True in tdxlib.ini.")
 
     def test_aaa(self):
         if not self.tax:
@@ -331,6 +346,7 @@ class TdxAssetTesting(unittest.TestCase):
         for i in asset['Attributes']:
             if str(i['ID']) == str(new_attributes[0]['ID']) and str(i['Value']) == str(new_attributes[0]['Value']):
                 new_attributes = self.testing_vars['attributes2']
+                break
         attrib_list = []
         for i in new_attributes:
             attrib_list.append(self.tax.build_asset_custom_attribute_value(i['ID'],i['Value']))
@@ -455,7 +471,7 @@ class TdxAssetTesting(unittest.TestCase):
                                  asset_custom_attributes={'Attributes': [self.testing_vars['attributes1'][0]]}))
         validate = self.tax.get_asset_custom_attribute_value_by_name(new_asset,
                                                                      self.testing_vars['attributes1'][0]['Name'], True)
-        self.assertTrue(validate == str(self.testing_vars['attributes1'][0]['Value']))
+        self.assertEqual(validate, str(self.testing_vars['attributes1'][0]['choice1']['ID']))
 
     def test_copy_asset_attributes(self):
         if not self.tax:
