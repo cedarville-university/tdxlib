@@ -2,7 +2,7 @@ import time
 import unittest
 import json
 from datetime import datetime as dt
-from tdxlib import tdx_integration
+from tdxlib import tdx_integration, tdx_config
 import os
 
 
@@ -13,8 +13,8 @@ class TdxIntegrationTesting(unittest.TestCase):
     def setUp(self):
         # Will only run non-admin tests
         self.is_admin = False
-        testing_vars_file = '../testing_vars.json'
-        self.tdx = tdx_integration.TDXIntegration('../tdxlib.ini')
+        testing_vars_file = './testing_vars.json'
+        self.tdx = tdx_integration.TDXIntegration('../tdxlib.ini', skip_initial_auth=True)
         right_now = dt.today()
         if os.path.isfile(testing_vars_file):
             with open(testing_vars_file, 'r') as f:
@@ -23,15 +23,41 @@ class TdxIntegrationTesting(unittest.TestCase):
             print('Testing variables need to be populated in file "testing_vars.json" in the working directory.',
                   'A sample file is available in testing/sample_ticket_testing_vars. Any *.json files are ignored by git.')
 
+    def test_file_config(self, config_parser):
+            file_contents = """
+[TDX API Settings]
+org_name = loaded-from-file
+sandbox = false
+username = username
+password = not-a-password
+authtype = password
+ticket_app_id = 987
+asset_app_id = 876
+caching = false
+timezone = -0500
+"""
+            if os.path.exists('./tdxlib_test.ini'):
+                raise Exception("Testing ini file already exists. Please remove it before running tests.")
+            with open('./tdxlib_test.ini', 'w') as f:
+                f.write(file_contents)
+            tdx = tdx_integration.TDXIntegration('./tdxlib_test.ini', skip_initial_auth=True)
+            self.assertIsInstance(tdx, tdx_integration.TDXIntegration)
+            self.assertIsInstance(tdx.config, tdx_config.TDXConfig)
+            self.assertGreater(len(tdx.config.api_url), 10)
+            self.assertEqual(tdx.config.org_name, 'loaded-from-file')
+            self.assertNotIn('//', tdx.config.api_url.lstrip('https://'),
+                             f'Extra slash in URL {tdx.config.api_url}')
+            os.remove('./tdxlib_test.ini')
+
     def test_config_by_file(self):
-        test_tdxlib = tdx_integration.TDXIntegration('../tdxlib.ini')
+        test_tdxlib = tdx_integration.TDXIntegration('../tdxlib.ini', skip_initial_auth=True)
         self.assertIsNotNone(test_tdxlib.config)
         self.assertGreater(len(test_tdxlib.config.api_url), 13)
         self.assertTrue(self.testing_vars['org_name'] in test_tdxlib.config.api_url)
 
     def test_config_by_dict(self):
         test_dict = self.testing_vars['test_config_dict']
-        test_tdxlib = tdx_integration.TDXIntegration(config=test_dict)
+        test_tdxlib = tdx_integration.TDXIntegration(config=test_dict, skip_initial_auth=True)
         self.assertIsNotNone(test_tdxlib.config)
         self.assertGreater(len(test_tdxlib.config.api_url), 13)
         self.assertTrue(self.testing_vars['org_name'] in test_tdxlib.config.api_url)
@@ -43,7 +69,7 @@ class TdxIntegrationTesting(unittest.TestCase):
             env_name = f'TDXLIB_{k.upper()}'
             os.environ[env_name] = str(v)
         os.environ.update()
-        test_tdxlib = tdx_integration.TDXIntegration()
+        test_tdxlib = tdx_integration.TDXIntegration(skip_initial_auth=True)
         self.assertIsNotNone(test_tdxlib.config)
         self.assertGreater(len(test_tdxlib.config.api_url), 13)
         self.assertTrue(self.testing_vars['org_name'] in test_tdxlib.config.api_url)
@@ -210,7 +236,7 @@ class TdxIntegrationTesting(unittest.TestCase):
     def test_get_location_by_name_partial(self):
         if not self.tdx:
             self.setUp()
-        standard = self.testing_vars['location2']
+        standard = self.testing_vars['location']
         test = self.tdx.get_location_by_name(standard['PartialName'])
         self.assertEqual(test['ID'], standard['ID'])
 
@@ -266,7 +292,7 @@ class TdxIntegrationTesting(unittest.TestCase):
             return
         if not self.is_admin:
             return
-        location = self.tdx.get_location_by_name(self.testing_vars['location1']['Name'])
+        location = self.tdx.get_location_by_name(self.testing_vars['location']['Name'])
         name = 'Testing Room ' + TdxIntegrationTesting.timestamp
         description = 'Testing room Description'
         new_room = self.tdx.create_room(location, name, description=description)
