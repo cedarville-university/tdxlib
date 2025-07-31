@@ -5,15 +5,15 @@
   },
   "ticket2": {
     "_comment": "A ticket with at least 1 ticket task, and at least 1 feed entry. The ID should be an integer"
-    "ID": 
+    "ID":
     "task": {
       "_comment": "A ticket task with at least 1 feed entry. The ID should be an integer"
-      "ID": 
+      "ID":
     }
   },
   "ticket3": {
     "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer"
-    "ID": 
+    "ID":
   },
   "ticket_type": {
     "_comment": "A valid active ticket type. The ID should be an integer, and the Name should be an exact string match with TDX"
@@ -52,6 +52,18 @@
   },
   "location": {
     "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
+  },
+    "location1": {
+    "_comment": "A second valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations"
+    "ID": ,
+    "Name": "",
+    "PartialName": ""
+  },
+    "location2": {
+    "_comment": "A third valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations"
     "ID": ,
     "Name": "",
     "PartialName": ""

@@ -1,0 +1,117 @@
+{
+  "asset1": {
+    "ID": 1,
+    "Name": "Asset One"
+  },
+  "asset2": {
+    "ID": 2,
+    "SerialNumber": "SN123456",
+    "Tag": "000987654"
+  },
+  "asset_form": {
+    "ID": 3,
+    "Name": "Asset Form Name"
+  },
+  "asset_search": {
+    "Count": 5,
+    "Text": "Search term"
+  },
+  "asset_status1": {
+    "ID": 4,
+    "Name": "Available"
+  },
+  "asset_status2": {
+    "ID": 5,
+    "Name": "Checked Out"
+  },
+  "attributes1": [
+    {
+      "Name": "CustomAttrib1",
+      "ID": 34576,
+      "Value": "MyValue",
+      "choice1": {
+        "ID": 123123,
+        "Name": "MyValue",
+        "Value": "123123"
+      }
+    },
+    {
+      "Name": "CustomAttrib2",
+      "ID": 8765,
+      "Value": "MyString"
+    }
+  ],
+  "attributes2": [
+    {
+      "Name": "CustomAttrib1",
+      "ID": 34576,
+      "Value": "MyValue2",
+      "choice1": {
+        "ID": 456456,
+        "Name": "MyValue2",
+        "Value": "456456"
+      }
+    },
+    {
+      "Name": "CustomAttrib2",
+      "ID": 8765,
+      "Value": "MyOtherString"
+    }
+  ],
+  "child_asset": {
+    "ID": 6
+  },
+  "department": {
+    "asset_count": 12,
+    "Name": "IT Department"
+  },
+  "department_alt": {
+    "asset_count": 8,
+    "Name": "Finance Department"
+  },
+  "location1": {
+    "asset_count": 6,
+    "Name": "Building A"
+  },
+  "location2": {
+    "asset_count": 9,
+    "Name": "Building B"
+  },
+  "location3": {
+    "Name": "Building C"
+  },
+  "owner": {
+    "asset_count": 15,
+    "PrimaryEmail": "owner@example.com"
+  },
+  "owner_alt": {
+    "asset_count": 5,
+    "PrimaryEmail": "altowner@example.com"
+  },
+  "parent_asset": {
+    "ID": 7
+  },
+  "person1": {
+    "UID": "U123",
+    "FullName": "Jane Doe"
+  },
+  "product_model": {
+    "asset_count": 22,
+    "ID": 8,
+    "Name": "Model X"
+  },
+  "product_type": {
+    "asset_count": 10,
+    "ID": 9,
+    "Name": "Laptop"
+  },
+  "room1": {
+    "_comment": "Room with multiple assets in location3",
+    "asset_count": 4,
+    "Name": "Room 101"
+  },
+  "vendor": {
+    "ID": 10,
+    "Name": "Vendor Inc."
+  }
+}

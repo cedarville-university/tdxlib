@@ -1,0 +1,68 @@
+{
+   "account": {
+        "_comment": "A valid active account. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Accounts"
+        "ID": 0,
+        "Name": "",
+        "PartialName": ""
+    },
+    "account_ca":{
+        "_comment": "A valid active custom account attribute, ID should be an integer, Name should be an exact string match with TDX."
+        "ID": 0,
+        "Name": "",
+        "type": "account",
+        "choice": {
+          "_comment": "A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
+          "ID": ,
+          "Name": ""
+        }
+    },
+    "group": {
+        "_comment": "A valid active group. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Groups",
+        "ID": 0,
+        "Name": ""
+    },
+    "location": {
+        "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations",
+        "ID": 0,
+        "Name": "",
+        "PartialName": ""
+    },
+    "org_name": "",
+      "person1": {
+        "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings."
+        "UID": "",
+        "PrimaryEmail": "",
+        "FullName": ""
+    },
+    "room": {
+        "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location"
+        "ID": ,
+        "Name": "",
+        "PartialName": ""
+    },
+    "test_config_dict": {
+        "TDX API Settings": {
+            "orgname": "example-not-loaded-from-file",
+            "fullhost": "tdx.example.edu",
+            "sandbox": true,
+            "username": "username",
+            "password": "",
+            "ticketAppId": 2345,
+            "assetAppId": 1234,
+            "caching": false,
+            "timezone": "-0500",
+            "logLevel": "ERROR"
+        }
+    },
+    "ticket_ca": {
+    "_comment": "A valid active custom ticket attribute, ID should be an integer, Name should be an exact string match with TDX."
+    "ID": ,
+    "Name": "",
+    "type": "ticket",
+    "choice": {
+      "_comment": "A custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX."
+      "ID": ,
+      "Name": ""
+    }
+  }
+}
