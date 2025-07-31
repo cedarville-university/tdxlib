@@ -20,4 +20,4 @@ import tdxlib.tdx_report
 import tdxlib.tdx_utils
 
 
-__version__ = "0.5.5"
+__version__ = "0.5.6"
