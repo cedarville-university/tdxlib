@@ -29,8 +29,8 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         'Requested': 6
     }
 
-    def __init__(self, filename: str = None, config=None):
-        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename, config)
+    def __init__(self, filename: str = None, config=None, skip_initial_auth: bool = False):
+        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename, config, skip_initial_auth=skip_initial_auth)
         if self.config.ticket_app_id is None:
             raise RuntimeError("Ticket App Id is required. Check your configuration.")
         self.clean_cache()
@@ -145,7 +145,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
 
     # #### GETTING TICKETS #### #
 
-    def get_ticket_by_id(self, ticket_id: int) -> tdxlib.tdx_ticket.TDXTicket:
+    def get_ticket_by_id(self, ticket_id: int) -> tdxlib.tdx_ticket.TDXTicket | None:
         """
         Gets a ticket, based on its ID
 
@@ -159,7 +159,7 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         if ticket_data:
             return tdxlib.tdx_ticket.TDXTicket(self, ticket_data)
 
-    def search_tickets(self, criteria: dict, max_results: int = 25, closed: bool = False, cancelled: bool = False,
+    def search_tickets(self, criteria: dict|str, max_results: int = 25, closed: bool = False, cancelled: bool = False,
                        other_status: bool = False) -> list:
         """
         Gets a ticket, based on a variety of criteria::
