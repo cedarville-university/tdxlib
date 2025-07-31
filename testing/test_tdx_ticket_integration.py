@@ -13,7 +13,7 @@ class TdxTicketTesting(unittest.TestCase):
     def setUp(self):
         # Only run tests that don't require admin
         self.is_admin = False
-        testing_vars_file = '../testing_vars.json'
+        testing_vars_file = './ticket_testing_vars.json'
         self.tix = tdx_ticket_integration.TDXTicketIntegration('../tdxlib.ini')
         right_now = dt.today()
         self.timestamp = right_now.strftime("%d-%B-%Y %H:%M:%S")
