@@ -1,0 +1,128 @@
+{
+  "asset1": {
+    "_comment": "This is a sample asset with just a name",
+    "ID": 123456,
+    "Name": "SAMPLE-ASSET-001"
+  },
+  "asset2": {
+    "_comment": "This is a sample asset with a name, serial number, and tag",
+    "ID": 789012,
+    "SerialNumber": "ABC123XYZ9",
+    "Tag": "12345"
+  },
+  "asset_form": {
+    "ID": 10001,
+    "Name": "Sample Form"
+  },
+  "asset_search": {
+    "Count": 5,
+    "Text": "sample-"
+  },
+  "asset_status1": {
+    "ID": 2001,
+    "Name": "Active"
+  },
+  "asset_status2": {
+    "ID": 2002,
+    "Name": "Inactive"
+  },
+  "attributes1": [
+    {
+      "Name": "Sample Attribute 1",
+      "ID": 30001,
+      "Value": "Option A",
+      "choice1": {
+        "ID": 40001,
+        "Name": "Option A",
+        "Value": "40001"
+      }
+    },
+    {
+      "Name": "Sample Attribute 2",
+      "ID": 30002,
+      "Value": "AA:BB:CC:DD:EE:FF"
+    }
+  ],
+  "attributes2": [
+    {
+      "Name": "Sample Attribute 1",
+      "ID": 30001,
+      "Value": "Option B",
+      "choice1": {
+        "ID": 40002,
+        "Name": "Option B",
+        "Value": "40002"
+      }
+    },
+    {
+      "Name": "Sample Attribute 2",
+      "ID": 30002,
+      "Value": "FF:EE:DD:CC:BB:AA"
+    }
+  ],
+  "child_asset": {
+    "ID": 555555
+  },
+  "department": {
+    "asset_count": 12,
+    "ID": 50001,
+    "Name": "Sample Department"
+  },
+  "department_alt": {
+    "asset_count": 8,
+    "ID": 50002,
+    "Name": "Alternative Department"
+  },
+  "location1": {
+    "asset_count": 6,
+    "ID": 60001,
+    "Name": "Sample Building A"
+  },
+  "location2": {
+    "asset_count": 9,
+    "ID": 60002,
+    "Name": "Sample Building B"
+  },
+  "location3": {
+    "asset_count": 99,
+    "ID": 60003,
+    "Name": "Sample Building C"
+  },
+  "owner": {
+    "asset_count": 5,
+    "FullName": "John Sample",
+    "UID": "12345678-1234-1234-1234-123456789abc",
+    "PrimaryEmail": "john.sample@example.com"
+  },
+  "owner_alt": {
+    "asset_count": 5,
+    "UID": "87654321-4321-4321-4321-cba987654321",
+    "FullName": "Jane Alternative",
+    "PrimaryEmail": "jane.alt@example.com"
+  },
+  "parent_asset": {
+    "ID": 777777
+  },
+  "person1": {
+    "UID": "abcdef12-3456-7890-abcd-ef1234567890",
+    "FullName": "Sample Person"
+  },
+  "product_model": {
+    "asset_count": 15,
+    "ID": 70001,
+    "Name": "SAMPLE-MODEL-001"
+  },
+  "product_type": {
+    "asset_count": 100,
+    "ID": 80001,
+    "Name": "Sample Device Type"
+  },
+  "room1": {
+    "asset_count": 3,
+    "Name": "Room 101"
+  },
+  "vendor": {
+    "ID": 90001,
+    "Name": "Sample Vendor"
+  }
+}

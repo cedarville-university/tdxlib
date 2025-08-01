@@ -13,13 +13,14 @@ import logging
 class TDXIntegration:
     component_ids = tdxlib.tdx_constants.component_ids
 
-    def __init__(self, filename: str = None, config: dict = None):
+    def __init__(self, filename: str = None, config: dict = None, skip_initial_auth: bool = False):
         self.cache = dict()
         self.logger = logging.getLogger('tdx_integration')
         self.config = tdxlib.tdx_config.TDXConfig(filename, config)
         self.setup_logs()
         self.clean_cache()
-        self.check_auth_init()
+        if not skip_initial_auth:
+            self.check_auth_init()
 
     def setup_logs(self):
         if self.config.log_level:
