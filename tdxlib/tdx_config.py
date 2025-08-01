@@ -25,11 +25,13 @@ class TDXConfig:
         self.ticket_app_id = None
         self.asset_app_id = None
         self.full_host = None
-        self.load_config_from_env()
+
         if config:
             self.set_config_from_dict(config)
-        else:
+        elif filename:
             self.load_config_from_file(filename)
+        else:
+            self.load_config_from_env()
         if not self.config_complete():
             self.run_setup_wizard()
         self.config_to_attributes()
@@ -119,7 +121,7 @@ class TDXConfig:
             api_end = '/SBTDWebApi/api'
         else:
             api_end = '/TDWebApi/api'
-        if self.full_host is None:
+        if not self.full_host:
             self.api_url = 'https://' + self.org_name + '.teamdynamix.com' + api_end
         else:
             self.api_url = 'https://' + self.full_host + api_end
