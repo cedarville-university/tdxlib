@@ -26,7 +26,7 @@ pip install gspread oauth2client  # for Google Sheets integration examples
 
 ### Testing
 ```bash
-# Run all unit tests (from project root)
+# Run all unit tests (from ./testing directory)
 python -m unittest discover testing
 
 # Run specific test module
