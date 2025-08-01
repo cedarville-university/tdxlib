@@ -89,11 +89,11 @@ class TDXTicket:
             data = self.ticket_data
         # Check for required attributes
         if not editable_only:
-            for attrib in TDXTicket.required_attributes:
+            for attrib in required_attributes:
                 if attrib not in data:
                     raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                         "Value required for {0}".format(attrib))
-                if attrib in self.valid_int_attributes:
+                if attrib in valid_int_attributes:
                     if not isinstance(data[attrib], int):
                         raise tdxlib.tdx_api_exceptions.TdxApiTicketValidationError(
                             "Integer value required for {0}".format(attrib))

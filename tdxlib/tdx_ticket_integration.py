@@ -236,8 +236,12 @@ class TDXTicketIntegration(tdxlib.tdx_integration.TDXIntegration):
         changed_custom_attributes = False
         if not isinstance(ticket, tdxlib.tdx_ticket.TDXTicket):
             full_ticket = self.get_ticket_by_id(ticket)
+            if not full_ticket:
+                raise tdxlib.tdx_api_exceptions.TdxApiObjectNotFoundError(
+                    f'Full body of ticket with ID {ticket} not found')
         else:
             full_ticket = ticket
+
         # Separate CA changes into their own object: 'changed_custom_attributes'.
         # need to make a full copy of this dict, so we can reuse it
         changed_attributes_copy = copy.deepcopy(changed_attributes)

@@ -153,7 +153,8 @@ valid_int_attributes = [
     'ArticleStatus',
     'ServiceOfferingID',
     'WorkflowID',
-    'WorkflowConfigurationID'
+    'WorkflowConfigurationID',
+    'StatusID'
 ]
 valid_decimal_attributes = [
     'TimeBudget',
@@ -255,7 +256,6 @@ required_attributes = [
     'TypeID',
     'AccountID',
     'PriorityID',
-    'RequestorUid',
     'StatusID',
     'Title'
 ]
