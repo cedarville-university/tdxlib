@@ -1,68 +1,69 @@
 {
-   "account": {
-        "_comment": "A valid active account. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Accounts"
-        "ID": 0,
-        "Name": "",
-        "PartialName": ""
+    "account": {
+      "_comment": "A valid active account. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Accounts",
+      "ID": 12345,
+      "Name": "Information Technology Services",
+      "PartialName": "Information Technology"
     },
     "account_ca":{
-        "_comment": "A valid active custom account attribute, ID should be an integer, Name should be an exact string match with TDX."
-        "ID": 0,
-        "Name": "",
-        "type": "account",
-        "choice": {
-          "_comment": "A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
-          "ID": ,
-          "Name": ""
-        }
+      "_comment": "A valid active custom account attribute, ID should be an integer, Name should be an exact string match with TDX.",
+      "ID": 67890,
+      "Name": "Department",
+      "type": "account",
+      "choice": {
+        "_comment": "A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
+        "ID": 98765,
+        "Name": "Academic Affairs"
+      }
     },
     "group": {
-        "_comment": "A valid active group. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Groups",
-        "ID": 0,
-        "Name": ""
+      "_comment": "A valid active group. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Groups",
+      "ID": 54321,
+      "Name": "Campus Technology Support",
+      "PartialName": "Campus Technology"
     },
     "location": {
-        "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations",
-        "ID": 0,
-        "Name": "",
-        "PartialName": ""
+      "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations",
+      "ID": 11111,
+      "Name": "Administration Building",
+      "PartialName": "Admin"
     },
-    "org_name": "",
-      "person1": {
-        "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings."
-        "UID": "",
-        "PrimaryEmail": "",
-        "FullName": ""
+    "org_name": "example-university",
+    "person1": {
+      "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings.",
+      "UID": "a1b2c3d4-e5f6-7890-abcd-123456789012",
+      "PrimaryEmail": "john.doe@example-university.edu",
+      "FullName": "John Doe"
     },
     "room": {
-        "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location"
-        "ID": ,
-        "Name": "",
-        "PartialName": ""
+      "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location",
+      "ID": 22222,
+      "Name": "101 (Conference Room)",
+      "PartialName": "101"
     },
     "test_config_dict": {
         "TDX API Settings": {
-            "orgname": "example-not-loaded-from-file",
-            "fullhost": "tdx.example.edu",
+            "orgname": "example-university",
+            "fullhost": "",
             "sandbox": true,
-            "username": "username",
-            "password": "",
-            "ticketAppId": 2345,
-            "assetAppId": 1234,
-            "caching": false,
+            "username": "testuser@example-university.edu",
+            "password": "TestPassword123",
+            "ticketAppId": 1001,
+            "assetAppId": 1002,
+            "caching": true,
             "timezone": "-0500",
             "logLevel": "ERROR"
         }
     },
     "ticket_ca": {
-    "_comment": "A valid active custom ticket attribute, ID should be an integer, Name should be an exact string match with TDX."
-    "ID": ,
-    "Name": "",
+    "_comment": "A valid active custom ticket attribute, ID should be an integer, Name should be an exact string match with TDX.",
+    "ID": 33333,
+    "Name": "Service Category",
     "type": "ticket",
     "choice": {
-      "_comment": "A custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX."
-      "ID": ,
-      "Name": ""
+      "_comment": "A custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
+      "ID": 44444,
+      "Name": "Hardware Support"
     }
   }
 }
