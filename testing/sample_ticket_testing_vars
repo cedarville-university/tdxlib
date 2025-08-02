@@ -1,115 +1,131 @@
 {
   "ticket1": {
-    "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer"
-    "ID":
+    "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer",
+    "ID": 1000001
   },
   "ticket2": {
-    "_comment": "A ticket with at least 1 ticket task, and at least 1 feed entry. The ID should be an integer"
-    "ID": 
+    "_comment": "A ticket with at least 1 ticket task, and at least 1 feed entry. The ID should be an integer",
+    "ID": 1000002,
     "task": {
-      "_comment": "A ticket task with at least 1 feed entry. The ID should be an integer"
-      "ID": 
+      "_comment": "A ticket task with at least 1 feed entry. The ID should be an integer",
+      "ID": 2000001
     }
   },
   "ticket3": {
-    "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer"
-    "ID": 
+    "_comment": "A ticket with no ticket tasks, but at least 1 feed entry. The ID should be an integer",
+    "ID": 1000003
   },
   "ticket_type": {
-    "_comment": "A valid active ticket type. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket type. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "ID": 3001,
+    "Name": "Service Request"
   },
   "ticket_status": {
-    "_comment": "A valid active ticket status. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket status. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "ID": 4001,
+    "Name": "Open"
   },
   "ticket_priority": {
-    "_comment": "A valid active ticket priority. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket priority. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "ID": 5001,
+    "Name": "Medium"
   },
   "ticket_classification": {
-    "_comment": "A valid active ticket classification. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket classification. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "Name": "Incident"
   },
   "ticket_urgency": {
-    "_comment": "A valid active ticket urgency. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket urgency. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "ID": 6001,
+    "Name": "Normal"
   },
   "ticket_impact": {
-    "_comment": "A valid active ticket impact. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket impact. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "ID": 7001,
+    "Name": "Low"
   },
   "ticket_source": {
-    "_comment": "A valid active ticket source. The ID should be an integer, and the Name should be an exact string match with TDX"
-    "ID": ,
-    "Name": ""
+    "_comment": "A valid active ticket source. The ID should be an integer, and the Name should be an exact string match with TDX",
+    "ID": 8001,
+    "Name": "Email"
   },
   "location": {
-    "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations"
-    "ID": ,
-    "Name": "",
-    "PartialName": ""
+    "_comment": "A valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations",
+    "ID": 9001,
+    "Name": "Main Building",
+    "PartialName": "Main"
+  },
+    "location1": {
+    "_comment": "A second valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations",
+    "ID": 9002,
+    "Name": "Science Hall",
+    "PartialName": "Science"
+  },
+    "location2": {
+    "_comment": "A third valid location. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX locations",
+    "ID": 9003,
+    "Name": "Library Building",
+    "PartialName": "Library"
   },
   "room": {
-    "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location"
-    "ID": ,
-    "Name": "",
-    "PartialName": ""
+    "_comment": "A room in the location above. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all rooms in that location",
+    "ID": 10001,
+    "Name": "201 (Conference Room)",
+    "PartialName": "201"
   },
   "account": {
-    "_comment": "A valid active account. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Accounts"
-    "ID": ,
-    "Name": "",
-    "PartialName": ""
+    "_comment": "A valid active account. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Accounts",
+    "ID": 11001,
+    "Name": "Information Technology Services",
+    "PartialName": "Information Technology"
   },
   "group": {
-    "_comment": "A valid active group. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Groups"
-    "ID": ,
-    "Name": "",
-    "PartialName": ""
+    "_comment": "A valid active group. The ID should be an integer, and the Name should be an exact string match with TDX. The partial name should be a substring of Name that is unique among all TDX Groups",
+    "ID": 12001,
+    "Name": "Campus Support Team",
+    "PartialName": "Campus Support"
   },
   "person1": {
-    "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings."
-    "UID": "",
-    "PrimaryEmail": "",
-    "FullName": ""
+    "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings.",
+    "UID": "a1b2c3d4-e5f6-7890-abcd-123456789abc",
+    "PrimaryEmail": "john.smith@example-university.edu",
+    "FullName": "John Smith"
   },
   "person2": {
-    "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings."
-    "UID": "",
-    "PrimaryEmail": "",
-    "FullName": ""
+    "_comment": "A valid active user, with their UID, PrimaryEmail, and FullName as strings.",
+    "UID": "b2c3d4e5-f6a7-8901-bcde-234567890def",
+    "PrimaryEmail": "jane.doe@example-university.edu",
+    "FullName": "Jane Doe"
   },
   "ticket_ca": {
-    "_comment": "A valid active custom ticket attribute, ID should be an integer, Name should be an exact string match with TDX."
-    "ID": ,
-    "Name": "",
+    "_comment": "A valid active custom ticket attribute, ID should be an integer, Name should be an exact string match with TDX.",
+    "ID": 13001,
+    "Name": "Service Category",
     "type": "ticket",
     "choice": {
-      "_comment": "A custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX."
-      "ID": ,
-      "Name": ""
+      "_comment": "A custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
+      "ID": 14001,
+      "Name": "Hardware"
+    },
+    "choice2": {
+      "_comment": "A second custom ticket attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
+      "ID": 14002,
+      "Name": "Software"
     }
   },
   "account_ca":{
-    "_comment": "A valid active custom account attribute, ID should be an integer, Name should be an exact string match with TDX."
-    "ID": ,
-    "Name": "",
+    "_comment": "A valid active custom account attribute, ID should be an integer, Name should be an exact string match with TDX.",
+    "ID": 15001,
+    "Name": "Department",
     "type": "account",
     "choice": {
       "_comment": "A custom account attribute choice for the CA above, ID should be an integer, Name should be an exact string match with TDX.",
-      "ID": ,
-      "Name": ""
+      "ID": 16001,
+      "Name": "Academic Affairs"
     }
   },
   "attachment": {
     "_comment": "A valid file placed in working directory to upload as a ticket attachment",
-    "Name": ""
+    "Name": "../README.md"
   }
 }

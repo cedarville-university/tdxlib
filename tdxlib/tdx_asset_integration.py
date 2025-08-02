@@ -7,11 +7,10 @@ from tdxlib.tdx_api_exceptions import *
 
 
 class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
-    def __init__(self, filename: str = None):
-        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename)
+    def __init__(self, filename: str = None, skip_initial_auth: bool = False) -> None:
+        tdxlib.tdx_integration.TDXIntegration.__init__(self, filename, skip_initial_auth=skip_initial_auth)
         if self.config.asset_app_id is None:
             raise RuntimeError("Asset App Id is required. Check your configuration.")
-        
         self.clean_cache()
 
     def clean_cache(self) -> None:
@@ -80,9 +79,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: list of form data
 
         """
-        if not self.cache['asset_form']:
-            self.cache['asset_form'] = self.get_all_asset_forms()
-        for asset_form in self.cache['asset_form']:
+        if not self.config.caching or not self.cache['asset_form']:
+            forms = self.get_all_asset_forms()
+            if self.config.caching:
+                self.cache['asset_form'] = forms
+        else:
+            forms = self.cache['asset_form']
+        for asset_form in forms:
             if str(key).lower() in asset_form['Name'].lower():
                 return asset_form
             if str(asset_form['ID']).lower() == str(key):
@@ -108,9 +111,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: dict of status data
 
         """
-        if not self.cache['asset_status']:
-            self.cache['asset_status'] = self.get_all_asset_statuses()
-        for status in self.cache['asset_status']:
+        if not self.config.caching or not self.cache['asset_status']:
+            statuses = self.get_all_asset_statuses()
+            if self.config.caching:
+                self.cache['asset_status'] = statuses
+        else:
+            statuses = self.cache['asset_status']
+        for status in statuses:
             if status['Name'].lower() == str(key).lower() or str(status['ID']) == str(key):
                 return status
         raise TdxApiObjectNotFoundError(f'No asset status found for {str(key)}')
@@ -141,9 +148,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: dict of product type data
 
         """
-        if not self.cache['product_type']:
-            self.cache['product_type'] = self.get_all_product_types()
-        for product_type in self.cache['product_type']:
+        if not self.config.caching or not self.cache['product_type']:
+            types = self.get_all_product_types()
+            if self.config.caching:
+                self.cache['product_type'] = types
+        else:
+            types = self.cache['product_type']
+        for product_type in types:
             if str(key).lower() == product_type['Name'].lower() or str(product_type['ID']) == str(key):
                 return product_type
         raise TdxApiObjectNotFoundError(f'No product type found for {str(key)}')
@@ -238,9 +249,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: dict of model data
 
         """
-        if not self.cache['product_model']:
-            self.cache['product_model'] = self.get_all_product_models()
-        for product_model in self.cache['product_model']:
+        if not self.config.caching or not self.cache['product_model']:
+            cache = self.get_all_product_models()
+            if self.config.caching:
+                self.cache['product_model'] = cache
+        else:
+            cache = self.cache['product_model']
+        for product_model in cache:
             if str(key).lower() in product_model['Name'].lower() or str(product_model['ID']) == str(key):
                 return product_model
         raise TdxApiObjectNotFoundError(f'No product model found for {str(key)}')
@@ -321,9 +336,13 @@ class TDXAssetIntegration(tdxlib.tdx_integration.TDXIntegration):
         :return: dict of vendor data
 
         """
-        if not self.cache['vendor']:
-            self.cache['vendor'] = self.get_all_vendors()
-        for vendor in self.cache['vendor']:
+        if not self.config.caching or not self.cache['vendor']:
+            cache = self.get_all_vendors()
+            if self.config.caching:
+                self.cache['vendor'] = cache
+        else:
+            cache = self.cache['vendor']
+        for vendor in cache:
             if str(key).lower() in vendor['Name'].lower() or str(vendor['ID']) == str(key):
                 return vendor
         raise TdxApiObjectNotFoundError(f'No vendor found for {str(key)}')
