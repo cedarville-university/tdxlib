@@ -24,6 +24,7 @@ class TDXConfig:
         self.auth_type = None
         self.ticket_app_id = None
         self.asset_app_id = None
+        self.client_portal_app_id = None
         self.full_host = None
 
         if config:
@@ -108,6 +109,9 @@ class TDXConfig:
             self.asset_app_id = self.get_value('assetAppId')
         if not self.asset_app_id:
             self.asset_app_id = self.get_value('assetappid')
+        self.client_portal_app_id = self.get_value('client_portal_app_id')
+        if not self.client_portal_app_id:
+            self.client_portal_app_id = self.get_value('clientPortalAppId')
         self.caching = self.get_value('caching', bool)
         self.timezone = self.get_value('timezone')
         self.full_host = self.get_value('full_host')
@@ -140,7 +144,7 @@ class TDXConfig:
         self.set_auth_type_wizard()
         self.set_ticket_app_id_wizard()
         self.set_asset_app_id_wizard()
-        self.set_caching_wizard()
+        self.set_client_portal_app_id_wizard()
         self.set_timezone_wizard()
         self.set_logging_wizard()
         self.save_config_wizard()
@@ -224,20 +228,9 @@ class TDXConfig:
         init_ticket_id = input("\nTickets App ID (optional): ")
         self.config.set('TDX API Settings', 'ticket_app_id', init_ticket_id)
 
-    def set_caching_wizard(self):
-        print("\nTDXLib uses intelligent caching to speed up API calls on repetitive operations.")
-        print("In very dynamic environments, TDXLib's caching can cause issues.")
-        caching_invalid = True
-        while caching_invalid:
-            caching_choice = input("Disable Caching? Y/N [N]: ")
-            if caching_choice == '' or caching_choice.lower() in ['y', 'ye', 'yes', 'true']:
-                self.config.set('TDX API Settings', 'caching', 'true')
-                caching_invalid = False
-            elif caching_choice.lower() in ['n', 'no', 'false']:
-                self.config.set('TDX API Settings', 'caching', 'false')
-                caching_invalid = False
-            if caching_invalid:
-                print("Invalid Response.")
+    def set_client_portal_app_id_wizard(self):
+        init_cp_id = input("\nClient Portal App ID (optional): ")
+        self.config.set('TDX API Settings', 'client_portal_app_id', init_cp_id)
 
     def set_timezone_wizard(self):
         print("\nWhat timezone would you like to set for this integration (default: '-0500')?")

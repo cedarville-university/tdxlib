@@ -47,6 +47,7 @@ config_keys = {
     'asset_app_id': str,
     # backwards compatibility
     'assetAppId': str,
+    'client_portal_app_id': str,
     'caching': bool,
     'timezone': str,
     'log_level': str,

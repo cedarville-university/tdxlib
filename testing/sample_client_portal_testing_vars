@@ -1,0 +1,30 @@
+{
+    "article": {
+        "_comment": "A valid knowledge base article. The ID should be an integer, and the Title should be an exact string match with TDX.",
+        "ID": 12345,
+        "Title": "How to Reset Your Password"
+    },
+    "article_category": {
+        "_comment": "A valid article category. The ID should be an integer, and the Name should be an exact string match with TDX.",
+        "ID": 54321,
+        "Name": "Account Management"
+    },
+    "article_search": {
+        "_comment": "Search criteria for testing article search functionality.",
+        "search_term": "password"
+    },
+    "service": {
+        "_comment": "A valid service. The ID should be an integer, and the Name should be an exact string match with TDX.",
+        "ID": 67890,
+        "Name": "Password Reset Request"
+    },
+    "service_category": {
+        "_comment": "A valid service category. The ID should be an integer, and the Name should be an exact string match with TDX.",
+        "ID": 98765,
+        "Name": "IT Support"
+    },
+    "service_search": {
+        "_comment": "Search criteria for testing service search functionality.",
+        "search_term": "support"
+    }
+}
