@@ -65,7 +65,7 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
 
        import tdxlib
     
-6. To interact with the TDX API, you'll need to create an api integration object, through which all of the TDXLib commands are run. TDXLib currently supports two types of integrations:
+6. To interact with the TDX API, you'll need to create an api integration object, through which all of the TDXLib commands are run. TDXLib currently supports three types of integrations:
 
    * **TDX Ticket Integration (Tickets, Ticket Tasks, etc.)**
    
@@ -74,6 +74,10 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
    * **TDX Asset Integration (Assets, CIs, etc.)**
          
          my_tdx_asset_integration = tdxlib.tdx_asset_integration.TDXAssetIntegration()
+
+   * **TDX Client Portal Integration (Knowledge Base Articles, Services, etc.)**
+         
+         my_tdx_client_portal_integration = tdxlib.tdx_client_portal_integration.TDXClientPortalIntegration()
 
 7. In order to store settings, TDXLib uses a INI-style configuration file. 
    If there is no file set up in your working directory, TDXLib will walk you through the generation of one the first time you instantiate an integration object:
@@ -133,10 +137,11 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
     
        <pre>Enter the TDX Password for user myuser@myuniversity.edu (this password will not be stored):   </pre>
 
-    * The `ticket_app_id` and `asset_app_id` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. You can find these ID's in the URLs in the following locations when using a TDX Tickets or Assets app through TDNext in your browser: 
+    * The `ticket_app_id`, `asset_app_id`, and `client_portal_app_id` fields are the numbers that appear after `Apps` in your TeamDynamix URL, and are specific to your organization. You can find these ID's in the URLs in the following locations when using TDX apps through TDNext in your browser: 
     
       * Tickets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{ticketAppId}/Tickets/...`  
       * Assets: `https://myuniversity.teamdynamix.com/TDNext/Apps/{assetAppId}/Assets/...`
+      * Client Portal: `https://myuniversity.teamdynamix.com/TDNext/Apps/{clientPortalAppId}/KnowledgeBase/...`
 
     * The `caching` field specifies whether or not TDXLib should cache TeamDynamix objects such as valid ticket types, statuses and priorities. Setting this option to `True` reduces the volume of API calls and allows TDXLib to perform some batch operations much faster.
     
@@ -292,4 +297,40 @@ TDXLib is a suite of Python libraries originally designed to take input from Goo
     * **Vendors**
         * Editing
         * Deleting
+    * **Accepting Suggestions...** (Submit an Issue!)
+
+* ### TDXClientPortalIntegration:
+
+    The class (inherited from TDXIntegration) that allows interactions with Client Portal objects including Knowledge Base articles and services.
+
+    #### Currently Implemented & Tested:
+    * **Knowledge Base Articles**
+        * Retrieving by ID
+        * Searching with text and dictionary criteria
+        * Searching within specific categories
+    * **Article Categories**
+        * Retrieving all categories
+        * Filtering for public categories only
+        * Retrieving categories by name or ID
+    * **Services**
+        * Retrieving by ID
+        * Searching with text and dictionary criteria
+        * Searching within specific categories
+    * **Service Categories**
+        * Retrieving all categories
+        * Retrieving categories by name or ID
+    * **Caching**
+        * Intelligent caching of categories to reduce API calls
+        * Cache management and cleanup
+    
+    #### Future Plans:
+    * **Knowledge Base Articles**
+        * Creating and editing articles
+        * Managing article permissions and publishing status
+    * **Services**
+        * Creating and editing services
+        * Managing service forms and permissions
+    * **Categories**
+        * Creating and editing article/service categories
+        * Managing category hierarchies
     * **Accepting Suggestions...** (Submit an Issue!)
