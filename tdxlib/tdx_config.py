@@ -20,6 +20,8 @@ class TDXConfig:
         self.sandbox = True
         self.username = None
         self.password = None
+        self.beid = None
+        self.wskey = None
         self.org_name = None
         self.auth_type = None
         self.ticket_app_id = None
@@ -40,9 +42,13 @@ class TDXConfig:
 
     def config_complete(self):
         if not self.get_value('org_name') and not self.get_value('orgname') and not self.get_value('full_host'):
-            return False
+           return False
         if self.get_value('authType') == 'password' and \
                 (not self.get_value('username')):
+            return False
+        if self.get_value('authType') == 'wskey' and \
+                (not self.get_value('beid')) and \
+                (not self.get_value('wskey')):
             return False
         return True
 
@@ -99,6 +105,9 @@ class TDXConfig:
         if not self.auth_type or self.auth_type == 'password':
             self.username = self.get_value('username')
             self.password = self.get_value('password')
+        if not self.auth_type or self.auth_type == 'wskey':
+            self.beid = self.get_value('beid')
+            self.wskey = self.get_value('wskey')
         self.ticket_app_id = self.get_value('ticket_app_id')
         if not self.ticket_app_id:
             self.ticket_app_id = self.get_value('ticketAppId')
