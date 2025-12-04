@@ -103,6 +103,13 @@ timezone = -0500
         self.assertIsNotNone(self.tdx.config.token)
         self.assertGreater(len(self.tdx.config.token), 200)
 
+    def test_authentication_wsk(self):
+        """Test Web Service Key authentication and token generation."""
+        auth_result = self.tdx.auth(force_auth_type='wsk')
+        self.assertTrue(auth_result)
+        self.assertIsNotNone(self.tdx.config.token)
+        self.assertGreater(len(self.tdx.config.token), 200)
+
     def test_check_auth_exp(self):
         """Test automatic token refresh when expired."""
         # Set token exp to sometime in the past

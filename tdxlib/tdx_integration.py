@@ -42,12 +42,12 @@ class TDXIntegration:
     def set_token(self, token: str):
         self.config.token = token
 
-    def auth(self) -> bool:
+    def auth(self, force_auth_type = None) -> bool:
         """
         Internal method to authenticate to the TDX api using the selected method
         Stores a token in the token property, used for future calls. Returns true for success, false for failure.
         """
-        if not self.config.auth_type or self.config.auth_type == 'password':
+        if not self.config.auth_type or self.config.auth_type == 'password' or force_auth_type == 'password':
             try:
                 response = requests.post(
                     url=str(self.config.api_url) + '/auth',
@@ -80,7 +80,7 @@ class TDXIntegration:
             except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
                 self.logger.error(str(e))
                 return False
-        elif self.config.auth_type == 'wskey':
+        elif self.config.auth_type == 'wskey' or force_auth_type == 'wskey':
             try:
                 response = requests.post(
                     url=str(self.config.api_url) + '/auth/loginadmin',
@@ -113,7 +113,7 @@ class TDXIntegration:
             except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
                 self.logger.error(str(e))
                 return False
-        elif self.config.auth_type == 'token':
+        elif self.config.auth_type == 'token' or force_auth_type == 'token':
             if self.config.token is None:
                 self.config.token_exp = time.time()
                 self.logger.info("Skipping initial authentication, no token provided yet.")

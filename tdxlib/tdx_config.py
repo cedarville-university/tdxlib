@@ -195,6 +195,14 @@ class TDXConfig:
         if provided_token != "":
             self.token = provided_token
 
+    def set_wsk_wizard(self):
+        provided_ws_key = input("\nEnter Web services Key: ")
+        if provided_ws_key != "":
+            self.wskey = provided_ws_key
+        provided_beid = input("Enter BEID:")
+        if provided_beid != "":
+            self.beid = provided_beid
+
     def set_password_wizard(self):
         init_username = input("\nTDX API Username (tdxuser@company.com): ")
         self.config.set('TDX API Settings', 'username', init_username)
@@ -226,6 +234,9 @@ class TDXConfig:
                 auth_type_invalid = False
             elif auth_type == "token":
                 self.set_token_wizard()
+                auth_type_invalid = False
+            elif auth_type == "wsk":
+                self.set_wsk_wizard()
                 auth_type_invalid = False
         self.config.set("TDX API Settings", "authType", auth_type)
 
