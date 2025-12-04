@@ -41,6 +41,8 @@ config_keys = {
     'authType': str,
     'password': str,
     'username': str,
+    'beid': str,
+    'wskey': str,
     'ticket_app_id': str,
     # backwards compatibility
     'ticketAppId': str,

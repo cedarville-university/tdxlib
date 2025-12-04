@@ -80,6 +80,39 @@ class TDXIntegration:
             except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
                 self.logger.error(str(e))
                 return False
+        elif self.config.auth_type == 'wskey':
+            try:
+                response = requests.post(
+                    url=str(self.config.api_url) + '/auth/loginadmin',
+                    headers={
+                        "Content-Type": "application/json; charset=utf-8",
+                    },
+                    data=json.dumps({
+                        "BEID": self.config.beid,
+                        "WebServicesKey": self.config.wskey
+                    })
+                )
+                if response.status_code != 200:
+                    raise tdxlib.tdx_api_exceptions.TdxApiHTTPError(" Response code: " + str(response.status_code) +
+                                                                    " " + response.reason + " " + " Returned: " +
+                                                                    response.text)
+                else:
+                    self.config.token = response.text
+                    time.sleep(1)
+                    # Decode token to identify expiration date
+                    decoded = jwt.decode(self.config.token,
+                                         algorithms=['HS256'],
+                                         options={'verify_signature': False},
+                                         audience="https://www.teamdynamix.com/")
+                    self.config.token_exp = decoded['exp']
+                    return True
+
+            except requests.exceptions.RequestException as e:
+                self.logger.warning(f"Auth request Failed. Exception: {str(e)}")
+                return False
+            except tdxlib.tdx_api_exceptions.TdxApiHTTPError as e:
+                self.logger.error(str(e))
+                return False
         elif self.config.auth_type == 'token':
             if self.config.token is None:
                 self.config.token_exp = time.time()
@@ -225,7 +258,7 @@ class TDXIntegration:
     def make_file_post(self, request_url: str, file: BinaryIO, filename: str = None):
         """
         Makes an HTTP POST request to the TDX Api with a Multipart-Encoded File
-        
+
         :param request_url: the path (everything after /TDWebApi/api/) to call
         :param file: BinaryIO object opened in read mode to upload as attachment.
         (read documentation at requests.readthedocs.io/en/master/user/quickstart/#post-a-multipart-encoded-file)
@@ -491,7 +524,7 @@ class TDXIntegration:
         :rtype: list
         """
         return self.get_tdx_item_by_id('groups', str(group_id) + '/members')
-    
+
     def get_person_by_name_email(self, key: str) -> dict:
         """
         Gets the top match of people with based on a simple text search, such as:
@@ -545,10 +578,10 @@ class TDXIntegration:
     def get_account_by_name(self, key: str, additional_params: dict = None) -> dict:
         """
         Gets an account with by searching on its name.
-        
+
         :param key: a partial or full name of an account to search for
         :param additional_params: other search items, as a python dict, as described in TDX Api Docs
-        
+
         :return: dict of account data (not complete, but including the ID)
 
         :rtype: dict
