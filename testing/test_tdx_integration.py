@@ -98,7 +98,7 @@ timezone = -0500
 
     def test_authentication(self):
         """Test JWT authentication and token generation."""
-        auth_result = self.tdx.auth()
+        auth_result = self.tdx.auth(force_auth_type="password")
         self.assertTrue(auth_result)
         self.assertIsNotNone(self.tdx.config.token)
         self.assertGreater(len(self.tdx.config.token), 200)
